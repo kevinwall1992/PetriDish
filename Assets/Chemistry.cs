@@ -860,10 +860,6 @@ public class Interpretase : Ribozyme
             dna_segment.AddMonomer(dna.RemoveMonomer(monomer_index));
         }
 
-        string foo1 = dna.GetSequence();
-        string foo2 = dna_segment.GetSequence();
-
-
         return dna_segment;
     }
 

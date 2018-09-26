@@ -134,6 +134,8 @@ public class MoveAnimation : ActionAnimation
         source = source_;
         target = target_;
 
+        transform.position = source.transform.position;
+
         return this;
     }
 
@@ -324,6 +326,18 @@ public class ActionComponent : MonoBehaviour
                 animations.Add(compound_component.gameObject.AddComponent<FadeAnimation>()
                                                             .SetParameters(true, false)
                                                             .SetLength(0.5f));
+            }
+
+            if(action is Interpretase.MoveCommand)
+            {
+                Interpretase.MoveCommand move_command = action as Interpretase.MoveCommand;
+
+                CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
+                compound_component.SetCompound(move_command.OutputtedCompound);
+
+                animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
+                                                            .SetParameters(CellComponent.GetSlotComponent(move_command.InputSlot).CompoundComponent.gameObject, CellComponent.GetSlotComponent(move_command.OutputSlot).CompoundComponent.gameObject)
+                                                            .SetLength(1.0f * length));
             }
         }
     }

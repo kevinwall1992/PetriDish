@@ -1,17 +1,23 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
 
 public class CompoundComponent : MonoBehaviour
 {
     Compound compound;
+    Text quantity_text;
 
     string current_molecule_name= "";
 
     public Compound Compound
     {
         get { return compound; }
+    }
+
+    public SlotComponent SlotComponent
+    {
+        get { return GetComponentInParent<SlotComponent>(); }
     }
 
     private void Awake()

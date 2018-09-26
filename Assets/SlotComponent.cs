@@ -24,6 +24,11 @@ public class SlotComponent : MonoBehaviour
         get { return catalyst_compound_component; }
     }
 
+    public CellComponent CellComponent
+    {
+        get { return GetComponentInParent<CellComponent>(); }
+    }
+
     public Vector2 Center
     {
         get { return compound_component.transform.position; }

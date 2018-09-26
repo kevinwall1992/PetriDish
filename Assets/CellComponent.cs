@@ -4,15 +4,13 @@ using UnityEngine;
 
 public class CellComponent : MonoBehaviour
 {
-    OrganismComponent organism_component;
-
     Cell cell;
 
     List<SlotComponent> slot_components= new List<SlotComponent>();
 
     public OrganismComponent OrganismComponent
     {
-        get { return organism_component; }
+        get { return GetComponentInParent<OrganismComponent>(); }
     }
 
     public Cell Cell

@@ -208,7 +208,7 @@ public class FloatingLayout : GoodBehavior
                 return index;
         }
 
-        return -1;
+        return 0;
     }
 
     public void SetElementOffset(int index, Vector2 offset)

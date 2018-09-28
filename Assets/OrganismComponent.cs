@@ -37,7 +37,7 @@ public class OrganismComponent : MonoBehaviour
         }
 
         foreach (Action action in actions.Dequeue())
-            gameObject.AddComponent<ActionComponent>().SetAction(action, action is PoweredAction ? 2 : 2);
+            gameObject.AddComponent<ActionComponent>().SetAction(action, action is PoweredAction ? 3 : 1.5f);
     }
 
     void SetCellTransformations()
@@ -47,7 +47,7 @@ public class OrganismComponent : MonoBehaviour
             Vector2Int position = Organism.GetCellPosition(cell_component.Cell);
 
             cell_component.transform.parent = transform;
-            cell_component.transform.Translate(new Vector3(position.x, position.y, 0));
+            cell_component.transform.localPosition= new Vector3(position.x* 4.2f* 0.87f, (position.y+ (position.x % 2 == 1 ? 0.5f : 0)) * 4.2f);
         }
     }
 
@@ -115,12 +115,12 @@ public class OrganismComponent : MonoBehaviour
         cell_components.Clear();
 
         Cell cell = Organism.GetCell(new Vector2Int(0, 0));
-        SetCellTransformations();
 
         if (dna_sequence != "")
         {
             cell.GetSlot(0).AddCompound(new Compound(Molecule.GetMolecule("Interpretase"), 1));
             cell.GetSlot(0).AddCompound(new Compound(new DNA(dna_sequence), 1));
+            cell.GetSlot(5).AddCompound(new Compound(Molecule.GetMolecule("Phospholipid"), 5));
             Organism.Cytozol.AddCompound(new Compound(Molecule.GetMolecule("ATP"), 10));
         }
     }

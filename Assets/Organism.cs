@@ -80,6 +80,24 @@ public class Cell
             get { return Cell.GetSlotIndex(this); }
         }
 
+        public Organism.HexagonalDirection Direction
+        {
+            get
+            {
+                switch (Index)
+                {
+                    case 0: return Organism.HexagonalDirection.Up;
+                    case 1: return Organism.HexagonalDirection.UpRight;
+                    case 2: return Organism.HexagonalDirection.DownRight;
+                    case 3: return Organism.HexagonalDirection.Down;
+                    case 4: return Organism.HexagonalDirection.DownLeft;
+                    case 5: return Organism.HexagonalDirection.UpLeft;
+                }
+
+                return Organism.HexagonalDirection.Up;
+            }
+        }
+
         public Slot(Cell cell_)
         {
             cell = cell_;
@@ -233,16 +251,16 @@ public class Organism
 
     public enum HexagonalDirection { Up, UpRight, DownRight, Down, DownLeft, UpLeft };
 
-    Vector2Int GetDisplacement(HexagonalDirection direction)
+    Vector2Int GetDisplacement(bool even_column, HexagonalDirection direction)
     {
         switch (direction)
         {
             case HexagonalDirection.Up: return new Vector2Int(0, 1);
-            case HexagonalDirection.UpRight: return new Vector2Int(1, 1);
-            case HexagonalDirection.DownRight: return new Vector2Int(1, -1);
+            case HexagonalDirection.UpRight: return new Vector2Int(1, even_column ? 0 : 1);
+            case HexagonalDirection.DownRight: return new Vector2Int(1, even_column ? -1 : 0);
             case HexagonalDirection.Down: return new Vector2Int(0, -1);
-            case HexagonalDirection.DownLeft: return new Vector2Int(-1, -1);
-            case HexagonalDirection.UpLeft: return new Vector2Int(-1, 1);
+            case HexagonalDirection.DownLeft: return new Vector2Int(-1, even_column ? -1 : 0);
+            case HexagonalDirection.UpLeft: return new Vector2Int(-1, even_column ? 0 : 1);
         }
 
         return Vector2Int.zero;
@@ -250,22 +268,24 @@ public class Organism
 
     Vector2Int GetNeighborPosition(Cell cell, HexagonalDirection direction)
     {
-        return GetCellPosition(cell) + GetDisplacement(direction);
+        Vector2Int cell_position = GetCellPosition(cell);
+
+        return cell_position + GetDisplacement(cell_position.x % 2 == 0, direction);
     }
 
     bool IsPositionWithinBounds(Vector2Int position)
     {
-        return position.x < 0 || position.x >= cells.Count ||
-               position.y < 0 || position.y >= cells[0].Count;
+        return position.x >= 0 && position.x < cells.Count &&
+               position.y >= 0 && position.y < cells[0].Count;
     }
 
     //Expands _once_ in each direction towards position, if necessary
     void ExpandTowardsPosition(Vector2Int position)
     {
         if (cells.Count == position.x)
-            cells.Add(new List<Cell>());
+            cells.Add(Utility.CreateNullList<Cell>(cells[0].Count));
         else if (position.x == -1)
-            cells.Insert(0, new List<Cell>());
+            cells.Insert(0, Utility.CreateNullList<Cell>(cells[0].Count));
 
         if (cells[0].Count == position.y)
             foreach (List<Cell> column in cells)
@@ -279,13 +299,13 @@ public class Organism
     {
         Vector2Int position = GetNeighborPosition(cell, direction);
 
-        if (!IsPositionWithinBounds(position))
+        if (IsPositionWithinBounds(position))
             return cells[position.x][position.y];
 
         return null;
     }
 
-    public void AddCell(Cell host_cell, HexagonalDirection direction)
+    public Cell AddCell(Cell host_cell, HexagonalDirection direction)
     {
         ExpandTowardsPosition(GetNeighborPosition(host_cell, direction));
 
@@ -293,6 +313,8 @@ public class Organism
 
         if (IsPositionWithinBounds(position))
             cells[position.x][position.y] = new Cell(this);
+
+        return GetCell(position);
     }
 
     public void RemoveCell(Cell cell)

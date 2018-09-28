@@ -60,6 +60,7 @@ public class CompoundComponent : MonoBehaviour
             case "Pyrimidine": resource_name = "pyrimidine"; break;
             case "ATP": resource_name = "atp"; break;
             case "ADP": resource_name = "adp"; break;
+            case "Phospholipid": resource_name = "lipid"; break;
             default: break;
         }
         if (resource_name == null)

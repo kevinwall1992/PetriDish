@@ -279,11 +279,20 @@ public class ActionComponent : MonoBehaviour
 
                 foreach (Compound compound in reaction.GetCytozolProducts())
                 {
+                    GameObject source = CellComponent.GetSlotComponent(action.Slot).CompoundComponent.gameObject;
+                    if (reaction.GetCytozolProducts().Count== 2)
+                    {
+                        if (reaction.GetCytozolProducts().IndexOf(compound) == 0)
+                            source = CellComponent.GetSlotComponent(action.Slot).LeftCorner;
+                        else
+                            source = CellComponent.GetSlotComponent(action.Slot).RightCorner;
+                    }
+
                     CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
                     compound_component.SetCompound(compound);
 
                     animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
-                                                                .SetParameters(CellComponent.GetSlotComponent(action.Slot).CompoundComponent.gameObject, CellComponent.gameObject)
+                                                                .SetParameters(source, CellComponent.gameObject)
                                                                 .SetLength(0.5f * length, 0.5f * length));
 
                     animations.Add(compound_component.gameObject.AddComponent<FadeAnimation>()
@@ -356,7 +365,8 @@ public class ActionComponent : MonoBehaviour
             foreach (ActionAnimation animation in animations)
                 GameObject.Destroy(animation);
 
-            action.End();
+            if(!action.HasFailed())
+                action.End();
 
             GameObject.Destroy(this);
         }
@@ -529,6 +539,7 @@ public class PoweredAction : Action
 
         List<Molecule> products = new List<Molecule>();
         products.Add(Molecule.GetMolecule("ADP"));
+        products.Add(Molecule.GetMolecule("Phosphate"));
 
         reaction = new Reaction(slot, reactants, null, null, products);
     }

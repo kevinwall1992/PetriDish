@@ -9,9 +9,21 @@ public class SlotComponent : MonoBehaviour
     CompoundComponent compound_component;
     CompoundComponent catalyst_compound_component;
 
+    GameObject left_corner, right_corner;
+
     public Cell.Slot Slot
     {
         get { return slot; }
+    }
+
+    public GameObject LeftCorner
+    {
+        get { return left_corner; }
+    }
+
+    public GameObject RightCorner
+    {
+        get { return right_corner; }
     }
 
     public CompoundComponent CompoundComponent
@@ -37,6 +49,14 @@ public class SlotComponent : MonoBehaviour
     private void Awake()
     {
         gameObject.AddComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("slot");
+
+        left_corner = new GameObject("left_corner");
+        left_corner.transform.parent = transform;
+        left_corner.transform.localPosition = new Vector3(-0.4f, 1.5f);
+
+        right_corner = new GameObject("right_corner");
+        right_corner.transform.parent = transform;
+        right_corner.transform.localPosition = new Vector3(0.4f, 1.5f);
     }
 
     void Start()

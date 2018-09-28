@@ -55,7 +55,7 @@ public class DetailPane : GoodBehavior
 
     private void Start()
     {
-        AddDNASequence("CACTCCAATTCTACCGGAATCGGCTTTCATTCTTACTGACCCTCCTAGCAGTGAGACGAATCCAAATTT");
+        AddDNASequence("TCTACTGTAATCGGTTTTCATTCTTACCCCTCCTAC");
     }
 
     private void Update()

@@ -16,6 +16,7 @@ public class World : MonoBehaviour
     List<OrganismComponent> active_organism_components = new List<OrganismComponent>(),
                             finished_organism_components = new List<OrganismComponent>();
 
+    public Camera camera;
     public DetailPane detail_pane;
 
     OrganismComponent[] GetOrganismComponents()
@@ -26,6 +27,7 @@ public class World : MonoBehaviour
     private void Awake()
     {
         the_world = this;
+        camera = GameObject.Find("Main Camera").GetComponent<Camera>();
     }
 
     void Start()
@@ -54,10 +56,23 @@ public class World : MonoBehaviour
         detail_pane.AddDNASequenceElement("AAA", "0");
 
         detail_pane.AddDNASequenceElement("TCTACCGGAATCGGCTTT", "Interpretase");
+        detail_pane.AddDNASequenceElement("ACCGGAATCGGC", "Rotase");
+        detail_pane.AddDNASequenceElement("ACTGTAATCGGT", "Contructase");
     }
 
     void Update()
     {
+        float scroll_speed = 3.5f;
+        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
+            camera.transform.Translate(new Vector3(0, scroll_speed * Time.deltaTime));
+        if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
+            camera.transform.Translate(new Vector3(0, -scroll_speed * Time.deltaTime));
+        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
+            camera.transform.Translate(new Vector3(-scroll_speed * Time.deltaTime, 0));
+        if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
+            camera.transform.Translate(new Vector3(scroll_speed * Time.deltaTime, 0));
+
+
         if (detail_pane.gameObject.activeSelf)
             return;
 

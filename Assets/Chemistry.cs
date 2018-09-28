@@ -51,6 +51,12 @@ public abstract class Molecule
         RegisterNamedMolecule("Benzene", new SimpleMolecule("C2 N3 H4"));
         RegisterNamedMolecule("ATP", new SimpleMolecule("C10 H16 N5 O13 P3"));
         RegisterNamedMolecule("ADP", new SimpleMolecule("C10 H16 N5 O10 P2"));
+        RegisterNamedMolecule("Phosphate", new SimpleMolecule("S O4"));
+        RegisterNamedMolecule("Glycerol", new SimpleMolecule("C3 H8 O3"));
+        RegisterNamedMolecule("Palmitic Acid", new SimpleMolecule("C16 H32 O2"));
+        RegisterNamedMolecule("Oleic Acid", new SimpleMolecule("C18 H34 O2"));
+        RegisterNamedMolecule("Choline", new SimpleMolecule("C5 H14 N O"));
+        RegisterNamedMolecule("Phospholipid", new SimpleMolecule("C42 H82 N O8 P"));
     }
 
     protected static T RegisterNamedMolecule<T>(string name, T molecule) where T : Molecule
@@ -205,6 +211,7 @@ public class Polymer : Molecule
     {
         new Interpretase();
         new Rotase();
+        new Constructase();
     }
 
 
@@ -229,7 +236,7 @@ public class Polymer : Molecule
         monomers.Add(monomer);
     }
 
-    public Monomer RemoveMonomer(int index)
+    public virtual Monomer RemoveMonomer(int index)
     {
         Monomer monomer = monomers[index];
         monomers.RemoveAt(index);
@@ -337,6 +344,11 @@ public class DNA : Polymer
         set { active_codon_index = value; }
     }
 
+    public string ActiveCodon
+    {
+        get { return GetCodon(ActiveCodonIndex); }
+    }
+
     public DNA(string sequence)
     {
         foreach (char character in sequence)
@@ -362,6 +374,14 @@ public class DNA : Polymer
             monomer == Nucleotide.guanine ||
             monomer == Nucleotide.thymine)
             base.AddMonomer(monomer);
+    }
+
+    public override Monomer RemoveMonomer(int index)
+    {
+        if (index < ActiveCodonIndex)
+            ActiveCodonIndex--;
+
+        return base.RemoveMonomer(index);
     }
 
     public void AddAdenine()
@@ -403,11 +423,6 @@ public class DNA : Polymer
         }
 
         return codon;
-    }
-
-    public string GetActiveCodon()
-    {
-        return GetCodon(ActiveCodonIndex);
     }
 
     public string GetSequence()
@@ -686,7 +701,7 @@ public class Interpretase : Ribozyme
         if (dna.ActiveCodonIndex >= dna.GetCodonCount())
             return null;
 
-        string codon = dna.GetActiveCodon();
+        string codon = dna.ActiveCodon;
         string subcodon = codon.Substring(1);
 
         switch(codon[0])
@@ -772,7 +787,7 @@ public class Interpretase : Ribozyme
     {
         while (dna.ActiveCodonIndex < dna.GetCodonCount() &&
                 dna.ActiveCodonIndex >= 0 && 
-                dna.GetActiveCodon()[0] != 'C')
+                dna.ActiveCodon[0] != 'C')
 
             if (seek_backwards)
                 dna.ActiveCodonIndex--;
@@ -803,13 +818,13 @@ public class Interpretase : Ribozyme
                 if (dna.ActiveCodonIndex == original_codon_index)
                     return;
             }
-            while (dna.GetActiveCodon() != marker);
+            while (dna.ActiveCodon != marker);
 
             int t_codon_index = dna.ActiveCodonIndex;
             SeekToCommand(dna, true);
             int operand_count = 0;
-            if (dna.GetActiveCodon()[0] == 'C')
-                switch (dna.GetActiveCodon().Substring(1))
+            if (dna.ActiveCodon[0] == 'C')
+                switch (dna.ActiveCodon.Substring(1))
                 {
                     case "AA":
                     case "CC":
@@ -960,9 +975,10 @@ public class Rotase : Ribozyme
 
     }
 
+    //Should Catalysts check if action is possible? Or should Actions? Both?
     public override Action Catalyze(Cell.Slot slot)
     {
-        Cell.Slot atp_slot = slot.Cell.GetSlot(slot.Index == 5 ? 0 : slot.Index + 1);
+        Cell.Slot atp_slot = slot;
 
         if (atp_slot.Compound == null || atp_slot.Compound.Molecule != Molecule.GetMolecule("ATP"))
             return null;
@@ -971,6 +987,47 @@ public class Rotase : Ribozyme
     }
 }
 
+public class Constructase : Ribozyme
+{
+    public class ConstructCell : Reaction
+    {
+        public ConstructCell(Cell.Slot slot) : base(
+            slot, 
+            Utility.CreateDictionary<Cell.Slot, Molecule>(slot, GetMolecule("Phospholipid")), 
+            null, 
+            Utility.CreateList<Molecule>(Molecule.GetMolecule("ATP")), 
+            Utility.CreateList<Molecule>(Molecule.GetMolecule("ADP"), Molecule.GetMolecule("Phosphate")))
+        {
+            
+        }
+
+        public override void Beginning()
+        {
+            base.Beginning();
+        }
+
+        public override void End()
+        {
+            base.End();
+
+            Organism.AddCell(Cell, Slot.Direction);
+        }
+    }
+        
+
+    public Constructase() : base("Constructase", "ACT GTA ATC GGT")
+    {
+
+    }
+
+    public override Action Catalyze(Cell.Slot slot)
+    {
+        if (slot.Cell.Organism.GetNeighbor(slot.Cell, slot.Direction)!= null)
+            return null;
+
+        return new ConstructCell(slot);
+    }
+}
 
 public abstract class Enzyme : Polymer, Catalyst
 {

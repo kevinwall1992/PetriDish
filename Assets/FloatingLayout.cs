@@ -179,7 +179,10 @@ public class FloatingLayout : GoodBehavior
     public void Clear()
     {
         foreach (Floater floater in GetComponentsInChildren<Floater>())
+        {
+            GameObject.Destroy(floater.Element);
             GameObject.Destroy(floater.gameObject);
+        }
 
         elements_changed = true;
     }
@@ -191,14 +194,14 @@ public class FloatingLayout : GoodBehavior
 
     public int GetHoveredInsertionIndex()
     {
-        for (int index = 0; index < layout_group.transform.childCount; index++)
+        for (int index = 0; index < ElementCount; index++)
         {
             Floater floater = GetFloater(index);
             
             if (index == 0 && Input.mousePosition.y > (floater.transform as RectTransform).position.y)
                 return index;
 
-            if (index == (layout_group.transform.childCount - 1) && Input.mousePosition.y < (floater.transform as RectTransform).position.y)
+            if (index == (ElementCount - 1))
                 return index + 1;
 
             Floater next_floater = GetFloater(index + 1);

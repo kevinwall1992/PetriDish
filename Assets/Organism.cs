@@ -6,7 +6,7 @@ using System.Collections.Generic;
 public class Compound
 {
     Molecule molecule;
-    int quantity;
+    float quantity;
 
     public Molecule Molecule
     {
@@ -16,20 +16,20 @@ public class Compound
         }
     }
 
-    public int Quantity
+    public float Quantity
     {
         get { return quantity; }
         
         set { quantity = value; }
     }
 
-    public Compound(Molecule molecule_, int quantity_)
+    public Compound(Molecule molecule_, float quantity_)
     {
         molecule = molecule_;
         quantity = quantity_;
     }
 
-    public Compound Split(int quantity)
+    public Compound Split(float quantity)
     {
         quantity = Mathf.Min(quantity, Quantity);
 
@@ -80,6 +80,16 @@ public class Cell
             get { return Cell.GetSlotIndex(this); }
         }
 
+        public Slot NextSlot
+        {
+            get { return Cell.GetSlot(Index + 1); }
+        }
+
+        public Slot PreviousSlot
+        {
+            get { return Cell.GetSlot(Index - 1); }
+        }
+
         public Organism.HexagonalDirection Direction
         {
             get
@@ -105,7 +115,7 @@ public class Cell
 
         public void AddCompound(Compound compound_)
         {
-            if (Compound != null || compound_.Quantity== 0)
+            if (compound != null || compound_.Quantity== 0)
                 return;
 
             compound = compound_;
@@ -151,7 +161,10 @@ public class Cell
 
     public Slot GetSlot(int index)
     {
-        return slots[index];
+        if (index < 0)
+            index = -index;
+
+        return slots[index% 6];
     }
 
     public void Rotate(int count)
@@ -182,47 +195,13 @@ public class Cell
     }
 }
 
-public class Cytozol
-{
-    Dictionary<Molecule, Compound> compounds= new Dictionary<Molecule, Compound>();
-
-    public void AddCompound(Compound compound)
-    {
-        if (compounds.ContainsKey(compound.Molecule))
-            compounds[compound.Molecule].Quantity += compound.Quantity;
-        else
-            compounds[compound.Molecule] = new Compound(compound.Molecule, compound.Quantity);
-    }
-
-    public Compound RemoveCompound(Molecule molecule, int quantity)
-    {
-        if (!(compounds.ContainsKey(molecule) && compounds[molecule].Quantity >= quantity))
-            return new Compound(molecule, 0);
-
-        Compound compound = compounds[molecule].Split(quantity);
-
-        if (compounds[molecule].Quantity <= 0)
-            compounds.Remove(molecule);
-
-        return compound;
-            
-    }
-
-    public Compound GetCompound(Molecule molecule)
-    {
-        if (compounds.ContainsKey(molecule))
-            return compounds[molecule];
-
-        return new Compound(molecule, 0);
-    }
-}
 
 public class Organism
 {
     List<List<Cell>> cells= new List<List<Cell>>();
-    Cytozol cytozol= new Cytozol();
+    Solution cytozol= new Solution();
 
-    public Cytozol Cytozol
+    public Solution Cytozol
     {
         get { return cytozol; }
     }
@@ -231,6 +210,8 @@ public class Organism
     {
         cells.Add(new List<Cell>());
         cells[0].Add(new Cell(this));
+
+        Cytozol.AddCompound(Molecule.Water, 1000);
     }
 
     public Vector2Int GetCellPosition(Cell cell)

@@ -27,14 +27,15 @@ public class World : MonoBehaviour
     private void Awake()
     {
         the_world = this;
-        camera = GameObject.Find("Main Camera").GetComponent<Camera>();
+        camera = GameObject.Find("Main Camera").GetComponent<Camera>(); 
     }
 
     void Start()
     {
-        InitializeSequenceWidgets();   
+        InitializeSequenceWidgets();
     }
 
+    //Consider moving this into UI (DetailPane, for example)
     void InitializeSequenceWidgets()
     {
         detail_pane.AddDNASequenceElement("CCCTAATAC", "Move Single Unit");
@@ -55,9 +56,13 @@ public class World : MonoBehaviour
 
         detail_pane.AddDNASequenceElement("AAA", "0");
 
-        detail_pane.AddDNASequenceElement("TCTACCGGAATCGGCTTT", "Interpretase");
-        detail_pane.AddDNASequenceElement("ACCGGAATCGGC", "Rotase");
-        detail_pane.AddDNASequenceElement("ACTGTAATCGGT", "Contructase");
+        detail_pane.AddDNASequenceElement(Ribozyme.GetRibozymeFamily("Interpretase")[0].Sequence, "Interpretase");
+        detail_pane.AddDNASequenceElement(Ribozyme.GetRibozymeFamily("Rotase")[0].Sequence, "Rotase");
+        detail_pane.AddDNASequenceElement(Ribozyme.GetRibozymeFamily("Constructase")[0].Sequence, "Constructase");
+
+        Catalyst catalyst = Reaction.GetReaction("Methanogenesis").Catalyst;
+        if (catalyst is Ribozyme)
+            detail_pane.AddDNASequenceElement((catalyst as Ribozyme).Sequence, "Methanogenesis");
     }
 
     void Update()

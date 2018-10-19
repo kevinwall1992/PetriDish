@@ -186,6 +186,7 @@ public class CytozolAnimation : ActionAnimation
 
 }
 
+//This needs an overhaul to reduce coupling with Action, or at least manage it better
 public class ActionComponent : MonoBehaviour
 {
     Action action;
@@ -225,13 +226,16 @@ public class ActionComponent : MonoBehaviour
                 actions.Enqueue((action as PoweredAction).GetReaction());
                 actions.Enqueue((action as PoweredAction).GetAction());
             }
+            else if (action is CompositeAction)
+                foreach (Action component_action in (action as CompositeAction).Actions)
+                    actions.Enqueue(component_action);
 
             if (action is RotateAction)
                 animations.Add(gameObject.AddComponent<RotationAnimation>().SetParameters(CellComponent, 1).SetLength(length));
 
-            if (action is Reaction)
+            if (action is ReactionAction)
             {
-                Reaction reaction = action as Reaction;
+                ReactionAction reaction = action as ReactionAction;
 
                 List<Cell.Slot> reactant_slots = reaction.GetReactantSlots();
                 foreach (Cell.Slot reactant_slot in reactant_slots)
@@ -273,8 +277,8 @@ public class ActionComponent : MonoBehaviour
                                                                 .SetLength(0.5f * length));
 
                     animations.Add(compound_component.gameObject.AddComponent<FadeAnimation>()
-                                                                .SetParameters(true, true)
-                                                                .SetLength(0.5f * length, 0.5f * length));
+                                                                .SetParameters(false, true)
+                                                                .SetLength(0.2f * length, 0.4f * length));
                 }
 
                 foreach (Compound compound in reaction.GetCytozolProducts())
@@ -373,6 +377,45 @@ public class ActionComponent : MonoBehaviour
     }
 }
 
+public class CompositeAction : Action
+{
+    List<Action> actions= new List<Action>();
+
+    public List<Action> Actions { get { return actions; } }
+
+    public CompositeAction(Cell.Slot slot, params Action[] actions_) : base(slot)
+    {
+        actions.AddRange(actions_);
+    }
+
+    public void AddAction(Action action)
+    {
+        actions.Add(action);
+    }
+
+    public override void Beginning()
+    {
+        base.Beginning();
+
+        foreach (Action action in actions)
+        {
+            action.Beginning();
+
+            if (action.HasFailed())
+                Fail();
+        }
+    }
+
+    public override void End()
+    {
+        base.End();
+
+        foreach (Action action in actions)
+            action.End();
+    }
+}
+
+//Should this inherit from PoweredAction, or is there some value in it being separate?
 public class RotateAction : Action
 {
     public RotateAction(Cell.Slot slot) : base(slot)
@@ -388,38 +431,33 @@ public class RotateAction : Action
     }
 }
 
-public class Reaction : Action
+public class ReactionAction : Action
 {
-    protected Dictionary<Cell.Slot, Molecule> slot_reactant_molecules = new Dictionary<Cell.Slot, Molecule>(),
-                                              slot_product_molecules = new Dictionary<Cell.Slot, Molecule>();
-    protected List<Molecule> cytozol_reactant_molecules = new List<Molecule>(),
-                             cytozol_product_molecules = new List<Molecule>();
-
     protected Dictionary<Cell.Slot, Compound> slot_reactants = new Dictionary<Cell.Slot, Compound>(),
                                               slot_products = new Dictionary<Cell.Slot, Compound>();
     protected List<Compound> cytozol_reactants = new List<Compound>(),
                              cytozol_products = new List<Compound>();
 
-    public Reaction(Cell.Slot slot,
-                    Dictionary<Cell.Slot, Molecule> slot_reactant_molecules_, 
-                    Dictionary<Cell.Slot, Molecule> slot_product_molecules_, 
-                    List<Molecule> cytozol_reactant_molecules_, 
-                    List<Molecule> cytozol_product_molecules_) : base(slot)
+    public ReactionAction(Cell.Slot slot,
+                    Dictionary<Cell.Slot, Compound> slot_reactants_, 
+                    Dictionary<Cell.Slot, Compound> slot_products_, 
+                    List<Compound> cytozol_reactants_, 
+                    List<Compound> cytozol_products_) : base(slot)
     {
-        if(slot_reactant_molecules_ != null)
-            slot_reactant_molecules = slot_reactant_molecules_;
+        if(slot_reactants_ != null)
+            slot_reactants = slot_reactants_;
 
-        if (slot_product_molecules_ != null)
-            slot_product_molecules = slot_product_molecules_;
+        if (slot_products_ != null)
+            slot_products = slot_products_;
 
-        if (cytozol_reactant_molecules_ != null)
-            cytozol_reactant_molecules = cytozol_reactant_molecules_;
+        if (cytozol_reactants_ != null)
+            cytozol_reactants = cytozol_reactants_;
 
-        if (cytozol_product_molecules_ != null)
-            cytozol_product_molecules = cytozol_product_molecules_;
+        if (cytozol_products_ != null)
+            cytozol_products = cytozol_products_;
     }
 
-    protected Reaction(Cell.Slot slot) : base(slot)
+    protected ReactionAction(Cell.Slot slot) : base(slot)
     {
 
     }
@@ -428,31 +466,30 @@ public class Reaction : Action
     {
         base.Beginning();
 
-        foreach (Cell.Slot destination in slot_product_molecules.Keys)
-            if (destination.Compound != null && !destination.Compound.Molecule.CompareMolecule(slot_product_molecules[destination]))
+        foreach (Cell.Slot destination in slot_products.Keys)
+            if (destination.Compound != null && 
+                !destination.Compound.Molecule.CompareMolecule(slot_products[destination].Molecule))
                 Fail();
 
-        foreach (Cell.Slot source in slot_reactant_molecules.Keys)
-            if (source.Compound == null || !source.Compound.Molecule.CompareMolecule(slot_reactant_molecules[source]))
+        foreach (Cell.Slot source in slot_reactants.Keys)
+            if (source.Compound == null ||
+                !source.Compound.Molecule.CompareMolecule(slot_reactants[source].Molecule) ||
+                source.Compound.Quantity < slot_reactants[source].Quantity)
                 Fail();
 
-        foreach(Molecule reactant in cytozol_reactant_molecules)
-            if (Organism.Cytozol.GetCompound(reactant).Quantity== 0)
+        foreach (Compound reactant in cytozol_reactants)
+            if (Organism.Cytozol.GetCompound(reactant.Molecule).Quantity < reactant.Quantity)
                 Fail();
 
         if (HasFailed())
             return;
 
 
-        foreach (Cell.Slot source in slot_reactant_molecules.Keys)
-            slot_reactants[source]= (source.Compound.Split(1));
-        foreach (Molecule molecule in cytozol_reactant_molecules)
-            cytozol_reactants.Add(Organism.Cytozol.RemoveCompound(molecule, 1));
+        foreach (Cell.Slot source in slot_reactants.Keys)
+            source.Compound.Split(slot_reactants[source].Quantity);
 
-        foreach (Cell.Slot destination in slot_product_molecules.Keys)
-            slot_products[destination]= (new Compound(slot_product_molecules[destination], 1));
-        foreach (Molecule molecule in cytozol_product_molecules)
-            cytozol_products.Add(new Compound(molecule, 1));
+        foreach (Compound reactant in cytozol_reactants)
+            Organism.Cytozol.RemoveCompound(reactant);
     }
 
     public override void End()
@@ -498,9 +535,47 @@ public class Reaction : Action
     }
 }
 
+public class ATPConsumptionAction : ReactionAction
+{
+    public ATPConsumptionAction(Cell.Slot slot, float quantity) 
+        : base(slot, 
+                null, null, 
+                Utility.CreateList<Compound>(new Compound(Molecule.ATP, quantity), 
+                                             new Compound(Molecule.Water, quantity)), 
+                Utility.CreateList<Compound>(new Compound(Molecule.ADP, quantity), 
+                                             new Compound(Molecule.Phosphate, quantity)))
+    {
+
+    }
+
+    public ATPConsumptionAction(Cell.Slot slot, float quantity, Cell.Slot ATP_slot)
+        : base(slot, 
+                Utility.CreateDictionary<Cell.Slot, Compound>(ATP_slot, new Compound(Molecule.ATP, quantity)), null,
+                Utility.CreateList<Compound>(new Compound(Molecule.Water, quantity)),
+                Utility.CreateList<Compound>(new Compound(Molecule.ADP, quantity),
+                                             new Compound(Molecule.Phosphate, quantity)))
+    {
+
+    }
+}
+
+public class ATPProductionAction : ReactionAction
+{
+    public ATPProductionAction(Cell.Slot slot, float quantity)
+        : base(slot, 
+                null, null,
+                Utility.CreateList<Compound>(new Compound(Molecule.ADP, quantity),
+                                             new Compound(Molecule.Phosphate, quantity)),
+                Utility.CreateList<Compound>(new Compound(Molecule.ATP, quantity),
+                                             new Compound(Molecule.Water, quantity)))
+    {
+
+    }
+}
+
 //This probably can't be a reaction; 1) The original "reactant" shouldn't be destroyed,
 //2) Causes Pipes to occur in the Reaction step. 
-public class PipeAction : Reaction
+public class PipeAction : ReactionAction
 {
     Cell.Slot input, output;
 
@@ -527,49 +602,36 @@ public class PipeAction : Reaction
 
 public class PoweredAction : Action
 {
-    Reaction reaction;
-    Action action;
+    CompositeAction composite_action;
 
     public PoweredAction(Cell.Slot slot, Cell.Slot atp_slot, Action action_) : base(slot)
     {
-        action = action_;
-
-        Dictionary<Cell.Slot, Molecule> reactants= new Dictionary<Cell.Slot, Molecule>();
-        reactants[atp_slot] = Molecule.GetMolecule("ATP");
-
-        List<Molecule> products = new List<Molecule>();
-        products.Add(Molecule.GetMolecule("ADP"));
-        products.Add(Molecule.GetMolecule("Phosphate"));
-
-        reaction = new Reaction(slot, reactants, null, null, products);
+        composite_action = new CompositeAction(slot, action_, new ATPConsumptionAction(slot, 1, atp_slot));
     }
 
     public override void Beginning()
     {
         base.Beginning();
 
-        reaction.Beginning();
-        if (reaction.HasFailed())
+        composite_action.Beginning();
+        if (composite_action.HasFailed())
             Fail();
-        else
-            action.Beginning();
     }
 
     public override void End()
     {
         base.End();
 
-        reaction.End();
-        action.End();
+        composite_action.End();
     }
 
     public Action GetAction()
     {
-        return action;
+        return composite_action.Actions[0];
     }
 
-    public Reaction GetReaction()
+    public ReactionAction GetReaction()
     {
-        return reaction;
+        return composite_action.Actions[1] as ReactionAction;
     }
 }

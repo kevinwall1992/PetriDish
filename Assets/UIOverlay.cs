@@ -50,7 +50,7 @@ public class UIOverlay : GoodBehavior
         //Update quantity texts
         foreach (CompoundComponent compound_component in compound_quantity_texts.Keys)
         {
-            compound_quantity_texts[compound_component].text = compound_component.Compound.Quantity.ToString();
+            compound_quantity_texts[compound_component].text = compound_component.Compound.Quantity.ToString("n1");
             compound_quantity_texts[compound_component].transform.position = GameObject.FindObjectOfType<Camera>().WorldToScreenPoint(compound_component.transform.position)+ new Vector3(20, -10);
 
             Color text_color = compound_quantity_texts[compound_component].color;

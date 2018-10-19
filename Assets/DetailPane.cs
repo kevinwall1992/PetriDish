@@ -55,7 +55,7 @@ public class DetailPane : GoodBehavior
 
     private void Start()
     {
-        AddDNASequence("TCTACTGTAATCGGTTTTCATTCTTACCCCTCCTAC");
+        AddDNASequence("CACTCCAATTCT" + Ribozyme.Rotase.Sequence + "TTTCATTCTTACTGACCCTCCTACCAGTGAGACGAATCCAAATTT");
     }
 
     private void Update()
@@ -117,7 +117,7 @@ public class DetailPane : GoodBehavior
 
         int indentation_level = 0;
 
-        Interpretase interpretase = new Interpretase();
+        Interpretase interpretase = Ribozyme.Interpretase;
         DNA dna = new DNA(GetDNASequence());
 
         int operand_count = 0;
@@ -173,7 +173,7 @@ public class DetailPane : GoodBehavior
     {
         Dictionary<int, int> command_groups = new Dictionary<int, int>();
 
-        Interpretase interpretase = new Interpretase();
+        Interpretase interpretase = Ribozyme.Interpretase;
         DNA dna = new DNA(GetDNASequence());
 
         int command_codon_index = -1;

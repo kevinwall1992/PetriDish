@@ -6,7 +6,7 @@ using System.Linq;
 
 public class Element
 {
-    public static Dictionary<string, Element> elements= new Dictionary<string, Element>();
+    public static Dictionary<string, Element> elements = new Dictionary<string, Element>();
 
     static Element()
     {
@@ -25,6 +25,22 @@ public class Element
     string name;
     int atomic_number;
 
+    public string Name
+    {
+        get { return name; }
+    }
+
+    public int AtomicNumber
+    {
+        get { return atomic_number; }
+    }
+
+    //simplification, not sure its matters though
+    public int Mass
+    {
+        get { return atomic_number * 2; }
+    }
+
     public Element(string name_, int atomic_number_)
     {
         name = name_;
@@ -32,34 +48,46 @@ public class Element
     }
 }
 
+//May need to add charge as additional property
 public abstract class Molecule
 {
     static Dictionary<string, Molecule> molecules= new Dictionary<string, Molecule>();
-    public const int mini_mole = 1000000000;
 
+    public static Molecule Oxygen { get; private set; }
+    public static Molecule CarbonDioxide { get; private set; }
+    public static Molecule Nitrogen { get; private set; }
+    public static Molecule Hydrogen { get; private set; }
+    public static Molecule Water { get; private set; }
+    public static Molecule Salt { get; private set; }
+    public static Molecule Glucose { get; private set; }
+    public static Molecule ATP { get; private set; }
+    public static Molecule ADP { get; private set; }
+    public static Molecule Phosphate { get; private set; }
+    public static Molecule Imidazole { get; private set; }
+    public static Molecule Methane { get; private set; }
+
+    //Consider phasing this out once we get data for this stuff working
     static Molecule()
     {
-        RegisterNamedMolecule("Salt", new SimpleMolecule("Na Cl"));
-        RegisterNamedMolecule("Sand", new SimpleMolecule("Si O2"));
-        RegisterNamedMolecule("Water", new SimpleMolecule("H2 0"));
-        RegisterNamedMolecule("Carbon Dioxide", new SimpleMolecule("C O2"));
-        RegisterNamedMolecule("Iron", new SimpleMolecule("Fe"));
-        RegisterNamedMolecule("Oxygen", new SimpleMolecule("O2"));
-        RegisterNamedMolecule("Hydrogen Sulfide", new SimpleMolecule("H2 S2"));
-        RegisterNamedMolecule("Imidazole", new SimpleMolecule("C2 N3 H4"));
-        RegisterNamedMolecule("Methane", new SimpleMolecule("C2 N3 H4"));
-        RegisterNamedMolecule("Benzene", new SimpleMolecule("C2 N3 H4"));
-        RegisterNamedMolecule("ATP", new SimpleMolecule("C10 H16 N5 O13 P3"));
-        RegisterNamedMolecule("ADP", new SimpleMolecule("C10 H16 N5 O10 P2"));
-        RegisterNamedMolecule("Phosphate", new SimpleMolecule("S O4"));
-        RegisterNamedMolecule("Glycerol", new SimpleMolecule("C3 H8 O3"));
-        RegisterNamedMolecule("Palmitic Acid", new SimpleMolecule("C16 H32 O2"));
-        RegisterNamedMolecule("Oleic Acid", new SimpleMolecule("C18 H34 O2"));
-        RegisterNamedMolecule("Choline", new SimpleMolecule("C5 H14 N O"));
-        RegisterNamedMolecule("Phospholipid", new SimpleMolecule("C42 H82 N O8 P"));
+        CarbonDioxide = RegisterNamedMolecule("Carbon Dioxide", new SimpleMolecule("C O2", -393.5f));
+        Oxygen = RegisterNamedMolecule("Oxygen", new SimpleMolecule("O2", 0));
+        Nitrogen = RegisterNamedMolecule("Nitrogen", new SimpleMolecule("N2", 0));
+        Hydrogen = RegisterNamedMolecule("Hydrogen", new SimpleMolecule("H2", 0));
+
+        Water = RegisterNamedMolecule("Water", new SimpleMolecule("H2 0", -285.3f));
+
+        Salt = RegisterNamedMolecule("Salt", new SimpleMolecule("Na Cl", -411.1f));
+        Glucose = RegisterNamedMolecule("Glucose", new SimpleMolecule("C6 H12 O6", -1271));
+
+        ATP = RegisterNamedMolecule("ATP", new SimpleMolecule("C10 H16 N5 O13 P3", -2995.6f));
+        ADP = RegisterNamedMolecule("ADP", new SimpleMolecule("C10 H16 N5 O10 P2", -2005.9f));
+        Phosphate = RegisterNamedMolecule("Phosphate", new SimpleMolecule("S O4", -1308.0f));
+
+        Imidazole = RegisterNamedMolecule("Imidazole", new SimpleMolecule("C3 H4 N2", 49.8f));
+        Methane = RegisterNamedMolecule("Methane", new SimpleMolecule("C H4", -74.9f));
     }
 
-    protected static T RegisterNamedMolecule<T>(string name, T molecule) where T : Molecule
+    public static T RegisterNamedMolecule<T>(string name, T molecule) where T : Molecule
     {
         molecules[name] = molecule;
 
@@ -72,18 +100,36 @@ public abstract class Molecule
     }
 
 
+    public int Mass
+    {
+        get
+        {
+            int total_mass = 0;
+
+            foreach (Element element in GetElements())
+                total_mass += element.Mass;
+
+            return total_mass;
+        }
+    }
+
+    public abstract float Enthalpy { get; }
+
+    public virtual string Name
+    {
+        get
+        {
+            foreach (string name in molecules.Keys)
+                if (molecules[name] == this)
+                    return name;
+
+            return "Unnamed";
+        }
+    }
+
     public Molecule()
     {
 
-    }
-
-    public string GetName()
-    {
-        foreach (string name in molecules.Keys)
-            if (molecules[name] == this)
-                return name;
-
-        return "not found";
     }
 
     public abstract List<Element> GetElements();
@@ -93,8 +139,11 @@ public abstract class Molecule
 public class SimpleMolecule : Molecule
 {
     List<Element> elements = new List<Element>();
+    float enthalpy;
 
-    public SimpleMolecule(string formula)
+    public override float Enthalpy{ get{ return enthalpy; } }
+
+    public SimpleMolecule(string formula, float enthalpy_)
     {
         MatchCollection match_collection= Regex.Matches(formula, "([A-Z][a-z]?)([0-9]*) *");
         foreach(Match match in match_collection)
@@ -107,8 +156,11 @@ public class SimpleMolecule : Molecule
             for(int i= 0; i< count; i++)
                 elements.Add(Element.elements[element_key]);
         }
+
+        enthalpy = enthalpy_;
     }
 
+    //This might be better as a dictionary
     public override List<Element> GetElements()
     {
         return elements;
@@ -128,7 +180,10 @@ public class Polymer : Molecule
     public abstract class Monomer : Molecule
     {
         Molecule condensate;
-        bool condensed = false;
+        bool is_condensed = false;
+
+        public Molecule Condensate { get { return condensate; } }
+        public bool IsCondensed { get { return is_condensed; } }
 
         public Monomer(Molecule condensate_)
         {
@@ -137,12 +192,12 @@ public class Polymer : Molecule
 
         public void Condense()
         {
-            condensed = true;
+            is_condensed = true;
         }
 
         public override List<Element> GetElements()
         {
-            if (!condensed)
+            if (!is_condensed)
                 return GetElements();
             else
             {
@@ -165,6 +220,11 @@ public class Polymer : Molecule
     {
         Molecule molecule;
 
+        public override float Enthalpy
+        {
+            get { return molecule.Enthalpy - (IsCondensed ? Condensate.Enthalpy : 0); }
+        }
+      
         public WrapperMonomer(Molecule molecule_, Molecule condensate) : base(condensate)
         {
             molecule = molecule_;
@@ -185,37 +245,14 @@ public class Polymer : Molecule
     }
 
 
-    static Dictionary<string, Polymer> polymers= new Dictionary<string, Polymer>();
-
-    public static void RegisterNamedPolymer(string name, Polymer polymer)
-    {
-        polymers[name] = polymer;
-        RegisterNamedMolecule(name, polymer);
-    }
-
-    public static Polymer GetPolymer(List<Monomer> monomers)
-    {
-        foreach (string name in polymers.Keys)
-            if (polymers[name].monomers.SequenceEqual(monomers))
-                return polymers[name];
-
-        return null;
-    }
-
-    public static Polymer GetPolymer(string name)
-    {
-        return polymers[name];
-    }
-
-    static Polymer()
-    {
-        new Interpretase();
-        new Rotase();
-        new Constructase();
-    }
-
-
     List<Monomer> monomers = new List<Monomer>();
+
+    public List<Monomer> Monomers { get { return monomers; } }
+
+    public override float Enthalpy
+    {
+        get { return MathUtility.Sum(monomers, delegate (Monomer monomer) { return monomer.Enthalpy; }); }
+    }
 
     public Polymer(List<Monomer> monomers_)
     {
@@ -242,16 +279,6 @@ public class Polymer : Molecule
         monomers.RemoveAt(index);
 
         return monomer;
-    }
-
-    public Monomer GetMonomer(int index)
-    {
-        return monomers[index];
-    }
-
-    public List<Monomer> GetMonomers()
-    {
-        return monomers;
     }
 
     public override List<Element> GetElements()
@@ -293,19 +320,24 @@ public class Nucleotide : Polymer.Monomer
 
     static Nucleotide()
     {
-        SimpleMolecule pyrophosphate = RegisterNamedMolecule("Pyrophosphate", new SimpleMolecule("P2 O7"));
-
-        adenine = RegisterNamedMolecule("Adenine", new Nucleotide(new SimpleMolecule("N5 C5 H4")));
-        cytosine = RegisterNamedMolecule("Adenine", new Nucleotide(new SimpleMolecule("N3 C4 H4 O")));
-        guanine = RegisterNamedMolecule("Adenine", new Nucleotide(new SimpleMolecule("N5 C5 H4 O")));
-        thymine = RegisterNamedMolecule("Adenine", new Nucleotide(new SimpleMolecule("N2 C4 H5 O2")));
+        //Incorrect names, but these are less of a mouthful and more iconic
+        //Correctly, these are adenosine/cytodine/guanosine/thymidine monophoshate
+        adenine = RegisterNamedMolecule("Adenine", new Nucleotide(new SimpleMolecule("N5 C5 H4", 96.9f)));
+        cytosine = RegisterNamedMolecule("Cytosine", new Nucleotide(new SimpleMolecule("N3 C4 H4 O", -235.4f)));
+        guanine = RegisterNamedMolecule("Guanine", new Nucleotide(new SimpleMolecule("N5 C5 H4 O", -183.9f)));
+        thymine = RegisterNamedMolecule("Thymine", new Nucleotide(new SimpleMolecule("N2 C4 H5 O2", -462.8f)));
     }
 
 
-    Molecule common_structure = new SimpleMolecule("P O4 H C C5 O2 H9");
+    Molecule common_structure = new SimpleMolecule("P O6 C6 H10", -1113.8f);
     Molecule nucleobase;
 
-    Nucleotide(Molecule nucleobase_) : base(GetMolecule("Pyrophosphate"))
+    public override float Enthalpy
+    {
+        get { return common_structure.Enthalpy + nucleobase.Enthalpy - (IsCondensed ? Condensate.Enthalpy : 0); }
+    }
+
+    Nucleotide(Molecule nucleobase_) : base(Water)
     {
         nucleobase = nucleobase_;
     }
@@ -330,12 +362,6 @@ public class Nucleotide : Polymer.Monomer
 
 public class DNA : Polymer
 {
-    static DNA()
-    {
-
-    }
-
-
     int active_codon_index = 0;
 
     public int ActiveCodonIndex
@@ -347,6 +373,19 @@ public class DNA : Polymer
     public string ActiveCodon
     {
         get { return GetCodon(ActiveCodonIndex); }
+    }
+
+    public string Sequence
+    {
+        get
+        {
+            string sequence = "";
+
+            for (int i = 0; i < GetCodonCount(); i++)
+                sequence += GetCodon(i);
+
+            return sequence;
+        }
     }
 
     public DNA(string sequence)
@@ -410,7 +449,7 @@ public class DNA : Polymer
 
         for(int i= 0; i< 3; i++)
         {
-            Monomer monomer = GetMonomer(codon_index * 3 + i);
+            Monomer monomer = Monomers[(codon_index * 3 + i)];
 
             if (monomer.CompareMolecule(Nucleotide.adenine))
                 codon += "A";
@@ -425,82 +464,95 @@ public class DNA : Polymer
         return codon;
     }
 
-    public string GetSequence()
-    {
-        string sequence = "";
-
-        for (int i = 0; i < GetCodonCount(); i++)
-            sequence += GetCodon(i) + " ";
-
-        sequence= sequence.TrimEnd(' ');
-
-        return sequence;
-    }
-
     public int GetCodonCount()
     {
-        return GetMonomers().Count / 3;
+        return Monomers.Count / 3;
     }
 }
+
 
 public interface Catalyst
 {
     Action Catalyze(Cell.Slot slot);
 }
 
-public class AminoAcid : Polymer.Monomer
-{
-    static Molecule common_structure = new SimpleMolecule("C2 O2 N H4");
-
-    public static AminoAcid histadine;
-    public static AminoAcid alanine;
-    public static AminoAcid serine;
-    public static AminoAcid phenylalanine;
-
-    static AminoAcid()
-    {
-        //These aren't _exactly_ chemically accurate
-        RegisterNamedMolecule("Histadine", new AminoAcid(GetMolecule("Imidazole")));
-        RegisterNamedMolecule("Alanine", new AminoAcid(GetMolecule("Methane")));
-        RegisterNamedMolecule("Serine", new AminoAcid(GetMolecule("Water")));
-        RegisterNamedMolecule("Phenylalanine", new AminoAcid(GetMolecule("Benzene")));
-    }
-
-
-    Molecule side_chain;
-
-    public AminoAcid(Molecule side_chain_) : base(GetMolecule("Water"))
-    {
-        side_chain = side_chain_;
-    }
-
-    public override List<Element> GetElements()
-    {
-        List<Element> elements = common_structure.GetElements();
-        elements.AddRange(side_chain.GetElements());
-        elements.Remove(Element.elements["H"]);//Just assume this for now
-
-        return elements;
-    }
-
-    public override bool CompareMolecule(Molecule other)
-    {
-        if (!(other is AminoAcid))
-            return false;
-
-        return ((AminoAcid)other).side_chain.CompareMolecule(this.side_chain);
-    }
-}
-
-
 public abstract class Ribozyme : DNA, Catalyst
 {
-    public Ribozyme(string name, string sequence) : base(sequence)
+    static Dictionary<string, Ribozyme> ribozymes = new Dictionary<string, Ribozyme>();
+    static Dictionary<string, List<Ribozyme>> ribozyme_families = new Dictionary<string, List<Ribozyme>>();
+
+    public static Interpretase Interpretase { get; private set; }
+    public static Rotase Rotase { get; private set; }
+    public static Constructase Constructase { get; private set; }
+
+    static Ribozyme()
     {
-        RegisterNamedPolymer(name, this);
+        Interpretase = new Interpretase();
+        Rotase = new Rotase();
+        Constructase = new Constructase();
     }
 
-    public Ribozyme()
+    public static void RegisterNamedRibozyme(Ribozyme ribozyme, string name)
+    {
+        ribozymes[ribozyme.Sequence] = ribozyme;
+
+        if (!ribozyme_families.ContainsKey(name))
+            ribozyme_families[name] = new List<Ribozyme>();
+        ribozyme_families[name].Add(ribozyme);
+    }
+
+    public static Ribozyme GetRibozyme(string dna_sequence)
+    {
+        return ribozymes[dna_sequence];
+    }
+
+    public static List<Ribozyme> GetRibozymeFamily(string name)
+    {
+        return ribozyme_families[name];
+    }
+
+    static string GenerateUniqueDNASequence(int codon_count)
+    {
+        List<string> starting_codon = new List<string> { "A", "G" };
+        List<string> other_codons = new List<string> { "A", "C", "C", "C", "G", "T", "T", "T" };
+
+        string dna_sequence;
+
+        do
+        {
+            dna_sequence = "";
+
+            for (int i = 0; i < codon_count; i++)
+            {
+                dna_sequence += MathUtility.RandomElement(starting_codon);
+                dna_sequence += MathUtility.RandomElement(other_codons);
+                dna_sequence += MathUtility.RandomElement(other_codons);
+            }
+        }
+        while (ribozymes.ContainsKey(dna_sequence));
+
+        return dna_sequence;
+    }
+
+
+    public override string Name
+    {
+        get
+        {
+            foreach (string name in ribozyme_families.Keys)
+                if (ribozyme_families[name].Contains(this))
+                    return name;
+
+            return "Unnamed";
+        }
+    }
+
+    public Ribozyme(string name, int codon_count) : base(GenerateUniqueDNASequence(codon_count))
+    {
+        RegisterNamedRibozyme(this, name);
+    }
+
+    public Ribozyme(int codon_count)
     {
 
     }
@@ -596,7 +648,7 @@ public class Interpretase : Ribozyme
                     Fail();
                 else
                 {
-                    Polymer polymer = Polymer.GetPolymer(dna.GetMonomers());
+                    Polymer polymer = GetRibozyme(dna.Sequence);
                     if (polymer!= null)
                         dna = polymer as DNA;
 
@@ -624,10 +676,10 @@ public class Interpretase : Ribozyme
         {
             base.Beginning();
 
-            if (!IsMoleculeValidForOutput(Molecule.GetMolecule("ATP")))
+            if (!IsMoleculeValidForOutput(Molecule.ATP))
                 Fail();
             else
-                OutputtedCompound = Cell.Organism.Cytozol.RemoveCompound(Molecule.GetMolecule("ATP"), activation_count);
+                OutputtedCompound = Cell.Organism.Cytozol.RemoveCompound(Molecule.ATP, activation_count);
         }
     }
 
@@ -685,14 +737,14 @@ public class Interpretase : Ribozyme
     }
 
 
-    public Interpretase() : base("Interpretase", "AGG GCT AAG GTG")
+    public Interpretase() : base("Interpretase", 6)
     {
         
     }
 
     public override Action Catalyze(Cell.Slot slot)
     {
-        if (!(slot.Compound.Molecule is DNA))
+        if (slot.Compound == null || !(slot.Compound.Molecule is DNA))
             return null;
 
         DNA dna = slot.Compound.Molecule as DNA;
@@ -916,7 +968,7 @@ public class Interpretase : Ribozyme
             return null;
 
         if (value < 54)
-            return dna_slot.Cell.GetSlot((dna_slot.Index + value - 48) % 6);
+            return dna_slot.Cell.GetSlot(dna_slot.Index + value - 48);
         else if (value == 54)
             return dna_slot.Cell.Organism;
         else
@@ -935,7 +987,7 @@ public class Interpretase : Ribozyme
                 next_codon_index = function_codon_index + 2;
                 Cell.Slot query_slot = CodonToLocation(dna_slot, dna.GetCodon(function_codon_index + 1)) as Cell.Slot;
 
-                return query_slot.Compound == null ? 0 : query_slot.Compound.Quantity;
+                return query_slot.Compound == null ? 0 : (int)query_slot.Compound.Quantity;
 
             case "GAC":
             case "GAT":
@@ -970,7 +1022,7 @@ public class Interpretase : Ribozyme
 
 public class Rotase : Ribozyme
 {
-    public Rotase() : base("Rotase", "ACC GGA ATC GGC")
+    public Rotase() : base("Rotase", 6)
     {
 
     }
@@ -980,7 +1032,7 @@ public class Rotase : Ribozyme
     {
         Cell.Slot atp_slot = slot;
 
-        if (atp_slot.Compound == null || atp_slot.Compound.Molecule != Molecule.GetMolecule("ATP"))
+        if (atp_slot.Compound == null || atp_slot.Compound.Molecule != Molecule.ATP)
             return null;
 
         return new PoweredAction(slot, atp_slot, new RotateAction(slot));
@@ -989,14 +1041,13 @@ public class Rotase : Ribozyme
 
 public class Constructase : Ribozyme
 {
-    public class ConstructCell : Reaction
+    public class ConstructCell : PoweredAction
     {
-        public ConstructCell(Cell.Slot slot) : base(
-            slot, 
-            Utility.CreateDictionary<Cell.Slot, Molecule>(slot, GetMolecule("Phospholipid")), 
-            null, 
-            Utility.CreateList<Molecule>(Molecule.GetMolecule("ATP")), 
-            Utility.CreateList<Molecule>(Molecule.GetMolecule("ADP"), Molecule.GetMolecule("Phosphate")))
+        public ConstructCell(Cell.Slot slot) 
+            : base(slot, slot, 
+                   new ReactionAction(slot, 
+                                      null, null, 
+                                      Utility.CreateList<Compound>(new Compound(Glucose, 7), new Compound(Phosphate, 1)), null))
         {
             
         }
@@ -1015,7 +1066,7 @@ public class Constructase : Ribozyme
     }
         
 
-    public Constructase() : base("Constructase", "ACT GTA ATC GGT")
+    public Constructase() : base("Constructase", 6)
     {
 
     }
@@ -1029,16 +1080,128 @@ public class Constructase : Ribozyme
     }
 }
 
+
+public class AminoAcid : Polymer.Monomer
+{
+    static Molecule common_structure = new SimpleMolecule("C2 O2 N H4", -491.6f);
+
+    public static AminoAcid histadine;
+    public static AminoAcid alanine;
+    public static AminoAcid serine;
+
+    static AminoAcid()
+    {
+        //These aren't _exactly_ chemically accurate
+        RegisterNamedMolecule("Histadine", new AminoAcid(Imidazole));
+        RegisterNamedMolecule("Alanine", new AminoAcid(Methane));
+        RegisterNamedMolecule("Serine", new AminoAcid(Water));
+    }
+
+
+    Molecule side_chain;
+
+    public override float Enthalpy
+    {
+        get { return common_structure.Enthalpy + side_chain.Enthalpy - (IsCondensed ? Condensate.Enthalpy : 0); }
+    }
+
+    public AminoAcid(Molecule side_chain_) : base(Water)
+    {
+        side_chain = side_chain_;
+    }
+
+    public override List<Element> GetElements()
+    {
+        List<Element> elements = common_structure.GetElements();
+        elements.AddRange(side_chain.GetElements());
+        elements.Remove(Element.elements["H"]);//Just assume this for now
+
+        return elements;
+    }
+
+    public override bool CompareMolecule(Molecule other)
+    {
+        if (!(other is AminoAcid))
+            return false;
+
+        return ((AminoAcid)other).side_chain.CompareMolecule(this.side_chain);
+    }
+}
+
 public abstract class Enzyme : Polymer, Catalyst
 {
-    public static Dictionary<string, Enzyme> enzymes;
+    static Dictionary<string, Enzyme> enzymes = new Dictionary<string, Enzyme>();
+    static Dictionary<string, List<Enzyme>> enzyme_families= new Dictionary<string, List<Enzyme>>();
 
-    public Enzyme(string name, params AminoAcid[] amino_acids)
+    public static void RegisterNamedEnzyme(Enzyme enzyme, string name)
     {
-        foreach (AminoAcid amino_acid in amino_acids)
+        enzymes[AminoAcidSequenceToString(enzyme.AminoAcidSequence)] = enzyme;
+
+        if (!enzyme_families.ContainsKey(name))
+            enzyme_families[name] = new List<Enzyme>();
+        enzyme_families[name].Add(enzyme);
+    }
+
+    static string AminoAcidSequenceToString(List<AminoAcid> amino_acid_sequence)
+    {
+        string amino_acid_string = "";
+
+        foreach (AminoAcid amino_acid in amino_acid_sequence)
+            amino_acid_string += amino_acid.Name;
+
+        return amino_acid_string;
+    }
+
+    static List<AminoAcid> GenerateAminoAcidSequence(int length)
+    {
+        List<AminoAcid> amino_acid_sequence;
+
+        List<AminoAcid> amino_acids = new List<AminoAcid> { AminoAcid.histadine, AminoAcid.alanine, AminoAcid.serine };
+
+        do
+        {
+            amino_acid_sequence = new List<AminoAcid>();
+
+            for (int i = 0; i < length; i++)
+                amino_acid_sequence.Add(MathUtility.RandomElement(amino_acids));
+        }
+        while (enzymes.ContainsKey(AminoAcidSequenceToString(amino_acid_sequence)));
+
+        return amino_acid_sequence;
+    }
+
+
+    public override string Name
+    {
+        get
+        {
+            foreach (string name in enzyme_families.Keys)
+                if (enzyme_families[name].Contains(this))
+                    return name;
+
+            return "Unnamed";
+        }
+    }
+
+    public List<AminoAcid> AminoAcidSequence
+    {
+        get
+        {
+            List<AminoAcid> amino_acid_sequence= new List<AminoAcid>();
+
+            foreach (Monomer monomer in Monomers)
+                amino_acid_sequence.Add(monomer as AminoAcid);
+
+            return amino_acid_sequence;
+        }
+    }
+
+    public Enzyme(string name, int length)
+    {
+        foreach (AminoAcid amino_acid in GenerateAminoAcidSequence(length))
             AddMonomer(amino_acid);
 
-        RegisterNamedPolymer(name, this);
+        RegisterNamedEnzyme(this, name);
     }
 
     public Enzyme()

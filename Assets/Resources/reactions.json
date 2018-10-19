@@ -1,0 +1,50 @@
+{
+  "Molecules" : 
+  {
+    "Pyruvate" : { "Formula" : "C3 H4 O3", "Enthalpy" : -586.9 }
+  },
+
+  "Reactions" :
+  {
+    "Methanogenesis" : 
+    {
+      "Catalyst Name" : "Methanogenase",
+      "Ribozyme" : 0.7,
+      "Potential" : 1,
+      "Flexibility" : 1,
+
+      "Reactants" : 
+      {
+        "Carbon Dioxide" : { "Quantity" : 1, "Slotted" : 0.1 },
+        "Hydrogen" : { "Quantity" : 4, "Slotted" : 0.1 }
+      },
+
+      "Products" : 
+      {
+        "Methane" : { "Quantity" : 1, "Slotted" : 0.1 },
+        "Water" : { "Quantity" : 2, "Slotted" : 0.1 }
+      },
+
+      "Cost" : 0.1,
+      "Productivity" : 1,
+
+      "Optimal Temperature" : 32,
+      "Temperature Tolerance" : 1.5,
+      "Thermophilic" : true,
+      "Cryophilic" : true,
+
+      "Optimal pH" : 7.4,
+      "pH Tolerance" : 1.5,
+
+      "Inhibitors" : 
+      { 
+        "Oxygen" : 0.001
+      },
+
+      "Cofactors" : 
+      { 
+        
+      }
+    }
+  }
+}

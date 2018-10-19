@@ -100,7 +100,7 @@ public class OrganismComponent : MonoBehaviour
             new_actions.AddRange(cell_component.Cell.GetActions());
 
         actions.Enqueue(new_actions.OfType<Interpretase.Command>().OfType<Action>().ToList());
-        actions.Enqueue(new_actions.OfType<Reaction>().OfType<Action>().ToList());
+        actions.Enqueue(new_actions.OfType<ReactionAction>().OfType<Action>().ToList());
         actions.Enqueue(new_actions.OfType<PipeAction>().OfType<Action>().ToList());
         actions.Enqueue(new_actions.OfType<PoweredAction>().OfType<Action>().ToList());
     }
@@ -118,10 +118,9 @@ public class OrganismComponent : MonoBehaviour
 
         if (dna_sequence != "")
         {
-            cell.GetSlot(0).AddCompound(new Compound(Molecule.GetMolecule("Interpretase"), 1));
+            cell.GetSlot(0).AddCompound(new Compound(Ribozyme.Interpretase, 1));
             cell.GetSlot(0).AddCompound(new Compound(new DNA(dna_sequence), 1));
-            cell.GetSlot(5).AddCompound(new Compound(Molecule.GetMolecule("Phospholipid"), 5));
-            Organism.Cytozol.AddCompound(new Compound(Molecule.GetMolecule("ATP"), 10));
+            Organism.Cytozol.AddCompound(new Compound(Molecule.ATP, 10));
         }
     }
 }

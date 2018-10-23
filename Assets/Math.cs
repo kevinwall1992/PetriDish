@@ -49,6 +49,16 @@ public static class MathUtility
 
         return sum;
     }
+
+    public static int Sum<T>(List<T> list, System.Func<T, int> function)
+    {
+        int sum = 0;
+
+        foreach (T element in list)
+            sum += function(element);
+
+        return sum;
+    }
 }
 
 public abstract class GenericFunction<T>

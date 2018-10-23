@@ -11,15 +11,123 @@ public class Element
     static Element()
     {
         elements["H"] = new Element("Hydrogen", 1);
+        elements["He"] = new Element("Helium", 2);
+        elements["Li"] = new Element("Lithium", 3);
+        elements["Be"] = new Element("Beryllium", 4);
+        elements["B"] = new Element("Boron", 5);
         elements["C"] = new Element("Carbon", 6);
         elements["N"] = new Element("Nitrogen", 7);
         elements["O"] = new Element("Oxygen", 8);
+        elements["F"] = new Element("Flourine", 9);
+        elements["N"] = new Element("Neon", 10);
         elements["Na"] = new Element("Sodium", 11);
+        elements["Mg"] = new Element("Magnesium", 12);
+        elements["Al"] = new Element("Aluminium", 13);
         elements["Si"] = new Element("Silicon", 14);
         elements["P"] = new Element("Phosphorus", 15);
         elements["S"] = new Element("Sulfur", 16);
         elements["Cl"] = new Element("Chlorine", 17);
+        elements["Ar"] = new Element("Argon", 18);
+        elements["K"] = new Element("Potassium", 19);
+        elements["Ca"] = new Element("Calcium", 20);
+        elements["Sc"] = new Element("Scandium", 21);
+        elements["Ti"] = new Element("Titanium", 22);
+        elements["V"] = new Element("Vanadium", 23);
+        elements["Cr"] = new Element("Chromium", 24);
+        elements["Mn"] = new Element("Manganese", 25);
         elements["Fe"] = new Element("Iron", 26);
+        elements["Co"] = new Element("CobaLT", 27);
+        elements["Ni"] = new Element("Nickel", 28);
+        elements["Cu"] = new Element("Copper", 29);
+        elements["Zn"] = new Element("Zinc", 30);
+        elements["Ga"] = new Element("Gallium", 31);
+        elements["Ge"] = new Element("Germanium", 32);
+        elements["As"] = new Element("Arsenic", 33);
+        elements["Se"] = new Element("Selenium", 34);
+        elements["Br"] = new Element("Bromine", 35);
+        elements["Kr"] = new Element("Krypton", 36);
+        elements["Rb"] = new Element("Rubidium", 37);
+        elements["Sr"] = new Element("Strontium", 38);
+        elements["Y"] = new Element("Yttrium", 39);
+        elements["Zr"] = new Element("Zirconium", 40);
+        elements["Nb"] = new Element("Niobium", 41);
+        elements["Mo"] = new Element("Molybdenum", 42);
+        elements["Tc"] = new Element("Technetium", 43);
+        elements["Ru"] = new Element("Ruthenium", 44);
+        elements["Rh"] = new Element("Rhodium", 45);
+        elements["Pd"] = new Element("Palladium", 46);
+        elements["Ag"] = new Element("Silver", 47);
+        elements["Cd"] = new Element("Cadmium", 48);
+        elements["In"] = new Element("Indium", 49);
+        elements["Sn"] = new Element("Tin", 50);
+        elements["Sb"] = new Element("Antimony", 51);
+        elements["Te"] = new Element("Tellurium", 52);
+        elements["I"] = new Element("Iodine", 53);
+        elements["Xe"] = new Element("Xenon", 54);
+        elements["Cs"] = new Element("Caesium", 55);
+        elements["Ba"] = new Element("Barium", 56);
+        elements["La"] = new Element("Lanthanum", 57);
+        elements["Ce"] = new Element("Cerium", 58);
+        elements["Pr"] = new Element("Praseodymium", 59);
+        elements["Nd"] = new Element("Neodymium", 60);
+        elements["Pm"] = new Element("Promethium", 61);
+        elements["Sm"] = new Element("Samarium", 62);
+        elements["Eu"] = new Element("Europium", 63);
+        elements["Gd"] = new Element("Gadolinium", 64);
+        elements["Tb"] = new Element("Terbium", 65);
+        elements["Dy"] = new Element("Dysprosium", 66);
+        elements["Ho"] = new Element("Holmium", 67);
+        elements["Er"] = new Element("Erbium", 68);
+        elements["Tm"] = new Element("Thulium", 69);
+        elements["Yb"] = new Element("Ytterbium", 70);
+        elements["Lu"] = new Element("Lutetium", 71);
+        elements["Hf"] = new Element("Hafnium", 72);
+        elements["Ta"] = new Element("Tantalum", 73);
+        elements["W"] = new Element("Tungsten", 74);
+        elements["Re"] = new Element("Rhemium", 75);
+        elements["Os"] = new Element("Osmium", 76);
+        elements["Ir"] = new Element("Iridium", 77);
+        elements["Pt"] = new Element("Platinum", 78);
+        elements["Au"] = new Element("Gold", 79);
+        elements["Hg"] = new Element("Mercury", 80);
+        elements["Tl"] = new Element("Thallium", 81);
+        elements["Pb"] = new Element("Lead", 82);
+        elements["Bi"] = new Element("Bismuth", 83);
+        elements["Po"] = new Element("Polonium", 84);
+        elements["At"] = new Element("Astatine", 85);
+        elements["Rn"] = new Element("Radon", 86);
+        elements["Fr"] = new Element("Francium", 87);
+        elements["Ra"] = new Element("Radium", 88);
+        elements["Ac"] = new Element("Actinium", 89);
+        elements["Th"] = new Element("Thorium", 90);
+        elements["Pa"] = new Element("Protactinium", 91);
+        elements["U"] = new Element("Uranium", 92);
+        elements["Np"] = new Element("Neptunium", 93);
+        elements["Pu"] = new Element("Plutonium", 94);
+        elements["Am"] = new Element("Americium", 95);
+        elements["Cm"] = new Element("Curium", 96);
+        elements["Bk"] = new Element("Berkelium", 97);
+        elements["Cf"] = new Element("Californium", 98);
+        elements["Es"] = new Element("Einsteinium", 99);
+        elements["Fm"] = new Element("Fermium", 100);
+        elements["Md"] = new Element("Mendelevium", 101);
+        elements["No"] = new Element("Nobelium", 102);
+        elements["Lr"] = new Element("Lawrencium", 103);
+        elements["Rf"] = new Element("Rutherfordium", 104);
+        elements["Db"] = new Element("Dubnium", 105);
+        elements["Sg"] = new Element("Seaborgium", 106);
+        elements["Bh"] = new Element("Bohrium", 107);
+        elements["Hs"] = new Element("Hasium", 108);
+        elements["Mt"] = new Element("Meitnerium", 109);
+        elements["Ds"] = new Element("Darmstadtium", 110);
+        elements["Rg"] = new Element("Roentgenium", 111);
+        elements["Cn"] = new Element("Copernicium", 112);
+        elements["Nh"] = new Element("Nihonium", 113);
+        elements["Fl"] = new Element("Flerovium", 114);
+        elements["Mc"] = new Element("Moscovium", 115);
+        elements["Lv"] = new Element("Livermorium", 116);
+        elements["Ts"] = new Element("Tennessine", 117);
+        elements["Og"] = new Element("Ogenesson", 118);
     }
 
     string name;
@@ -58,6 +166,8 @@ public abstract class Molecule
     public static Molecule Nitrogen { get; private set; }
     public static Molecule Hydrogen { get; private set; }
     public static Molecule Water { get; private set; }
+    public static Molecule Hydronium { get; private set; }
+    public static Molecule Hydroxide { get; private set; }
     public static Molecule Salt { get; private set; }
     public static Molecule Glucose { get; private set; }
     public static Molecule ATP { get; private set; }
@@ -75,13 +185,15 @@ public abstract class Molecule
         Hydrogen = RegisterNamedMolecule("Hydrogen", new SimpleMolecule("H2", 0));
 
         Water = RegisterNamedMolecule("Water", new SimpleMolecule("H2 0", -285.3f));
+        Water = RegisterNamedMolecule("Hydronium", new SimpleMolecule("H3 0", -285.3f, 1));
+        Water = RegisterNamedMolecule("Hydroxide", new SimpleMolecule("H 0", -285.3f, -1));
 
         Salt = RegisterNamedMolecule("Salt", new SimpleMolecule("Na Cl", -411.1f));
         Glucose = RegisterNamedMolecule("Glucose", new SimpleMolecule("C6 H12 O6", -1271));
 
-        ATP = RegisterNamedMolecule("ATP", new SimpleMolecule("C10 H16 N5 O13 P3", -2995.6f));
-        ADP = RegisterNamedMolecule("ADP", new SimpleMolecule("C10 H16 N5 O10 P2", -2005.9f));
-        Phosphate = RegisterNamedMolecule("Phosphate", new SimpleMolecule("S O4", -1308.0f));
+        ATP = RegisterNamedMolecule("ATP", new SimpleMolecule("C10 H12 N5 O13 P3", -2995.6f, -4));
+        ADP = RegisterNamedMolecule("ADP", new SimpleMolecule("C10 H12 N5 O10 P2", -2005.9f, -3));
+        Phosphate = RegisterNamedMolecule("Phosphate", new SimpleMolecule("S O4", -1308.0f, -3));
 
         Imidazole = RegisterNamedMolecule("Imidazole", new SimpleMolecule("C3 H4 N2", 49.8f));
         Methane = RegisterNamedMolecule("Methane", new SimpleMolecule("C H4", -74.9f));
@@ -113,6 +225,8 @@ public abstract class Molecule
         }
     }
 
+    public abstract int Charge { get; }
+
     public abstract float Enthalpy { get; }
 
     public virtual string Name
@@ -143,13 +257,16 @@ public abstract class Molecule
 public class SimpleMolecule : Molecule
 {
     Dictionary<Element, int> elements = new Dictionary<Element, int>();
+    int charge;
     float enthalpy;
+
+    public override int Charge { get { return charge; } }
 
     public override float Enthalpy{ get{ return enthalpy; } }
 
     public override Dictionary<Element, int> Elements { get { return elements; } }
 
-    public SimpleMolecule(string formula, float enthalpy_)
+    public SimpleMolecule(string formula, float enthalpy_, int charge_= 0)
     {
         MatchCollection match_collection= Regex.Matches(formula, "([A-Z][a-z]?)([0-9]*) *");
         foreach(Match match in match_collection)
@@ -167,6 +284,7 @@ public class SimpleMolecule : Molecule
             elements[element] += count;
         }
 
+        charge = charge_;
         enthalpy = enthalpy_;
     }
 
@@ -222,6 +340,8 @@ public class Polymer : Molecule
     {
         Molecule molecule;
 
+        public override int Charge { get { return molecule.Charge; } }
+
         public override float Enthalpy
         {
             get { return molecule.Enthalpy - (IsCondensed ? Condensate.Enthalpy : 0); }
@@ -248,6 +368,14 @@ public class Polymer : Molecule
 
     public List<Monomer> Monomers { get { return monomers; } }
 
+    public override int Charge
+    {
+        get
+        {
+            return MathUtility.Sum(monomers, delegate (Monomer monomer) { return monomer.Charge; });
+        }
+    }
+
     public override float Enthalpy
     {
         get { return MathUtility.Sum(monomers, delegate (Monomer monomer) { return monomer.Enthalpy; }); }
@@ -266,6 +394,8 @@ public class Polymer : Molecule
             return elements;
         }
     }
+
+    
 
     public Polymer(List<Monomer> monomers_)
     {
@@ -325,15 +455,17 @@ public class Nucleotide : Polymer.Monomer
     {
         //Incorrect names, but these are less of a mouthful and more iconic
         //Correctly, these are adenosine/cytodine/guanosine/thymidine monophoshate
-        adenine = RegisterNamedMolecule("Adenine", new Nucleotide(new SimpleMolecule("N5 C5 H5", 96.9f)));
-        cytosine = RegisterNamedMolecule("Cytosine", new Nucleotide(new SimpleMolecule("N3 C4 H4 O", -235.4f)));
-        guanine = RegisterNamedMolecule("Guanine", new Nucleotide(new SimpleMolecule("N5 C5 H4 O", -183.9f)));
-        thymine = RegisterNamedMolecule("Thymine", new Nucleotide(new SimpleMolecule("N2 C4 H5 O2", -462.8f)));
+        adenine = RegisterNamedMolecule("Adenine", new Nucleotide(new SimpleMolecule("C5 H5 N5", 96.9f)));
+        cytosine = RegisterNamedMolecule("Cytosine", new Nucleotide(new SimpleMolecule("C4 H4 N3 O", -235.4f)));
+        guanine = RegisterNamedMolecule("Guanine", new Nucleotide(new SimpleMolecule("C5 H4 N5 O", -183.9f)));
+        thymine = RegisterNamedMolecule("Thymine", new Nucleotide(new SimpleMolecule("C4 H5 N2 O2", -462.8f)));
     }
 
 
-    Molecule common_structure = new SimpleMolecule("P O7 C5 H9", -1113.8f);
+    Molecule common_structure = new SimpleMolecule("P O7 C5 H9", -1113.8f, -2);
     Molecule nucleobase;
+
+    public override int Charge { get { return common_structure.Charge; } }
 
     public override float Enthalpy
     {
@@ -1090,22 +1222,24 @@ public class Constructase : Ribozyme
 
 public class AminoAcid : Polymer.Monomer
 {
-    static Molecule common_structure = new SimpleMolecule("C3 O2 N H7", -491.6f);
+    static Molecule common_structure = new SimpleMolecule("C3 H7 N O2", -491.6f);
 
-    public static AminoAcid histadine;
+    public static AminoAcid histidine;
     public static AminoAcid alanine;
     public static AminoAcid serine;
 
     static AminoAcid()
     {
         //These aren't _exactly_ chemically accurate
-        RegisterNamedMolecule("Histadine", new AminoAcid(Imidazole));
+        RegisterNamedMolecule("Histidine", new AminoAcid(Imidazole));
         RegisterNamedMolecule("Alanine", new AminoAcid(Methane));
         RegisterNamedMolecule("Serine", new AminoAcid(Water));
     }
 
 
     Molecule side_chain;
+
+    public override int Charge { get { return side_chain.Charge; } }
 
     public override float Enthalpy
     {
@@ -1167,7 +1301,7 @@ public abstract class Enzyme : Polymer, Catalyst
     {
         List<AminoAcid> amino_acid_sequence;
 
-        List<AminoAcid> amino_acids = new List<AminoAcid> { AminoAcid.histadine, AminoAcid.alanine, AminoAcid.serine };
+        List<AminoAcid> amino_acids = new List<AminoAcid> { AminoAcid.histidine, AminoAcid.alanine, AminoAcid.serine };
 
         do
         {

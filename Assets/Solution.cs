@@ -27,7 +27,7 @@ public class Solution
 
     public float pH
     {
-        get { return -Mathf.Log(GetConcentration("Hydronium")); }
+        get { return -Mathf.Log(GetConcentration("Hydronium")+ Mathf.Pow(10, -7)); }
     }
 
     public Compound Water

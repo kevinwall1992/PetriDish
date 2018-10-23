@@ -325,14 +325,14 @@ public class Nucleotide : Polymer.Monomer
     {
         //Incorrect names, but these are less of a mouthful and more iconic
         //Correctly, these are adenosine/cytodine/guanosine/thymidine monophoshate
-        adenine = RegisterNamedMolecule("Adenine", new Nucleotide(new SimpleMolecule("N5 C5 H4", 96.9f)));
+        adenine = RegisterNamedMolecule("Adenine", new Nucleotide(new SimpleMolecule("N5 C5 H5", 96.9f)));
         cytosine = RegisterNamedMolecule("Cytosine", new Nucleotide(new SimpleMolecule("N3 C4 H4 O", -235.4f)));
         guanine = RegisterNamedMolecule("Guanine", new Nucleotide(new SimpleMolecule("N5 C5 H4 O", -183.9f)));
         thymine = RegisterNamedMolecule("Thymine", new Nucleotide(new SimpleMolecule("N2 C4 H5 O2", -462.8f)));
     }
 
 
-    Molecule common_structure = new SimpleMolecule("P O6 C6 H10", -1113.8f);
+    Molecule common_structure = new SimpleMolecule("P O7 C5 H9", -1113.8f);
     Molecule nucleobase;
 
     public override float Enthalpy
@@ -347,7 +347,7 @@ public class Nucleotide : Polymer.Monomer
             Dictionary<Element, int> elements = new Dictionary<Element, int>(common_structure.Elements);
             foreach (Element element in nucleobase.Elements.Keys)
                 elements[element] += nucleobase.Elements[element];
-            elements[Element.elements["H"]]--;//Just assume this for now
+            elements[Element.elements["H"]]-= 2;//Just assume this for now
 
             return elements;
         }
@@ -1090,7 +1090,7 @@ public class Constructase : Ribozyme
 
 public class AminoAcid : Polymer.Monomer
 {
-    static Molecule common_structure = new SimpleMolecule("C2 O2 N H4", -491.6f);
+    static Molecule common_structure = new SimpleMolecule("C3 O2 N H7", -491.6f);
 
     public static AminoAcid histadine;
     public static AminoAcid alanine;
@@ -1119,7 +1119,7 @@ public class AminoAcid : Polymer.Monomer
             Dictionary<Element, int> elements = new Dictionary<Element, int>(common_structure.Elements);
             foreach (Element element in side_chain.Elements.Keys)
                 elements[element] += side_chain.Elements[element];
-            elements[Element.elements["H"]]--;//Just assume this for now
+            elements[Element.elements["H"]]-= 2;
 
             return elements;
         }

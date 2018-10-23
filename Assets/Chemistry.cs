@@ -106,8 +106,8 @@ public abstract class Molecule
         {
             int total_mass = 0;
 
-            foreach (Element element in GetElements())
-                total_mass += element.Mass;
+            foreach (Element element in Elements.Keys)
+                total_mass += element.Mass* Elements[element];
 
             return total_mass;
         }
@@ -127,21 +127,27 @@ public abstract class Molecule
         }
     }
 
+    public abstract Dictionary<Element, int> Elements
+    {
+        get;
+    }
+
     public Molecule()
     {
 
     }
 
-    public abstract List<Element> GetElements();
     public abstract bool CompareMolecule(Molecule other);
 }
 
 public class SimpleMolecule : Molecule
 {
-    List<Element> elements = new List<Element>();
+    Dictionary<Element, int> elements = new Dictionary<Element, int>();
     float enthalpy;
 
     public override float Enthalpy{ get{ return enthalpy; } }
+
+    public override Dictionary<Element, int> Elements { get { return elements; } }
 
     public SimpleMolecule(string formula, float enthalpy_)
     {
@@ -153,17 +159,15 @@ public class SimpleMolecule : Molecule
             if (!Int32.TryParse(match.Groups[2].Value, out count))
                 count = 1;
 
-            for(int i= 0; i< count; i++)
-                elements.Add(Element.elements[element_key]);
+            Element element = Element.elements[element_key];
+
+            if (!elements.ContainsKey(element))
+                elements[element] = 0;
+
+            elements[element] += count;
         }
 
         enthalpy = enthalpy_;
-    }
-
-    //This might be better as a dictionary
-    public override List<Element> GetElements()
-    {
-        return elements;
     }
 
     public override bool CompareMolecule(Molecule other)
@@ -185,6 +189,24 @@ public class Polymer : Molecule
         public Molecule Condensate { get { return condensate; } }
         public bool IsCondensed { get { return is_condensed; } }
 
+        public override Dictionary<Element, int> Elements
+        {
+            get
+            {
+                if (!is_condensed)
+                    return Elements;
+                else
+                {
+                    Dictionary<Element, int> elements = new Dictionary<Element, int>(Elements);
+
+                    foreach (Element element in condensate.Elements.Keys)
+                        elements[element] -= condensate.Elements[element];
+
+                    return elements;
+                }
+            }
+        }
+
         public Monomer(Molecule condensate_)
         {
             condensate = condensate_;
@@ -193,26 +215,6 @@ public class Polymer : Molecule
         public void Condense()
         {
             is_condensed = true;
-        }
-
-        public override List<Element> GetElements()
-        {
-            if (!is_condensed)
-                return GetElements();
-            else
-            {
-                List<Element> elements = GetElements();
-
-                foreach (Element element in condensate.GetElements())
-                    for (int i = 0; i < elements.Count; i++)
-                        if (elements[i] == element)
-                        {
-                            elements.RemoveAt(i);
-                            i--;
-                        }
-
-                return elements;
-            }
         }
     }
 
@@ -224,15 +226,12 @@ public class Polymer : Molecule
         {
             get { return molecule.Enthalpy - (IsCondensed ? Condensate.Enthalpy : 0); }
         }
-      
+
+        public override Dictionary<Element, int> Elements { get{ return molecule.Elements; } }
+
         public WrapperMonomer(Molecule molecule_, Molecule condensate) : base(condensate)
         {
             molecule = molecule_;
-        }
-
-        public override List<Element> GetElements()
-        {
-            return molecule.GetElements();
         }
 
         public override bool CompareMolecule(Molecule other)
@@ -252,6 +251,20 @@ public class Polymer : Molecule
     public override float Enthalpy
     {
         get { return MathUtility.Sum(monomers, delegate (Monomer monomer) { return monomer.Enthalpy; }); }
+    }
+
+    public override Dictionary<Element, int> Elements
+    {
+        get
+        {
+            Dictionary<Element, int> elements = new Dictionary<Element, int>();
+
+            foreach (Molecule monomer in monomers)
+                foreach (Element element in monomer.Elements.Keys)
+                    elements[element] += monomer.Elements[element];
+
+            return elements;
+        }
     }
 
     public Polymer(List<Monomer> monomers_)
@@ -279,16 +292,6 @@ public class Polymer : Molecule
         monomers.RemoveAt(index);
 
         return monomer;
-    }
-
-    public override List<Element> GetElements()
-    {
-        List<Element> elements = new List<Element>();
-
-        foreach (Molecule monomer in monomers)
-            elements.AddRange(monomer.GetElements());
-
-        return elements;
     }
 
     public int GetLength()
@@ -337,18 +340,22 @@ public class Nucleotide : Polymer.Monomer
         get { return common_structure.Enthalpy + nucleobase.Enthalpy - (IsCondensed ? Condensate.Enthalpy : 0); }
     }
 
+    public override Dictionary<Element, int> Elements
+    {
+        get
+        {
+            Dictionary<Element, int> elements = new Dictionary<Element, int>(common_structure.Elements);
+            foreach (Element element in nucleobase.Elements.Keys)
+                elements[element] += nucleobase.Elements[element];
+            elements[Element.elements["H"]]--;//Just assume this for now
+
+            return elements;
+        }
+    }
+
     Nucleotide(Molecule nucleobase_) : base(Water)
     {
         nucleobase = nucleobase_;
-    }
-
-    public override List<Element> GetElements()
-    {
-        List<Element> elements = common_structure.GetElements();
-        elements.AddRange(nucleobase.GetElements());
-        elements.Remove(Element.elements["H"]);//Just assume this for now
-
-        return elements;
     }
 
     public override bool CompareMolecule(Molecule other)
@@ -1105,18 +1112,22 @@ public class AminoAcid : Polymer.Monomer
         get { return common_structure.Enthalpy + side_chain.Enthalpy - (IsCondensed ? Condensate.Enthalpy : 0); }
     }
 
+    public override Dictionary<Element, int> Elements
+    {
+        get
+        {
+            Dictionary<Element, int> elements = new Dictionary<Element, int>(common_structure.Elements);
+            foreach (Element element in side_chain.Elements.Keys)
+                elements[element] += side_chain.Elements[element];
+            elements[Element.elements["H"]]--;//Just assume this for now
+
+            return elements;
+        }
+    }
+
     public AminoAcid(Molecule side_chain_) : base(Water)
     {
         side_chain = side_chain_;
-    }
-
-    public override List<Element> GetElements()
-    {
-        List<Element> elements = common_structure.GetElements();
-        elements.AddRange(side_chain.GetElements());
-        elements.Remove(Element.elements["H"]);//Just assume this for now
-
-        return elements;
     }
 
     public override bool CompareMolecule(Molecule other)

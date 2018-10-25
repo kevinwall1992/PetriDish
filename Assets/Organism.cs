@@ -199,7 +199,7 @@ public class Cell
 public class Organism
 {
     List<List<Cell>> cells= new List<List<Cell>>();
-    Solution cytozol= new Solution();
+    Solution cytozol= new Solution(1000000000.0f);
 
     public Solution Cytozol
     {
@@ -210,8 +210,6 @@ public class Organism
     {
         cells.Add(new List<Cell>());
         cells[0].Add(new Cell(this));
-
-        Cytozol.AddCompound(Molecule.Water, 1000000000.0f);
     }
 
     public Vector2Int GetCellPosition(Cell cell)

@@ -59,6 +59,11 @@ public static class MathUtility
 
         return sum;
     }
+
+    public static bool NearlyEqual(float a, float b, float tolerance = 0.001f)
+    {
+        return a > (b - tolerance) && a < (b + tolerance);
+    }
 }
 
 public abstract class GenericFunction<T>

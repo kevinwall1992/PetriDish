@@ -3,9 +3,35 @@ using System.Collections.Generic;
 
 public class Solution
 {
+    class Buffer
+    {
+        Molecule molecule;
+        Molecule conjugate;
+
+        public Molecule Molecule { get { return molecule; } }
+        public Molecule Conjugate { get { return conjugate; } }
+
+        public bool IsAcid
+        {
+            get { return (conjugate.Charge - molecule.Charge) < 0; }
+        }
+
+        public Buffer(Molecule molecule_, Molecule conjugate_)
+        {
+            molecule = molecule_;
+            conjugate = conjugate_;
+
+            Debug.Assert((int)(Mathf.Abs(molecule.Charge - conjugate.Charge) + 0.5f) == 1);
+        }
+    }
+
+    static List<Buffer> buffers = Utility.CreateList(new Buffer(Molecule.Water, Molecule.Hydronium), 
+                                                     new Buffer(Molecule.Water, Molecule.Hydroxide), 
+                                                     new Buffer(Molecule.CarbonicAcid, Molecule.Bicarbonate));
+
     Dictionary<Molecule, Compound> compounds= new Dictionary<Molecule, Compound>();
 
-    float heat;
+    float heat = 0;
 
     public float Mass
     {
@@ -41,7 +67,7 @@ public class Solution
         {
             return GetCompound(Molecule.Hydronium).Quantity == 0 ?
                      -Mathf.Log10(GetConcentration(Molecule.Hydroxide) + Mathf.Pow(10, -7)) :
-                     14 - pOH;
+                     14 - pH;
         }
     }
 
@@ -55,15 +81,10 @@ public class Solution
         get { return Water.Quantity / 55; }
     }
 
-    float GetChargeBalance()
+    public Solution(float water_volume)
     {
-        float charge_balance = 0;
-
-        foreach (Molecule molecule in compounds.Keys)
-            if(!molecule.CompareMolecule(Molecule.Hydronium) && !molecule.CompareMolecule(Molecule.Hydroxide))
-                charge_balance += molecule.Charge * compounds[molecule].Quantity;
-
-        return charge_balance;
+        AddCompound(Molecule.Water, water_volume);
+        heat = 298 * water_volume * Molecule.Water.Mass;
     }
 
     Compound GetCompound(Molecule molecule)
@@ -81,32 +102,44 @@ public class Solution
 
     public void AddCompound(Compound compound)
     {
-        if(compound.Molecule.CompareMolecule(Molecule.Proton))
-        {
-            AddCompound(Molecule.Hydronium, 
-                        RemoveCompound(Molecule.Water, 
-                                       compound.Split(Mathf.Min(compound.Quantity, Water.Quantity)).Quantity).Quantity);
-        }
-        else if(compound.Molecule.CompareMolecule(Molecule.Hydronium) && pH > 7)
-        {
-            float hydroxides_consumed = compound.Split(Mathf.Min(compound.Quantity, GetChargeBalance())).Quantity;
+        if (compound.Quantity == 0)
+            return;
 
-            RemoveCompound(Molecule.Hydroxide, hydroxides_consumed);
-            AddCompound(Molecule.Water, hydroxides_consumed * 2);
-        }
-        else if (compound.Molecule.CompareMolecule(Molecule.Hydroxide) && pH < 7)
-        {
-            float hydroniums_consumed = compound.Split(Mathf.Min(compound.Quantity, -GetChargeBalance())).Quantity;
+        bool is_proton = compound.Molecule.CompareMolecule(Molecule.Proton);
+        bool is_proton_or_hydronium = is_proton || compound.Molecule.CompareMolecule(Molecule.Hydronium);
+        bool is_primitive_ion = is_proton_or_hydronium || compound.Molecule.CompareMolecule(Molecule.Hydroxide);
 
-            RemoveCompound(Molecule.Hydronium, hydroniums_consumed);
-            AddCompound(Molecule.Water, hydroniums_consumed * 2);
-        }
+        if (is_primitive_ion)
+            foreach (Buffer buffer in buffers)
+            {
+                bool consume_conjugate = is_proton_or_hydronium ? buffer.IsAcid : !buffer.IsAcid;
+
+                Molecule consumed = consume_conjugate ? buffer.Conjugate : buffer.Molecule;
+                Molecule produced = consume_conjugate ? buffer.Molecule : buffer.Conjugate;
+
+                if (produced.CompareMolecule(compound.Molecule))
+                    continue;
+
+                float quantity = compound.Split(GetCompound(consumed).Quantity).Quantity;
+
+                RemoveCompound(consumed, quantity);
+                if(!is_proton)
+                    AddCompound(Molecule.Water, quantity);
+                AddCompound(produced, quantity);
+
+                if (compound.Quantity == 0)
+                    break;
+            }
 
         GetCompound(compound.Molecule).Quantity += compound.Quantity;
         heat +=  Temperature * compound.Molecule.Mass* compound.Quantity;
 
-        if (compound.Molecule.CompareMolecule(Molecule.Water))
-            AddCompound(RemoveCompound(Molecule.Proton, GetCompound(Molecule.Proton).Quantity));
+        if (!is_primitive_ion)
+        {
+            AddCompound(RemoveCompound(Molecule.Proton));
+            AddCompound(RemoveCompound(Molecule.Hydronium));
+            AddCompound(RemoveCompound(Molecule.Hydroxide));
+        }
     }
 
     public void AddCompound(Molecule molecule, float quantity)
@@ -122,9 +155,9 @@ public class Solution
         return removed_compound;
     }
 
-    public Compound RemoveCompound(Molecule molecule, float quantity)
+    public Compound RemoveCompound(Molecule molecule, float quantity= -1)
     {
-        return RemoveCompound(new Compound(molecule, quantity));
+        return RemoveCompound(new Compound(molecule, quantity < 0 ? GetQuantity(molecule) : quantity));
     }
 
     public float GetConcentration(Molecule molecule)

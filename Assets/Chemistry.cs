@@ -156,7 +156,6 @@ public class Element
     }
 }
 
-//May need to add charge as additional property
 public abstract class Molecule
 {
     static Dictionary<string, Molecule> molecules= new Dictionary<string, Molecule>();
@@ -166,6 +165,7 @@ public abstract class Molecule
     public static Molecule Nitrogen { get; private set; }
     public static Molecule Hydrogen { get; private set; }
     public static Molecule Water { get; private set; }
+    public static Molecule Proton { get; private set; }
     public static Molecule Hydronium { get; private set; }
     public static Molecule Hydroxide { get; private set; }
     public static Molecule Salt { get; private set; }
@@ -173,6 +173,8 @@ public abstract class Molecule
     public static Molecule ATP { get; private set; }
     public static Molecule ADP { get; private set; }
     public static Molecule Phosphate { get; private set; }
+    public static Molecule CarbonicAcid { get; private set; }
+    public static Molecule Bicarbonate { get; private set; }
     public static Molecule Imidazole { get; private set; }
     public static Molecule Methane { get; private set; }
 
@@ -184,16 +186,20 @@ public abstract class Molecule
         Nitrogen = RegisterNamedMolecule("Nitrogen", new SimpleMolecule("N2", 0));
         Hydrogen = RegisterNamedMolecule("Hydrogen", new SimpleMolecule("H2", 0));
 
-        Water = RegisterNamedMolecule("Water", new SimpleMolecule("H2 0", -285.3f));
-        Water = RegisterNamedMolecule("Hydronium", new SimpleMolecule("H3 0", -285.3f, 1));
-        Water = RegisterNamedMolecule("Hydroxide", new SimpleMolecule("H 0", -285.3f, -1));
+        Water = RegisterNamedMolecule("Water", new SimpleMolecule("H2 O", -285.3f));
+        Proton = RegisterNamedMolecule("Proton", new SimpleMolecule("H", 0.0f, 1));
+        Hydronium = RegisterNamedMolecule("Hydronium", new SimpleMolecule("H3 O", -265.0f, 1));
+        Hydroxide = RegisterNamedMolecule("Hydroxide", new SimpleMolecule("H O", -229.9f, -1));
 
         Salt = RegisterNamedMolecule("Salt", new SimpleMolecule("Na Cl", -411.1f));
         Glucose = RegisterNamedMolecule("Glucose", new SimpleMolecule("C6 H12 O6", -1271));
 
         ATP = RegisterNamedMolecule("ATP", new SimpleMolecule("C10 H12 N5 O13 P3", -2995.6f, -4));
         ADP = RegisterNamedMolecule("ADP", new SimpleMolecule("C10 H12 N5 O10 P2", -2005.9f, -3));
-        Phosphate = RegisterNamedMolecule("Phosphate", new SimpleMolecule("S O4", -1308.0f, -3));
+        Phosphate = RegisterNamedMolecule("Phosphate", new SimpleMolecule("S O4 H2", -1308.0f, -1));
+
+        CarbonicAcid = RegisterNamedMolecule("CarbonicAcid", new SimpleMolecule("C H2 O3", 31.5f));
+        Bicarbonate = RegisterNamedMolecule("Bicarbonate", new SimpleMolecule("C H O3", 31.5f, -1));
 
         Imidazole = RegisterNamedMolecule("Imidazole", new SimpleMolecule("C3 H4 N2", 49.8f));
         Methane = RegisterNamedMolecule("Methane", new SimpleMolecule("C H4", -74.9f));

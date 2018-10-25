@@ -478,7 +478,7 @@ public class ReactionAction : Action
                 Fail();
 
         foreach (Compound reactant in cytozol_reactants)
-            if (Organism.Cytozol.GetCompound(reactant.Molecule).Quantity < reactant.Quantity)
+            if (Organism.Cytozol.GetQuantity(reactant.Molecule) < reactant.Quantity)
                 Fail();
 
         if (HasFailed())

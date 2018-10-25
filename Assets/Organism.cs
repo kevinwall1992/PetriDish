@@ -211,7 +211,7 @@ public class Organism
         cells.Add(new List<Cell>());
         cells[0].Add(new Cell(this));
 
-        Cytozol.AddCompound(Molecule.Water, 1000);
+        Cytozol.AddCompound(Molecule.Water, 1000000000.0f);
     }
 
     public Vector2Int GetCellPosition(Cell cell)

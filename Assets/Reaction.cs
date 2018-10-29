@@ -9,6 +9,11 @@ public class Reaction
 {
     static Dictionary<string, Reaction> reactions= new Dictionary<string, Reaction>();
 
+    public static List<Reaction> Reactions
+    {
+        get { return new List<Reaction>(reactions.Values); }
+    }
+
     public static Reaction GetReaction(string name)
     {
         return reactions[name];
@@ -240,6 +245,19 @@ public class Reaction
     Attribute productivity;
     Attribute potential;
 
+    public string Name
+    {
+        get
+        {
+            foreach (string name in reactions.Keys)
+                if (reactions[name] == this)
+                    return name;
+
+            Debug.Assert(false, "Reaction not found in dictionary");
+            return "Unnamed";
+        }
+    }
+
     public Reaction( string name, string catalyst_name_,
                      Dictionary<Compound, float> reactants_,
                      Dictionary<Compound, float> products_,
@@ -274,6 +292,7 @@ public class Reaction
 
         if (thermophilic || cryophilic)
         {
+            //Change variable name
             bool equally_thermophilic = thermophilic && cryophilic;
 
             optimal_temperature = new Attribute(new SkewedNormalDistribution(mean_optimal_temperature, 

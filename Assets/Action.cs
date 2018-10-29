@@ -30,6 +30,7 @@ public abstract class Action
         slot = slot_;
     }
 
+    //Consider name change to Begin()
     public virtual void Beginning()
     {
         has_begun = true;
@@ -96,7 +97,8 @@ public class RotationAnimation : ActionAnimation
             return;
 
         cell_component.transform.rotation = Quaternion.identity;
-        cell_component.transform.Rotate(new Vector3(0, 0, rotation_count* -60 * GetMoment()));
+        if (GetMoment() < 1)
+            cell_component.transform.Rotate(new Vector3(0, 0, rotation_count* -60 * GetMoment()));
     }
 
     public RotationAnimation SetParameters(CellComponent cell_component_, int rotation_count_)
@@ -198,7 +200,7 @@ public class ActionComponent : MonoBehaviour
 
     OrganismComponent OrganismComponent
     {
-        get { return World.TheWorld.GetOrganismComponent(action.Organism); }
+        get { return Scene.Micro.Visualization.GetOrganismComponent(action.Organism); }
     }
 
     CellComponent CellComponent

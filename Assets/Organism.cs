@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
+using System.Linq;
+using System;
 
 public class Compound
 {
@@ -196,18 +197,48 @@ public class Cell
 }
 
 
-public class Organism
+public class Cytozol : Solution
+{
+    public Cytozol(float water_volume) : base(water_volume)
+    {
+
+    }
+}
+
+
+public class Organism : Chronal
 {
     List<List<Cell>> cells= new List<List<Cell>>();
-    Solution cytozol= new Solution(1000000000.0f);
+    Cytozol cytozol= new Cytozol(20000000000.0f);
+    Membrane membrane;
 
-    public Solution Cytozol
+    public Cytozol Cytozol{ get { return cytozol; } }
+
+    public Membrane Membrane { get { return membrane; } }
+
+    public float SurfaceArea
     {
-        get { return cytozol; }
+        get
+        {
+            int total_exposed_edges= 0;
+
+            foreach (List<Cell> column in cells)
+                foreach (Cell cell in column)
+                    if (cell != null)
+                        foreach (HexagonalDirection direction in Enum.GetValues(typeof(HexagonalDirection)))
+                            if (GetNeighbor(cell, direction) == null)
+                                total_exposed_edges++;
+                        
+            return total_exposed_edges/ 6.0f;
+        }
     }
+
+    public Locale Locale { get; set; }
 
     public Organism()
     {
+        membrane = new Membrane(this, new Dictionary<Molecule, float>());
+
         cells.Add(new List<Cell>());
         cells[0].Add(new Cell(this));
     }
@@ -321,5 +352,28 @@ public class Organism
     public int GetCellCount()
     {
         return GetCells().Count;
+    }
+
+    static void ExecuteActions<T>(List<T> actions) where T : Action
+    {
+        foreach (Action action in actions) action.Beginning();
+        foreach (Action action in actions) action.End();
+    }
+
+    public void Step()
+    {
+        Membrane.Step();
+
+        List<Action> actions= new List<Action>();
+
+        foreach (List<Cell> column in cells)
+            foreach (Cell cell in column)
+                if (cell != null)
+                    actions.AddRange(cell.GetActions());
+
+        ExecuteActions(actions.OfType<Interpretase.Command>().ToList());
+        ExecuteActions(actions.OfType<ReactionAction>().ToList());
+        ExecuteActions(actions.OfType<PipeAction>().ToList());
+        ExecuteActions(actions.OfType<PoweredAction>().ToList());
     }
 }

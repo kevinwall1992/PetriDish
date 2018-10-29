@@ -17,6 +17,8 @@ public class OrganismComponent : MonoBehaviour
         get { return organism; }
     }
 
+    public bool IsVisualizingStep { get { return actions.Count > 0; } }
+
     void Start()
     {
 
@@ -29,12 +31,8 @@ public class OrganismComponent : MonoBehaviour
         if (GetComponents<ActionComponent>().Length > 0)
             return;
 
-        if (actions.Count == 0)
-        {
-            if(World.TheWorld.IsTakingTurn(this))
-                World.TheWorld.FinishTurn(this);
+        if (!IsVisualizingStep)
             return;
-        }
 
         foreach (Action action in actions.Dequeue())
             gameObject.AddComponent<ActionComponent>().SetAction(action, action is PoweredAction ? 3 : 1.5f);
@@ -92,8 +90,10 @@ public class OrganismComponent : MonoBehaviour
         return GetCellComponent(cell);
     }
 
-    public void TakeTurn()
+    public void BeginStepVisualization()
     {
+        Organism.Membrane.Step();
+
         List<Action> new_actions= new List<Action>();
 
         foreach (CellComponent cell_component in cell_components)

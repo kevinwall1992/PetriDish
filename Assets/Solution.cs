@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-public class Solution
+//Need to add support for arbitrarily large amounts of water/ solvent
+public class Solution : Volume
 {
     class Buffer
     {
@@ -32,6 +33,8 @@ public class Solution
     Dictionary<Molecule, Compound> compounds= new Dictionary<Molecule, Compound>();
 
     float heat = 0;
+
+    public List<Molecule> Molecules { get { return new List<Molecule>(compounds.Keys); } }
 
     public float Mass
     {
@@ -163,5 +166,12 @@ public class Solution
     public float GetConcentration(Molecule molecule)
     {
         return GetCompound(molecule).Quantity/ MiniLiters;
+    }
+
+    public float GetQuantityPerArea(Molecule molecule)
+    {
+        return (50000000.0f / 3) * 
+               molecule.AtomCount * GetQuantity(molecule) /
+               MathUtility.Sum(Molecules, delegate (Molecule molecule_) { return molecule_.AtomCount * GetQuantity(molecule_); });
     }
 }

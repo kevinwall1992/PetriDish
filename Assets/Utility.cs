@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 public class Utility
 {
@@ -49,5 +50,11 @@ public class Utility
         list.RemoveAt(index);
 
         return element;
+    }
+
+    public static void ForEach<T>(List<T> list, Action<T> action)
+    {
+        foreach (T element in list)
+            action(element);
     }
 }

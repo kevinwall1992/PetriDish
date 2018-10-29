@@ -56,6 +56,8 @@ public class DetailPane : GoodBehavior
     private void Start()
     {
         AddDNASequence("CACTCCAATTCT" + Ribozyme.Rotase.Sequence + "TTTCATTCTTACTGACCCTCCTACCAGTGAGACGAATCCAAATTT");
+
+        InitializeSequenceElements();
     }
 
     private void Update()
@@ -70,11 +72,40 @@ public class DetailPane : GoodBehavior
         if (Input.GetKeyUp(KeyCode.Q))
         {
             gameObject.SetActive(false);
-            World.TheWorld.GetComponentInChildren<OrganismComponent>().ResetExperiment(GetDNASequence());
+            Scene.Micro.Visualization.OrganismComponents[0].ResetExperiment(GetDNASequence());
         }
 
         if (!codon_layout.Validate())
             FormatCodons();
+    }
+
+    void InitializeSequenceElements()
+    {
+        AddDNASequenceElement("CCCTAATAC", "Move Single Unit");
+        AddDNASequenceElement("CAATAATAC", "Move Stack");
+        AddDNASequenceElement("CATTCTTAA", "Cut and Paste DNA");
+        AddDNASequenceElement("CACTAAAAC", "Activate Slot");
+        AddDNASequenceElement("CAGTCTAAC", "Go To Marker");
+        AddDNASequenceElement("CAGTCTGAGGAATAAGAATAC", "Conditionally Go To");
+
+        AddDNASequenceElement("TCTTTT", "Marked Group");
+
+        AddDNASequenceElement("GAATAA", "Get Size of Slot");
+        AddDNASequenceElement("GAGTAATAC", "A == B");
+        AddDNASequenceElement("GACTAATAC", "A > B");
+        AddDNASequenceElement("GATTAATAC", "A < B");
+
+        AddDNASequenceElement("TAA", "Slot 1");
+
+        AddDNASequenceElement("AAA", "0");
+
+        AddDNASequenceElement(Ribozyme.GetRibozymeFamily("Interpretase")[0].Sequence, "Interpretase");
+        AddDNASequenceElement(Ribozyme.GetRibozymeFamily("Rotase")[0].Sequence, "Rotase");
+        AddDNASequenceElement(Ribozyme.GetRibozymeFamily("Constructase")[0].Sequence, "Constructase");
+
+        foreach(Reaction reaction in Reaction.Reactions)
+            if(reaction.Catalyst is Ribozyme)
+                AddDNASequenceElement((reaction.Catalyst as Ribozyme).Sequence, reaction.Name);
     }
 
     void FormatCodons()

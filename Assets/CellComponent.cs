@@ -8,6 +8,8 @@ public class CellComponent : MonoBehaviour
 
     List<SlotComponent> slot_components= new List<SlotComponent>();
 
+    int last_slot0_index = 0;
+
     public OrganismComponent OrganismComponent
     {
         get { return GetComponentInParent<OrganismComponent>(); }
@@ -38,19 +40,17 @@ public class CellComponent : MonoBehaviour
         for (int i = 0; i < 6; i++)
         {
             slot_components[i].transform.localRotation = Quaternion.identity;
-            slot_components[i].gameObject.transform.Rotate(new Vector3(0, 0, i * -60));
+            slot_components[i].gameObject.transform.Rotate(new Vector3(0, 0, slot_components[i].Slot.Index * -60));
         }
     }
 
     void ValidateSlots()
     {
-        if (slot_components[0].Slot == Cell.GetSlot(0))
+        if (last_slot0_index == slot_components[0].Slot.Index)
             return;
 
-        for (int i = 0; i < 6; i++)
-            slot_components[i].SetSlot(Cell.GetSlot(i));
-
         SetSlotTransformations();
+        last_slot0_index = slot_components[0].Slot.Index;
 
         transform.rotation = Quaternion.identity;
     }

@@ -60,6 +60,16 @@ public static class MathUtility
         return sum;
     }
 
+    public static decimal Sum<T>(List<T> list, System.Func<T, decimal> function)
+    {
+        decimal sum = 0;
+
+        foreach (T element in list)
+            sum += function(element);
+
+        return sum;
+    }
+
     public static bool NearlyEqual(float a, float b, float tolerance = 0.001f)
     {
         return a > (b - tolerance) && a < (b + tolerance);

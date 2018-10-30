@@ -36,7 +36,7 @@ public abstract class Locale : Volume, Chronal
 
 public class WaterLocale : Locale
 {
-    static float resting_volume = 100000000000000.0f;
+    static float resting_water_quantity = 100000000000000.0f;
 
     public Solution Solution
     {
@@ -56,7 +56,7 @@ public class WaterLocale : Locale
 
     public WaterLocale()
     {
-        Solution = new Solution(resting_volume);
+        Solution = new Solution(resting_water_quantity);
     }
 
     public override float GetQuantityPerArea(Molecule molecule)

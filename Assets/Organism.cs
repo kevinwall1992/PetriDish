@@ -199,7 +199,7 @@ public class Cell
 
 public class Cytozol : Solution
 {
-    public Cytozol(float water_volume) : base(water_volume)
+    public Cytozol(float water_quantity) : base(water_quantity)
     {
 
     }

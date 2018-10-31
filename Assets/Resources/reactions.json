@@ -1,7 +1,13 @@
 {
   "Molecules" : 
   {
-    "Pyruvate" : { "Formula" : "C3 H4 O3", "Enthalpy" : -586.9 }
+    "Hydrogen Sulfide" : { "Formula" : "H2 S", "Enthalpy" : -21 },
+    "Sulfur" : { "Formula" : "S8", "Enthalpy" : 0 },
+    "Ammonia" : { "Formula" : "N H3", "Enthalpy" : -46 },
+    "Pyruvate" : { "Formula" : "C3 H4 O3", "Enthalpy" : -586.9 },
+    "Pyrimidine" : { "Formula" : "C4 H4 N2", "Enthalpy" : 143.2 },
+    "Purine" : { "Formula" : "C5 H4 N4", "Enthalpy" : 169.4 },
+    "Vinegar" : { "Formula" : "C2 H4 O2", "Enthalpy" : -483 }
   },
 
   "Reactions" :
@@ -9,7 +15,7 @@
     "Methanogenesis" : 
     {
       "Catalyst Name" : "Methanogenase",
-      "Ribozyme" : 0.7,
+      "Ribozyme" : 0.75,
       "Potential" : 1,
       "Flexibility" : 1,
 
@@ -26,14 +32,14 @@
       },
 
       "Cost" : 0.1,
-      "Productivity" : 1,
+      "Productivity" : 1.0,
 
-      "Optimal Temperature" : 32,
+      "Optimal Temperature" : 298,
       "Temperature Tolerance" : 1.5,
       "Thermophilic" : true,
       "Cryophilic" : true,
 
-      "Optimal pH" : 7.4,
+      "Optimal pH" : 7.0,
       "pH Tolerance" : 1.5,
 
       "Inhibitors" : 
@@ -45,6 +51,310 @@
       { 
         
       }
+    },
+
+    "Hydrogen Sulfide Oxidation" : 
+    {
+      "Catalyst Name" : "Sulfide Dehydrogenase",
+      "Ribozyme" : 0.75,
+      "Potential" : 1,
+      "Flexibility" : 1,
+
+      "Reactants" : 
+      {
+        "Hydrogen Sulfide" : { "Quantity" : 12, "Slotted" : 0.1 },
+        "Carbon Dioxide" : { "Quantity" : 6, "Slotted" : 0.1 }
+      },
+
+      "Products" : 
+      {
+        "Glucose" : { "Quantity" : 1, "Slotted" : 0.1 },
+        "Sulfur" : { "Quantity" : 1.25, "Slotted" : 0.9 },
+        "Water" : { "Quantity" : 6, "Slotted" : 0.1 }
+      },
+
+      "Cost" : 0.1,
+      "Productivity" : 0.166667,
+
+      "Optimal Temperature" : 298,
+      "Temperature Tolerance" : 1.5,
+      "Thermophilic" : true,
+      "Cryophilic" : true,
+
+      "Optimal pH" : 7.0,
+      "pH Tolerance" : 1.5
+    },
+
+    "Nitrogen Fixation" : 
+    {
+      "Catalyst Name" : "Nitrogenase",
+      "Ribozyme" : 0.75,
+      "Potential" : 1,
+      "Flexibility" : 1,
+
+      "Reactants" : 
+      {
+        "Nitrogen" : { "Quantity" : 1, "Slotted" : 0.1 },
+        "Hydrogen" : { "Quantity" : 3, "Slotted" : 0.1 }
+      },
+
+      "Products" : 
+      {
+        "Ammonia" : { "Quantity" : 2, "Slotted" : 0.1 },
+      },
+
+      "Cost" : 0.1,
+      "Productivity" : 1,
+
+      "Optimal Temperature" : 298,
+      "Temperature Tolerance" : 1.0,
+
+      "Optimal pH" : 7.0,
+      "pH Tolerance" : 1.0
+    },
+
+    "Glycolysis" : 
+    {
+      "Catalyst Name" : "Glycolyase",
+      "Ribozyme" : 0.75,
+      "Potential" : 1,
+      "Flexibility" : 1,
+
+      "Reactants" : 
+      {
+        "Glucose" : { "Quantity" : 1, "Slotted" : 0.1 }
+      },
+
+      "Products" : 
+      {
+        "Pyruvate" : { "Quantity" : 2, "Slotted" : 0.3 },
+        "Hydrogen" : { "Quantity" : 2, "Slotted" : 0.1 }
+      },
+
+      "Cost" : 0.1,
+      "Productivity" : 1,
+
+      "Optimal Temperature" : 298,
+      "Temperature Tolerance" : 0.7,
+
+      "Optimal pH" : 7.0,
+      "pH Tolerance" : 0.7
+    },
+
+    "Imidazole Synthesis" : 
+    {
+      "Catalyst Name" : "Imidazole Synthase",
+      "Ribozyme" : 0.75,
+      "Potential" : 1,
+      "Flexibility" : 1,
+
+      "Reactants" : 
+      {
+        "Ammonia" : { "Quantity" : 4, "Slotted" : 0.1 },
+        "Glucose" : { "Quantity" : 1, "Slotted" : 0.1 }
+      },
+
+      "Products" : 
+      {
+        "Imidazole" : { "Quantity" : 2, "Slotted" : 0.9 },
+        "Water" : { "Quantity" : 6, "Slotted" : 0.1 }, 
+        "Hydrogen" : { "Quantity" : 2, "Slotted" : 0.1 }
+      },
+
+      "Cost" : 0.5,
+      "Productivity" : 0.5,
+
+      "Optimal Temperature" : 298,
+      "Temperature Tolerance" : 0.7,
+
+      "Optimal pH" : 7.0,
+      "pH Tolerance" : 0.7
+    },
+
+    "Pyrimidine Synthesis" : 
+    {
+      "Catalyst Name" : "Pyrimidine Synthase",
+      "Ribozyme" : 0.75,
+      "Potential" : 1,
+      "Flexibility" : 1,
+
+      "Reactants" : 
+      {
+        "Ammonia" : { "Quantity" : 6, "Slotted" : 0.1 },
+        "Glucose" : { "Quantity" : 2, "Slotted" : 0.1 }
+      },
+
+      "Products" : 
+      {
+        "Pyrimidine" : { "Quantity" : 3, "Slotted" : 0.9 },
+        "Water" : { "Quantity" : 12, "Slotted" : 0.1 }, 
+        "Hydrogen" : { "Quantity" : 3, "Slotted" : 0.1 }
+      },
+
+      "Cost" : 0.6,
+      "Productivity" : 0.25,
+
+      "Optimal Temperature" : 298,
+      "Temperature Tolerance" : 0.7,
+
+      "Optimal pH" : 7.0,
+      "pH Tolerance" : 0.7
+    },
+
+    "Purine Synthesis" : 
+    {
+      "Catalyst Name" : "Purine Synthase",
+      "Ribozyme" : 0.75,
+      "Potential" : 1,
+      "Flexibility" : 1,
+
+      "Reactants" : 
+      {
+        "Imidazole" : { "Quantity" : 1, "Slotted" : 0.9 },
+        "Pyrimidine" : { "Quantity" : 1, "Slotted" : 0.9 },
+        "Water" : { "Quantity" : 3, "Slotted" : 0.1 }
+      },
+
+      "Products" : 
+      {
+        "Purine" : { "Quantity" : 3, "Slotted" : 0.9 },
+        "Vinegar" : { "Quantity" : 1, "Slotted" : 0.1 },
+        "Hydrogen" : { "Quantity" : 2, "Slotted" : 0.1 }
+      },
+
+      "Cost" : 0.6,
+      "Productivity" : 1,
+
+      "Optimal Temperature" : 298,
+      "Temperature Tolerance" : 0.7,
+
+      "Optimal pH" : 7.0,
+      "pH Tolerance" : 0.7
+    },
+
+    "Adenosine Monophosphate Synthesis" : 
+    {
+      "Catalyst Name" : "AMP Synthase",
+      "Ribozyme" : 0.75,
+      "Potential" : 1,
+      "Flexibility" : 1,
+
+      "Reactants" : 
+      {
+        "Purine" : { "Quantity" : 6, "Slotted" : 0.9 },
+        "Glucose" : { "Quantity" : 5, "Slotted" : 0.3 },
+        "Phosphate" : { "Quantity" : 6, "Slotted" : 0.1 },
+        "Ammonia" : { "Quantity" : 8, "Slotted" : 0.1 }
+      },
+
+      "Products" : 
+      {
+        "AMP" : { "Quantity" : 6, "Slotted" : 0.9 },
+        "Water" : { "Quantity" : 18, "Slotted" : 0.1 },
+        "Nitrogen" : { "Quantity" : 1, "Slotted" : 0.1 }
+      },
+
+      "Cost" : 1.0,
+      "Productivity" : 0.1,
+
+      "Optimal Temperature" : 298,
+      "Temperature Tolerance" : 0.7,
+
+      "Optimal pH" : 7.0,
+      "pH Tolerance" : 0.7
+    },
+
+    "Guanosine Monophosphate Synthesis" : 
+    {
+      "Catalyst Name" : "GMP Synthase",
+      "Ribozyme" : 0.75,
+      "Potential" : 1,
+      "Flexibility" : 1,
+
+      "Reactants" : 
+      {
+        "Purine" : { "Quantity" : 6, "Slotted" : 0.9 },
+        "Glucose" : { "Quantity" : 5, "Slotted" : 0.3 },
+        "Phosphate" : { "Quantity" : 6, "Slotted" : 0.1 },
+        "Ammonia" : { "Quantity" : 6, "Slotted" : 0.1 }
+      },
+
+      "Products" : 
+      {
+        "GMP" : { "Quantity" : 6, "Slotted" : 0.9 },
+        "Water" : { "Quantity" : 12, "Slotted" : 0.1 },
+        "Hydrogen" : { "Quantity" : 3, "Slotted" : 0.1 }
+      },
+
+      "Cost" : 1.0,
+      "Productivity" : 0.1,
+
+      "Optimal Temperature" : 298,
+      "Temperature Tolerance" : 0.7,
+
+      "Optimal pH" : 7.0,
+      "pH Tolerance" : 0.7
+    },
+
+    "Cytidine Monophosphate Synthesis" : 
+    {
+      "Catalyst Name" : "CMP Synthase",
+      "Ribozyme" : 0.75,
+      "Potential" : 1,
+      "Flexibility" : 1,
+
+      "Reactants" : 
+      {
+        "Pyrimidine" : { "Quantity" : 6, "Slotted" : 0.9 },
+        "Glucose" : { "Quantity" : 5, "Slotted" : 0.3 },
+        "Phosphate" : { "Quantity" : 6, "Slotted" : 0.1 },
+        "Ammonia" : { "Quantity" : 6, "Slotted" : 0.1 }
+      },
+
+      "Products" : 
+      {
+        "CMP" : { "Quantity" : 6, "Slotted" : 0.9 },
+        "Water" : { "Quantity" : 12, "Slotted" : 0.1 },
+        "Hydrogen" : { "Quantity" : 3, "Slotted" : 0.1 }
+      },
+
+      "Cost" : 1.0,
+      "Productivity" : 0.1,
+
+      "Optimal Temperature" : 298,
+      "Temperature Tolerance" : 0.7,
+
+      "Optimal pH" : 7.0,
+      "pH Tolerance" : 0.7
+    },
+
+    "Thymidine Monophosphate Synthesis" : 
+    {
+      "Catalyst Name" : "TMP Synthase",
+      "Ribozyme" : 0.75,
+      "Potential" : 1,
+      "Flexibility" : 1,
+
+      "Reactants" : 
+      {
+        "Pyrimidine" : { "Quantity" : 6, "Slotted" : 0.9 },
+        "Glucose" : { "Quantity" : 6, "Slotted" : 0.3 },
+        "Phosphate" : { "Quantity" : 6, "Slotted" : 0.1 }
+      },
+
+      "Products" : 
+      {
+        "Water" : { "Quantity" : 12, "Slotted" : 0.1 }
+      },
+
+      "Cost" : 1.0,
+      "Productivity" : 0.1,
+
+      "Optimal Temperature" : 298,
+      "Temperature Tolerance" : 0.7,
+
+      "Optimal pH" : 7.0,
+      "pH Tolerance" : 0.7
     }
   }
 }

@@ -19,13 +19,27 @@ public class Reaction
         return reactions[name];
     }
 
-    static float JTokenToFloat(JToken json)
+    static float JTokenToFloat(JToken json, float default_value = 0)
     {
+        if (json == null)
+            return default_value;
+
         return System.Convert.ToSingle(json);
     }
 
-    static bool JTokenToBool(JToken json)
+    static int JTokenToInt(JToken json, int default_value = 0)
     {
+        if (json == null)
+            return default_value;
+
+        return System.Convert.ToInt32(json);
+    }
+
+    static bool JTokenToBool(JToken json, bool default_value = false)
+    {
+        if (json == null)
+            return default_value;
+
         return System.Convert.ToBoolean(json);
     }
 
@@ -36,7 +50,8 @@ public class Reaction
         JObject molecules = reactions_file["Molecules"] as JObject;
         foreach (var molecule in molecules)
             Molecule.RegisterNamedMolecule(molecule.Key, new SimpleMolecule(molecule.Value["Formula"].ToString(),
-                                                                    JTokenToFloat(molecule.Value["Enthalpy"])));//And again
+                                                                            JTokenToFloat(molecule.Value["Enthalpy"]),
+                                                                            JTokenToInt(molecule.Value["Charge"])));
 
         JObject reactions = reactions_file["Reactions"] as JObject;
         foreach (var reaction_pair in reactions)
@@ -56,28 +71,30 @@ public class Reaction
 
             JObject inhibitors_json = reaction["Inhibitors"] as JObject;
             Dictionary<Molecule, float> inhibitors = new Dictionary<Molecule, float>();
-            foreach (var inhibitor in inhibitors_json)
-                inhibitors[Molecule.GetMolecule(inhibitor.Key)] = JTokenToFloat(inhibitor.Value);
+            if (inhibitors_json != null)
+                foreach (var inhibitor in inhibitors_json)
+                    inhibitors[Molecule.GetMolecule(inhibitor.Key)] = JTokenToFloat(inhibitor.Value);
 
             JObject cofactors_json = reaction["Cofactors"] as JObject;
             Dictionary<Molecule, float> cofactors = new Dictionary<Molecule, float>();
-            foreach (var cofactor in cofactors_json)
-                cofactors[Molecule.GetMolecule(cofactor.Key)] = JTokenToFloat(cofactor.Value);
+            if (cofactors_json != null)
+                foreach (var cofactor in cofactors_json)
+                    cofactors[Molecule.GetMolecule(cofactor.Key)] = JTokenToFloat(cofactor.Value);
 
 
             new Reaction(reaction_name, reaction["Catalyst Name"].ToString(), 
                          reactants, products, 
-                         JTokenToFloat(reaction["Cost"]), 
-                         JTokenToFloat(reaction["Ribozyme"]), 
-                         JTokenToFloat(reaction["Optimal Temperature"]), 
-                         JTokenToFloat(reaction["Temperature Tolerance"]), 
-                         JTokenToBool(reaction["Thermophilic"]), 
-                         JTokenToBool(reaction["Cryophilic"]), 
-                         JTokenToFloat(reaction["Optimal pH"]), 
-                         JTokenToFloat(reaction["pH Tolerance"]), 
-                         JTokenToFloat(reaction["Potential"]), 
-                         JTokenToFloat(reaction["Flexibility"]), 
-                         JTokenToFloat(reaction["Productivity"]), 
+                         JTokenToFloat(reaction     ["Cost"],                   0.1f), 
+                         JTokenToFloat(reaction     ["Ribozyme"],               0.3f), 
+                         JTokenToFloat(reaction     ["Optimal Temperature"],    298), 
+                         JTokenToFloat(reaction     ["Temperature Tolerance"],  1), 
+                         JTokenToBool(reaction      ["Thermophilic"],           false), 
+                         JTokenToBool(reaction      ["Cryophilic"],             false), 
+                         JTokenToFloat(reaction     ["Optimal pH"],             7), 
+                         JTokenToFloat(reaction     ["pH Tolerance"],           1), 
+                         JTokenToFloat(reaction     ["Potential"],              1), 
+                         JTokenToFloat(reaction     ["Flexibility"],            1), 
+                         JTokenToFloat(reaction     ["Productivity"],           1), 
                          inhibitors, cofactors);
         }
     }

@@ -459,17 +459,17 @@ public class Polymer : Molecule
 
 public class Nucleotide : Polymer.Monomer
 {
-    //These names refer here to the nucleotides containing adenine, cytosine, etc
-    public static Nucleotide adenine, cytosine, guanine, thymine;
+    public static Nucleotide AMP { get; private set; }
+    public static Nucleotide CMP { get; private set; }
+    public static Nucleotide GMP { get; private set; }
+    public static Nucleotide TMP { get; private set; }
 
     static Nucleotide()
     {
-        //Incorrect names, but these are less of a mouthful and more iconic
-        //Correctly, these are adenosine/cytodine/guanosine/thymidine monophoshate
-        adenine = RegisterNamedMolecule("Adenine", new Nucleotide(new SimpleMolecule("C5 H5 N5", 96.9f)));
-        cytosine = RegisterNamedMolecule("Cytosine", new Nucleotide(new SimpleMolecule("C4 H4 N3 O", -235.4f)));
-        guanine = RegisterNamedMolecule("Guanine", new Nucleotide(new SimpleMolecule("C5 H4 N5 O", -183.9f)));
-        thymine = RegisterNamedMolecule("Thymine", new Nucleotide(new SimpleMolecule("C4 H5 N2 O2", -462.8f)));
+        AMP = RegisterNamedMolecule("AMP", new Nucleotide(new SimpleMolecule("C5 H5 N5", 96.9f)));
+        CMP = RegisterNamedMolecule("CMP", new Nucleotide(new SimpleMolecule("C4 H4 N3 O", -235.4f)));
+        GMP = RegisterNamedMolecule("GMP", new Nucleotide(new SimpleMolecule("C5 H4 N5 O", -183.9f)));
+        TMP = RegisterNamedMolecule("TMP", new Nucleotide(new SimpleMolecule("C4 H5 N2 O2", -462.8f)));
     }
 
 
@@ -558,10 +558,10 @@ public class DNA : Polymer
 
     public override void AddMonomer(Monomer monomer)
     {
-        if (monomer == Nucleotide.adenine ||
-            monomer == Nucleotide.cytosine ||
-            monomer == Nucleotide.guanine ||
-            monomer == Nucleotide.thymine)
+        if (monomer == Nucleotide.AMP ||
+            monomer == Nucleotide.CMP ||
+            monomer == Nucleotide.GMP ||
+            monomer == Nucleotide.TMP)
             base.AddMonomer(monomer);
     }
 
@@ -575,22 +575,22 @@ public class DNA : Polymer
 
     public void AddAdenine()
     {
-        AddMonomer(Nucleotide.adenine);
+        AddMonomer(Nucleotide.AMP);
     }
 
     public void AddCytosine()
     {
-        AddMonomer(Nucleotide.cytosine);
+        AddMonomer(Nucleotide.CMP);
     }
 
     public void AddGuanine()
     {
-        AddMonomer(Nucleotide.guanine);
+        AddMonomer(Nucleotide.GMP);
     }
 
     public void AddThymine()
     {
-        AddMonomer(Nucleotide.thymine);
+        AddMonomer(Nucleotide.TMP);
     }
 
     public string GetCodon(int codon_index)
@@ -601,13 +601,13 @@ public class DNA : Polymer
         {
             Monomer monomer = Monomers[(codon_index * 3 + i)];
 
-            if (monomer.CompareMolecule(Nucleotide.adenine))
+            if (monomer.CompareMolecule(Nucleotide.AMP))
                 codon += "A";
-            else if (monomer.CompareMolecule(Nucleotide.cytosine))
+            else if (monomer.CompareMolecule(Nucleotide.CMP))
                 codon += "C";
-            else if (monomer.CompareMolecule(Nucleotide.guanine))
+            else if (monomer.CompareMolecule(Nucleotide.GMP))
                 codon += "G";
-            else if (monomer.CompareMolecule(Nucleotide.thymine))
+            else if (monomer.CompareMolecule(Nucleotide.TMP))
                 codon += "T";
         }
 

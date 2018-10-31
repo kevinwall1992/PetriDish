@@ -705,14 +705,20 @@ public class Reaction
         }
     }
 
+    MutantCatalyst catalyst = null;
     public MutantCatalyst Catalyst
     {
         get
         {
-            if (is_ribozyme.IsTrue)
-                return new MutantRibozyme(catalyst_name, this);
-            else
-                return new MutantEnzyme(catalyst_name, this);
+            if(catalyst== null)
+            {
+                if (is_ribozyme.IsTrue)
+                    catalyst = new MutantRibozyme(catalyst_name, this);
+                else
+                    catalyst = new MutantEnzyme(catalyst_name, this);
+            }
+
+            return catalyst;
         }
     }
 }

@@ -105,7 +105,7 @@ public class DetailPane : GoodBehavior
 
         foreach(Reaction reaction in Reaction.Reactions)
             if(reaction.Catalyst is Ribozyme)
-                AddDNASequenceElement((reaction.Catalyst as Ribozyme).Sequence, reaction.Name);
+                AddDNASequenceElement((reaction.Catalyst as Ribozyme).Sequence, (reaction.Catalyst as Ribozyme).Name);
     }
 
     void FormatCodons()

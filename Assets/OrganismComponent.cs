@@ -118,8 +118,8 @@ public class OrganismComponent : MonoBehaviour
 
         if (dna_sequence != "")
         {
-            cell.GetSlot(0).AddCompound(new Compound(Ribozyme.Interpretase, 1));
-            cell.GetSlot(0).AddCompound(new Compound(new DNA(dna_sequence), 1));
+            cell.Slots[0].AddCompound(new Compound(Ribozyme.Interpretase, 1));
+            cell.Slots[0].AddCompound(new Compound(new DNA(dna_sequence), 1));
             Organism.Cytozol.AddCompound(new Compound(Molecule.ATP, 10));
         }
     }

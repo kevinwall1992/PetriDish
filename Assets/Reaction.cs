@@ -589,11 +589,11 @@ public class Reaction
 
             Dictionary<Cell.Slot, Compound> slot_reactants = new Dictionary<Cell.Slot, Compound>();
             foreach (Compound compound in this.slot_reactants.Keys)
-                slot_reactants[slot.Cell.GetSlot(slot.Index + this.slot_reactants[compound])] = new Compound(compound.Molecule, compound.Quantity* activity);
+                slot_reactants[slot.Cell.Slots[slot.Index + this.slot_reactants[compound]]] = new Compound(compound.Molecule, compound.Quantity* activity);
 
             Dictionary<Cell.Slot, Compound> slot_products = new Dictionary<Cell.Slot, Compound>();
             foreach (Compound compound in this.slot_products.Keys)
-                slot_products[slot.Cell.GetSlot(slot.Index + this.slot_products[compound])] = new Compound(compound.Molecule, compound.Quantity * activity);
+                slot_products[slot.Cell.Slots[slot.Index + this.slot_products[compound]]] = new Compound(compound.Molecule, compound.Quantity * activity);
 
             List<Compound> cytozol_reactants = new List<Compound>();
             foreach (Compound compound in this.cytozol_reactants)

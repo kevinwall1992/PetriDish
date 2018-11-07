@@ -5,7 +5,12 @@ public class Cell
 {
     Organism organism;
 
-    List<Slot> slots = new List<Slot>();
+    SlotList slots = new SlotList();
+
+    public SlotList Slots
+    {
+        get { return slots; }
+    }
 
     public Organism Organism
     {
@@ -23,14 +28,6 @@ public class Cell
     public int GetSlotIndex(Slot slot)
     {
         return slots.IndexOf(slot);
-    }
-
-    public Slot GetSlot(int index)
-    {
-        if (index < 0)
-            index = -index;
-
-        return slots[index % 6];
     }
 
     public void Rotate(int count)
@@ -73,6 +70,11 @@ public class Cell
             get { return cell; }
         }
 
+        public Cell AdjacentCell
+        {
+            get { return Cell.Organism.GetNeighbor(Cell, Direction); }
+        }
+
         public Compound Compound
         {
             get
@@ -82,6 +84,8 @@ public class Cell
 
                 return compound;
             }
+
+            private set { compound = value; }
         }
 
         public Compound CatalystCompound
@@ -102,12 +106,22 @@ public class Cell
 
         public Slot NextSlot
         {
-            get { return Cell.GetSlot(Index + 1); }
+            get { return Cell.Slots[Index + 1]; }
         }
 
         public Slot PreviousSlot
         {
-            get { return Cell.GetSlot(Index - 1); }
+            get { return Cell.Slots[Index - 1]; }
+        }
+
+        public Slot AcrossSlot
+        {
+            get { return IsExposed ? null : AdjacentCell.Slots[Index + 3]; }
+        }
+
+        public bool IsExposed
+        {
+            get { return AdjacentCell == null; }
         }
 
         public Organism.HexagonalDirection Direction
@@ -133,17 +147,20 @@ public class Cell
             cell = cell_;
         }
 
-        public void AddCompound(Compound compound_)
+        public void AddCompound(Compound compound)
         {
-            if (compound != null || compound_.Quantity == 0)
+            if (compound.Quantity <= 0)
                 return;
 
-            compound = compound_;
+            if (Compound == null)
+                Compound = compound;
+            else if(Compound.Molecule.CompareMolecule(compound.Molecule))
+                Compound.Quantity += compound.Quantity;
 
             if (CatalystCompound == null && Compound.Molecule is Catalyst)
             {
-                catalyst_compound = compound;
-                compound = null;
+                catalyst_compound = Compound;
+                Compound = null;
             }
         }
 
@@ -153,6 +170,22 @@ public class Cell
             compound = null;
 
             return removed_compound;
+        }
+    }
+
+    public class SlotList : List<Slot>
+    {
+        new public Slot this[int index]
+        {
+            get
+            {
+                if (index < 0)
+                    index = 5 - (-index - 1) % 6;
+                else
+                    index = index % 6;
+
+                return base[index];
+            }
         }
     }
 }

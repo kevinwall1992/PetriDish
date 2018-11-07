@@ -23,8 +23,8 @@ public class Organism : Chronal
             foreach (List<Cell> column in cells)
                 foreach (Cell cell in column)
                     if (cell != null)
-                        foreach (HexagonalDirection direction in Enum.GetValues(typeof(HexagonalDirection)))
-                            if (GetNeighbor(cell, direction) == null)
+                        foreach (Cell.Slot slot in cell.Slots)
+                            if (slot.IsExposed)
                                 total_exposed_edges++;
                         
             return total_exposed_edges/ 6.0f;

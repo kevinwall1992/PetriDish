@@ -66,3 +66,16 @@ public class Constructase : Ribozyme
         return new ConstructCell(slot);
     }
 }
+
+public class Pipase : Ribozyme
+{
+    public Pipase() : base("Pipase", 6)
+    {
+
+    }
+
+    public override Action Catalyze(Cell.Slot slot)
+    {
+        return new PipeAction(slot, 1);
+    }
+}

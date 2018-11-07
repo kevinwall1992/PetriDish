@@ -9,12 +9,14 @@ public abstract class Ribozyme : DNA, Catalyst
     public static Interpretase Interpretase { get; private set; }
     public static Rotase Rotase { get; private set; }
     public static Constructase Constructase { get; private set; }
+    public static Pipase Pipase { get; private set; }
 
     static Ribozyme()
     {
         Interpretase = new Interpretase();
         Rotase = new Rotase();
         Constructase = new Constructase();
+        Pipase = new Pipase();
     }
 
     public static void RegisterNamedRibozyme(Ribozyme ribozyme, string name)

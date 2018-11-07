@@ -61,7 +61,7 @@ public class CellComponent : MonoBehaviour
 
         for (int i = 0; i < 6; i++)
         {
-            slot_components.Add(new GameObject("slot").AddComponent<SlotComponent>().SetSlot(cell.GetSlot(i)));
+            slot_components.Add(new GameObject("slot").AddComponent<SlotComponent>().SetSlot(cell.Slots[i]));
             slot_components[i].transform.parent = transform;
         }
 

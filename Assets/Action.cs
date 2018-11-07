@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 
@@ -258,30 +259,54 @@ public class ATPProductionAction : ReactionAction
 }
 
 
-//This probably can't be a reaction; 1) The original "reactant" shouldn't be destroyed,
-//2) Causes Pipes to occur in the Reaction step. 
-public class PipeAction : ReactionAction
+public class PipeAction : Action
 {
-    Cell.Slot input, output;
+    float rate;
 
-    public PipeAction(Cell.Slot slot, Cell.Slot input_, Cell.Slot output_) : base(slot)
+    public Compound PipedCompound { get; private set; }
+
+    public PipeAction(Cell.Slot slot, float rate_) : base(slot)
     {
-        input = input_;
-        output = output_;
+        rate = rate_;
     }
 
+    //Consider getting rid of returns for less cruft (here and elsewhere)
     public override void Beginning()
     {
-        if (input.Compound == null)
+        if (Slot.Compound == null)
         {
             Fail();
             return;
         }
 
-        slot_reactants[input] = input.Compound;
-        slot_products[output] = slot_reactants[input];
+        if (Slot.AcrossSlot != null)
+        {
+            if (Slot.AcrossSlot.Compound != null && 
+                Slot.AcrossSlot.Compound.Molecule != Slot.Compound.Molecule)
+            {
+                Fail();
+                return;
+            }
+        }
+
+        PipedCompound = Slot.Compound.Split(rate);
 
         base.Beginning();
+    }
+
+    public override void End()
+    {
+        if (Slot.AcrossSlot != null)
+            Slot.AcrossSlot.AddCompound(PipedCompound);
+        else
+        {
+            if (Organism.Locale is WaterLocale)
+                (Organism.Locale as WaterLocale).Solution.AddCompound(PipedCompound);
+            else
+                throw new System.NotImplementedException();
+        }
+
+        base.End();
     }
 }
 

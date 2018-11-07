@@ -234,7 +234,7 @@ public class Interpretase : Ribozyme
             return null;
 
         if (value < 54)
-            return dna_slot.Cell.GetSlot(dna_slot.Index + value - 48);
+            return dna_slot.Cell.Slots[dna_slot.Index + value - 48];
         else if (value == 54)
             return dna_slot.Cell.Organism;
         else

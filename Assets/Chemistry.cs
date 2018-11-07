@@ -19,7 +19,7 @@ public class Element
         elements["N"] = new Element("Nitrogen", 7);
         elements["O"] = new Element("Oxygen", 8);
         elements["F"] = new Element("Flourine", 9);
-        elements["N"] = new Element("Neon", 10);
+        elements["Ne"] = new Element("Neon", 10);
         elements["Na"] = new Element("Sodium", 11);
         elements["Mg"] = new Element("Magnesium", 12);
         elements["Al"] = new Element("Aluminium", 13);
@@ -196,13 +196,22 @@ public abstract class Molecule
 
         ATP = RegisterNamedMolecule("ATP", new SimpleMolecule("C10 H12 N5 O13 P3", -2995.6f, -4));
         ADP = RegisterNamedMolecule("ADP", new SimpleMolecule("C10 H12 N5 O10 P2", -2005.9f, -3));
-        Phosphate = RegisterNamedMolecule("Phosphate", new SimpleMolecule("S O4 H2", -1308.0f, -1));
+        Phosphate = RegisterNamedMolecule("Phosphate", new SimpleMolecule("P O4 H2", -1308.0f, -1));
 
         CarbonicAcid = RegisterNamedMolecule("CarbonicAcid", new SimpleMolecule("C H2 O3", 31.5f));
         Bicarbonate = RegisterNamedMolecule("Bicarbonate", new SimpleMolecule("C H O3", 31.5f, -1));
 
         Imidazole = RegisterNamedMolecule("Imidazole", new SimpleMolecule("C3 H4 N2", 49.8f));
         Methane = RegisterNamedMolecule("Methane", new SimpleMolecule("C H4", -74.9f));
+
+        RegisterNamedMolecule("AMP", Nucleotide.AMP);
+        RegisterNamedMolecule("CMP", Nucleotide.CMP);
+        RegisterNamedMolecule("GMP", Nucleotide.GMP);
+        RegisterNamedMolecule("TMP", Nucleotide.TMP);
+
+        RegisterNamedMolecule("Histidine", AminoAcid.Histidine);
+        RegisterNamedMolecule("Alanine", AminoAcid.Alanine);
+        RegisterNamedMolecule("Serine", AminoAcid.Serine);
     }
 
     public static T RegisterNamedMolecule<T>(string name, T molecule) where T : Molecule
@@ -212,8 +221,16 @@ public abstract class Molecule
         return molecule;
     }
 
+    public static bool DoesMoleculeExist(string name)
+    {
+        return molecules.ContainsKey(name);
+    }
+
     public static Molecule GetMolecule(string name)
     {
+        if (!DoesMoleculeExist(name))
+            return null;
+
         return molecules[name];
     }
 
@@ -466,14 +483,14 @@ public class Nucleotide : Polymer.Monomer
 
     static Nucleotide()
     {
-        AMP = RegisterNamedMolecule("AMP", new Nucleotide(new SimpleMolecule("C5 H5 N5", 96.9f)));
-        CMP = RegisterNamedMolecule("CMP", new Nucleotide(new SimpleMolecule("C4 H4 N3 O", -235.4f)));
-        GMP = RegisterNamedMolecule("GMP", new Nucleotide(new SimpleMolecule("C5 H4 N5 O", -183.9f)));
-        TMP = RegisterNamedMolecule("TMP", new Nucleotide(new SimpleMolecule("C4 H5 N2 O2", -462.8f)));
+        AMP = new Nucleotide(new SimpleMolecule("C5 H5 N5", 96.9f));
+        CMP = new Nucleotide(new SimpleMolecule("C4 H4 N3 O", -235.4f));
+        GMP = new Nucleotide(new SimpleMolecule("C5 H4 N5 O", -183.9f));
+        TMP = new Nucleotide(new SimpleMolecule("C4 H5 N2 O2", -462.8f));
     }
 
 
-    Molecule common_structure = new SimpleMolecule("P O7 C5 H9", -1113.8f, -2);
+    Molecule common_structure = new SimpleMolecule("P O7 C5 H10", -1113.8f, -1);
     Molecule nucleobase;
 
     public override int Charge { get { return common_structure.Charge; } }
@@ -489,7 +506,12 @@ public class Nucleotide : Polymer.Monomer
         {
             Dictionary<Element, int> elements = new Dictionary<Element, int>(common_structure.Elements);
             foreach (Element element in nucleobase.Elements.Keys)
+            {
+                if (!elements.ContainsKey(element))
+                    elements[element] = 0;
+
                 elements[element] += nucleobase.Elements[element];
+            }
             elements[Element.elements["H"]]-= 2;//Just assume this for now
 
             return elements;
@@ -1235,16 +1257,16 @@ public class AminoAcid : Polymer.Monomer
 {
     static Molecule common_structure = new SimpleMolecule("C3 H7 N O2", -491.6f);
 
-    public static AminoAcid histidine;
-    public static AminoAcid alanine;
-    public static AminoAcid serine;
+    public static AminoAcid Histidine { get; private set; }
+    public static AminoAcid Alanine { get; private set; }
+    public static AminoAcid Serine { get; private set; }
 
     static AminoAcid()
     {
         //These aren't _exactly_ chemically accurate
-        RegisterNamedMolecule("Histidine", new AminoAcid(Imidazole));
-        RegisterNamedMolecule("Alanine", new AminoAcid(Methane));
-        RegisterNamedMolecule("Serine", new AminoAcid(Water));
+        Histidine = new AminoAcid(Imidazole);
+        Alanine = new AminoAcid(Methane);
+        Serine = new AminoAcid(Water);
     }
 
 
@@ -1263,7 +1285,12 @@ public class AminoAcid : Polymer.Monomer
         {
             Dictionary<Element, int> elements = new Dictionary<Element, int>(common_structure.Elements);
             foreach (Element element in side_chain.Elements.Keys)
+            {
+                if (!elements.ContainsKey(element))
+                    elements[element] = 0;
+
                 elements[element] += side_chain.Elements[element];
+            }
             elements[Element.elements["H"]]-= 2;
 
             return elements;
@@ -1312,7 +1339,7 @@ public abstract class Enzyme : Polymer, Catalyst
     {
         List<AminoAcid> amino_acid_sequence;
 
-        List<AminoAcid> amino_acids = new List<AminoAcid> { AminoAcid.histidine, AminoAcid.alanine, AminoAcid.serine };
+        List<AminoAcid> amino_acids = new List<AminoAcid> { AminoAcid.Histidine, AminoAcid.Alanine, AminoAcid.Serine };
 
         do
         {

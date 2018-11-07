@@ -250,8 +250,8 @@
       "Products" : 
       {
         "AMP" : { "Quantity" : 6, "Slotted" : 0.9 },
-        "Water" : { "Quantity" : 18, "Slotted" : 0.1 },
-        "Nitrogen" : { "Quantity" : 1, "Slotted" : 0.1 }
+        "Water" : { "Quantity" : 12, "Slotted" : 0.1 },
+        "Hydrogen" : { "Quantity" : 6, "Slotted" : 0.1 }
       },
 
       "Cost" : 1.0,
@@ -282,8 +282,8 @@
       "Products" : 
       {
         "GMP" : { "Quantity" : 6, "Slotted" : 0.9 },
-        "Water" : { "Quantity" : 12, "Slotted" : 0.1 },
-        "Hydrogen" : { "Quantity" : 3, "Slotted" : 0.1 }
+        "Water" : { "Quantity" : 6, "Slotted" : 0.1 },
+        "Hydrogen" : { "Quantity" : 15, "Slotted" : 0.1 }
       },
 
       "Cost" : 1.0,
@@ -314,8 +314,8 @@
       "Products" : 
       {
         "CMP" : { "Quantity" : 6, "Slotted" : 0.9 },
-        "Water" : { "Quantity" : 12, "Slotted" : 0.1 },
-        "Hydrogen" : { "Quantity" : 3, "Slotted" : 0.1 }
+        "Water" : { "Quantity" : 6, "Slotted" : 0.1 },
+        "Hydrogen" : { "Quantity" : 15, "Slotted" : 0.1 }
       },
 
       "Cost" : 1.0,
@@ -344,7 +344,8 @@
 
       "Products" : 
       {
-        "Water" : { "Quantity" : 12, "Slotted" : 0.1 }
+        "TMP" : { "Quantity" : 6, "Slotted" : 0.9 },
+        "Hydrogen" : { "Quantity" : 9, "Slotted" : 0.1 }
       },
 
       "Cost" : 1.0,

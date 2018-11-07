@@ -19,82 +19,91 @@ public class Reaction
         return reactions[name];
     }
 
-    static float JTokenToFloat(JToken json, float default_value = 0)
-    {
-        if (json == null)
-            return default_value;
-
-        return System.Convert.ToSingle(json);
-    }
-
-    static int JTokenToInt(JToken json, int default_value = 0)
-    {
-        if (json == null)
-            return default_value;
-
-        return System.Convert.ToInt32(json);
-    }
-
-    static bool JTokenToBool(JToken json, bool default_value = false)
-    {
-        if (json == null)
-            return default_value;
-
-        return System.Convert.ToBoolean(json);
-    }
-
     public static void LoadReactionFile(string filename)
     {
         JObject reactions_file = JObject.Parse(Resources.Load<TextAsset>(filename).text);
 
-        JObject molecules = reactions_file["Molecules"] as JObject;
-        foreach (var molecule in molecules)
-            Molecule.RegisterNamedMolecule(molecule.Key, new SimpleMolecule(molecule.Value["Formula"].ToString(),
-                                                                            JTokenToFloat(molecule.Value["Enthalpy"]),
-                                                                            JTokenToInt(molecule.Value["Charge"])));
+        if (reactions_file["Molecules"] != null)
+        {
+            JObject molecules = reactions_file["Molecules"] as JObject;
+            foreach (var molecule in molecules)
+                Molecule.RegisterNamedMolecule(molecule.Key, new SimpleMolecule(molecule.Value["Formula"].ToString(),
+                                                                                Utility.JTokenToFloat(molecule.Value["Enthalpy"]),
+                                                                                Utility.JTokenToInt(molecule.Value["Charge"])));
+        }
+
+
+        if (reactions_file["Reactions"] == null)
+            return;
 
         JObject reactions = reactions_file["Reactions"] as JObject;
         foreach (var reaction_pair in reactions)
         {
+            bool failed = false;
+
             string reaction_name = reaction_pair.Key;
             JObject reaction = reaction_pair.Value as JObject;
 
-            JObject reactants_json = reaction["Reactants"] as JObject;
             Dictionary<Compound, float> reactants = new Dictionary<Compound, float>();
-            foreach (var reactant in reactants_json)
-                reactants[new Compound(Molecule.GetMolecule(reactant.Key), JTokenToFloat(reactant.Value["Quantity"]))] = JTokenToFloat(reactant.Value["Slotted"]);
+            if (reaction["Reactants"] != null)
+            {
+                foreach (var reactant in reaction["Reactants"] as JObject)
+                    if (Molecule.DoesMoleculeExist(reactant.Key))
+                        reactants[new Compound(Molecule.GetMolecule(reactant.Key),
+                                               Utility.JTokenToFloat(reactant.Value["Quantity"]))]
+                        = Utility.JTokenToFloat(reactant.Value["Slotted"]);
+                    else
+                        failed = true;
+            }
+            else
+                failed = true;
 
-            JObject products_json = reaction["Products"] as JObject;
             Dictionary<Compound, float> products = new Dictionary<Compound, float>();
-            foreach (var product in products_json)
-                products[new Compound(Molecule.GetMolecule(product.Key), JTokenToFloat(product.Value["Quantity"]))] = JTokenToFloat(product.Value["Slotted"]);
+            if (reaction["Products"] != null)
+            {
+                foreach (var product in reaction["Products"] as JObject)
+                    if (Molecule.DoesMoleculeExist(product.Key))
+                        products[new Compound(Molecule.GetMolecule(product.Key),
+                                              Utility.JTokenToFloat(product.Value["Quantity"]))]
+                        = Utility.JTokenToFloat(product.Value["Slotted"]);
+                    else
+                        failed = true;
+            }
+            else
+                failed = true;
 
-            JObject inhibitors_json = reaction["Inhibitors"] as JObject;
             Dictionary<Molecule, float> inhibitors = new Dictionary<Molecule, float>();
-            if (inhibitors_json != null)
-                foreach (var inhibitor in inhibitors_json)
-                    inhibitors[Molecule.GetMolecule(inhibitor.Key)] = JTokenToFloat(inhibitor.Value);
+            if (reaction["Inhibitors"] != null)
+                foreach (var inhibitor in reaction["Inhibitors"] as JObject)
+                    if (Molecule.DoesMoleculeExist(inhibitor.Key))
+                        inhibitors[Molecule.GetMolecule(inhibitor.Key)] = Utility.JTokenToFloat(inhibitor.Value);
+                    else
+                        failed = true;
 
-            JObject cofactors_json = reaction["Cofactors"] as JObject;
             Dictionary<Molecule, float> cofactors = new Dictionary<Molecule, float>();
-            if (cofactors_json != null)
-                foreach (var cofactor in cofactors_json)
-                    cofactors[Molecule.GetMolecule(cofactor.Key)] = JTokenToFloat(cofactor.Value);
+            if (reaction["Cofactors"] != null)
+                foreach (var cofactor in reaction["Cofactors"] as JObject)
+                    if (Molecule.DoesMoleculeExist(cofactor.Key))
+                        cofactors[Molecule.GetMolecule(cofactor.Key)] = Utility.JTokenToFloat(cofactor.Value);
+                    else
+                        failed = true;
 
+            if (failed)
+                continue;
 
             new Reaction(reaction_name, reaction["Catalyst Name"].ToString(), 
-                         reactants, products, 
-                         JTokenToFloat(reaction     ["Cost"],                   0.1f), 
-                         JTokenToFloat(reaction     ["Ribozyme"],               0.3f), 
-                         JTokenToFloat(reaction     ["Optimal Temperature"],    298), 
-                         JTokenToFloat(reaction     ["Temperature Tolerance"],  1), 
-                         JTokenToBool(reaction      ["Thermophilic"],           false), 
-                         JTokenToBool(reaction      ["Cryophilic"],             false), 
-                         JTokenToFloat(reaction     ["Optimal pH"],             7), 
-                         JTokenToFloat(reaction     ["pH Tolerance"],           1), 
-                         JTokenToFloat(reaction     ["Potential"],              1), 
-                         JTokenToFloat(reaction     ["Flexibility"],            1), 
-                         JTokenToFloat(reaction     ["Productivity"],           1), 
+                         reactants, products,
+                         Utility.JTokenToFloat(reaction     ["Cost"],                   0.1f),
+                         Utility.JTokenToFloat(reaction     ["Ribozyme"],               0.3f),
+                         Utility.JTokenToFloat(reaction     ["Optimal Temperature"],    298),
+                         Utility.JTokenToFloat(reaction     ["Temperature Tolerance"],  1),
+                         Utility.JTokenToBool(reaction      ["Thermophilic"],           false),
+                         Utility.JTokenToBool(reaction      ["Cryophilic"],             false),
+                         Utility.JTokenToFloat(reaction     ["Optimal pH"],             7),
+                         Utility.JTokenToFloat(reaction     ["pH Tolerance"],           1),
+                         Utility.JTokenToFloat(reaction     ["Potential"],              1),
+                         Utility.JTokenToFloat(reaction     ["Flexibility"],            1),
+                         Utility.JTokenToFloat(reaction     ["Productivity"],           1), 
                          inhibitors, cofactors);
         }
     }

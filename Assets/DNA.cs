@@ -92,13 +92,13 @@ public class DNA : Polymer
         {
             Monomer monomer = Monomers[(codon_index * 3 + i)];
 
-            if (monomer.CompareMolecule(Nucleotide.AMP))
+            if (monomer == Nucleotide.AMP)
                 codon += "A";
-            else if (monomer.CompareMolecule(Nucleotide.CMP))
+            else if (monomer == Nucleotide.CMP)
                 codon += "C";
-            else if (monomer.CompareMolecule(Nucleotide.GMP))
+            else if (monomer == Nucleotide.GMP)
                 codon += "G";
-            else if (monomer.CompareMolecule(Nucleotide.TMP))
+            else if (monomer == Nucleotide.TMP)
                 codon += "T";
         }
 

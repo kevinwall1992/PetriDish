@@ -168,6 +168,11 @@ public class SimpleMolecule : Molecule
         if (!(other is SimpleMolecule))
             return false;
 
-        return elements.SequenceEqual((other as SimpleMolecule).elements);
+        foreach (Element element in this.Elements.Keys)
+            if (!other.Elements.ContainsKey(element) || 
+                this.Elements[element] != other.Elements[element])
+                return false;
+
+        return true;
     }
 }

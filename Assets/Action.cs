@@ -7,9 +7,6 @@ public abstract class Action
 {
     Cell.Slot slot;
 
-    bool has_begun = false;
-    bool has_failed = false;
-    
     public Cell.Slot Slot
     {
         get { return slot; }
@@ -25,35 +22,22 @@ public abstract class Action
         get { return Cell.Organism; }
     }
 
+    
+
+    public bool HasFailed { get; private set; }
+
     public Action(Cell.Slot slot_)
     {
         slot = slot_;
     }
 
-    //Consider name change to Begin()
-    public virtual void Beginning()
-    {
-        has_begun = true;
-    }
-
-    public virtual void End()
-    {
-        
-    }
-
-    public bool HasBegun()
-    {
-        return has_begun;
-    }
-
-    public bool HasFailed()
-    {
-        return has_failed;
-    }
+    public abstract bool Prepare();
+    public abstract void Begin();
+    public abstract void End();
 
     protected void Fail()
     {
-        has_failed = true;
+        HasFailed = true;
     }
 }
 
@@ -63,6 +47,7 @@ public class CompositeAction : Action
     List<Action> actions= new List<Action>();
 
     public List<Action> Actions { get { return actions; } }
+
 
     public CompositeAction(Cell.Slot slot, params Action[] actions_) : base(slot)
     {
@@ -74,42 +59,25 @@ public class CompositeAction : Action
         actions.Add(action);
     }
 
-    public override void Beginning()
+    public override bool Prepare()
     {
-        base.Beginning();
-
         foreach (Action action in actions)
-        {
-            action.Beginning();
-
-            if (action.HasFailed())
+            if (!action.Prepare())
                 Fail();
-        }
+
+        return !HasFailed;
+    }
+
+    public override void Begin()
+    {
+        foreach (Action action in actions)
+            action.Begin();
     }
 
     public override void End()
     {
-        base.End();
-
         foreach (Action action in actions)
             action.End();
-    }
-}
-
-
-//Should this inherit from PoweredAction, or is there some value in it being separate?
-public class RotateAction : Action
-{
-    public RotateAction(Cell.Slot slot) : base(slot)
-    {
-
-    }
-
-    public override void End()
-    {
-        base.End();
-
-        Cell.Rotate(1);
     }
 }
 
@@ -145,12 +113,10 @@ public class ReactionAction : Action
 
     }
 
-    public override void Beginning()
+    public override bool Prepare()
     {
-        base.Beginning();
-
         foreach (Cell.Slot destination in slot_products.Keys)
-            if (destination.Compound != null && 
+            if (destination.Compound != null &&
                 !destination.Compound.Molecule.CompareMolecule(slot_products[destination].Molecule))
                 Fail();
 
@@ -164,10 +130,11 @@ public class ReactionAction : Action
             if (Organism.Cytozol.GetQuantity(reactant.Molecule) < reactant.Quantity)
                 Fail();
 
-        if (HasFailed())
-            return;
+        return !HasFailed;
+    }
 
-
+    public override void Begin()
+    {
         foreach (Cell.Slot source in slot_reactants.Keys)
             source.Compound.Split(slot_reactants[source].Quantity);
 
@@ -177,8 +144,6 @@ public class ReactionAction : Action
 
     public override void End()
     {
-        base.End();
-
         foreach (Cell.Slot destination in slot_products.Keys)
             destination.AddCompound(slot_products[destination]);
 
@@ -221,20 +186,9 @@ public class ReactionAction : Action
 
 public class ATPConsumptionAction : ReactionAction
 {
-    public ATPConsumptionAction(Cell.Slot slot, float quantity) 
+    public ATPConsumptionAction(Cell.Slot slot, float quantity, Cell.Slot atp_slot = null)
         : base(slot, 
-                null, null, 
-                Utility.CreateList<Compound>(new Compound(Molecule.ATP, quantity), 
-                                             new Compound(Molecule.Water, quantity)), 
-                Utility.CreateList<Compound>(new Compound(Molecule.ADP, quantity), 
-                                             new Compound(Molecule.Phosphate, quantity)))
-    {
-
-    }
-
-    public ATPConsumptionAction(Cell.Slot slot, float quantity, Cell.Slot ATP_slot)
-        : base(slot, 
-                Utility.CreateDictionary<Cell.Slot, Compound>(ATP_slot, new Compound(Molecule.ATP, quantity)), null,
+                Utility.CreateDictionary<Cell.Slot, Compound>(atp_slot != null ? atp_slot : slot, new Compound(Molecule.ATP, quantity)), null,
                 Utility.CreateList<Compound>(new Compound(Molecule.Water, quantity)),
                 Utility.CreateList<Compound>(new Compound(Molecule.ADP, quantity),
                                              new Compound(Molecule.Phosphate, quantity)))
@@ -259,90 +213,11 @@ public class ATPProductionAction : ReactionAction
 }
 
 
-public class PipeAction : Action
+public class PoweredAction : CompositeAction
 {
-    float rate;
-
-    public Compound PipedCompound { get; private set; }
-
-    public PipeAction(Cell.Slot slot, float rate_) : base(slot)
+    public PoweredAction(Cell.Slot slot, Cell.Slot atp_slot, float cost, Action action) : base(slot)
     {
-        rate = rate_;
-    }
-
-    //Consider getting rid of returns for less cruft (here and elsewhere)
-    public override void Beginning()
-    {
-        if (Slot.Compound == null)
-        {
-            Fail();
-            return;
-        }
-
-        if (Slot.AcrossSlot != null)
-        {
-            if (Slot.AcrossSlot.Compound != null && 
-                Slot.AcrossSlot.Compound.Molecule != Slot.Compound.Molecule)
-            {
-                Fail();
-                return;
-            }
-        }
-
-        PipedCompound = Slot.Compound.Split(rate);
-
-        base.Beginning();
-    }
-
-    public override void End()
-    {
-        if (Slot.AcrossSlot != null)
-            Slot.AcrossSlot.AddCompound(PipedCompound);
-        else
-        {
-            if (Organism.Locale is WaterLocale)
-                (Organism.Locale as WaterLocale).Solution.AddCompound(PipedCompound);
-            else
-                throw new System.NotImplementedException();
-        }
-
-        base.End();
-    }
-}
-
-
-public class PoweredAction : Action
-{
-    CompositeAction composite_action;
-
-    public PoweredAction(Cell.Slot slot, Cell.Slot atp_slot, Action action_) : base(slot)
-    {
-        composite_action = new CompositeAction(slot, action_, new ATPConsumptionAction(slot, 1, atp_slot));
-    }
-
-    public override void Beginning()
-    {
-        base.Beginning();
-
-        composite_action.Beginning();
-        if (composite_action.HasFailed())
-            Fail();
-    }
-
-    public override void End()
-    {
-        base.End();
-
-        composite_action.End();
-    }
-
-    public Action GetAction()
-    {
-        return composite_action.Actions[0];
-    }
-
-    public ReactionAction GetReaction()
-    {
-        return composite_action.Actions[1] as ReactionAction;
+        AddAction(action);
+        AddAction(new ATPConsumptionAction(slot, cost, atp_slot));
     }
 }

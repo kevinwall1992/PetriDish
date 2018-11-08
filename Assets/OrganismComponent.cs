@@ -101,7 +101,7 @@ public class OrganismComponent : MonoBehaviour
 
         actions.Enqueue(new_actions.OfType<Interpretase.Command>().OfType<Action>().ToList());
         actions.Enqueue(new_actions.OfType<ReactionAction>().OfType<Action>().ToList());
-        actions.Enqueue(new_actions.OfType<PipeAction>().OfType<Action>().ToList());
+        actions.Enqueue(new_actions.OfType<Pipase.PipeAction>().OfType<Action>().ToList());
         actions.Enqueue(new_actions.OfType<PoweredAction>().OfType<Action>().ToList());
     }
 

@@ -28,9 +28,10 @@ public class ActionComponent : MonoBehaviour
         action = action_;
         length = length_;
 
-        action.Beginning();
-        if (action.HasFailed())
+        action.Prepare();
+        if (action.HasFailed)
             return;
+        action.Begin();
 
         Queue<Action> actions = new Queue<Action>();
         actions.Enqueue(action);
@@ -38,16 +39,11 @@ public class ActionComponent : MonoBehaviour
         while (actions.Count > 0)
         {
             Action action = actions.Dequeue();
-            if (action is PoweredAction)
-            {
-                actions.Enqueue((action as PoweredAction).GetReaction());
-                actions.Enqueue((action as PoweredAction).GetAction());
-            }
-            else if (action is CompositeAction)
-                foreach (Action component_action in (action as CompositeAction).Actions)
+            if (action is CompositeAction)
+                foreach(Action component_action in (action as CompositeAction).Actions)
                     actions.Enqueue(component_action);
 
-            if (action is RotateAction)
+            if (action is Rotase.RotateAction)
                 animations.Add(gameObject.AddComponent<RotationAnimation>().SetParameters(CellComponent, 1).SetLength(length));
 
             if (action is ReactionAction)
@@ -186,7 +182,7 @@ public class ActionComponent : MonoBehaviour
             foreach (ActionAnimation animation in animations)
                 GameObject.Destroy(animation);
 
-            if (!action.HasFailed())
+            if (!action.HasFailed)
                 action.End();
 
             GameObject.Destroy(this);

@@ -196,6 +196,25 @@ public class Interpretase : Ribozyme
         return dna_segment;
     }
 
+    //Would like to not replicate above code.
+    //Also, need to see if we can refactor this whole 
+    //class to avoid changing ActiveCodonIndex temporarily
+    int GetSegmentLength(DNA dna, string marker)
+    {
+        int length = 0;
+
+        int current_codon_index = dna.ActiveCodonIndex;
+        SeekToMarker(dna, marker);
+        int marker_codon_index = dna.ActiveCodonIndex + 1;
+        dna.ActiveCodonIndex = current_codon_index;
+
+        while ((marker_codon_index + length) < dna.GetCodonCount() && 
+               dna.GetCodon(marker_codon_index + length) != "TTT")
+            length++;
+
+        return length;
+    }
+
     public static int CodonToValue(string codon)
     {
         int total = 0;
@@ -298,10 +317,12 @@ public class Interpretase : Ribozyme
             return Slot.CatalystCompound.Molecule as Interpretase;
         }
 
+        public override bool Prepare() { return true; }
+
+        public override void Begin() { }
+
         public override void End()
         {
-            base.End();
-
             GetDNA().ActiveCodonIndex++;
         }
 
@@ -359,26 +380,27 @@ public class Interpretase : Ribozyme
             marker = marker_;
         }
 
-        public override void Beginning()
+        public override bool Prepare()
         {
-            base.Beginning();
-
             if (OutputSlot.Compound != null && !(OutputSlot.Compound.Molecule is DNA))
                 Fail();
-            else
-            {
-                DNA dna = GetInterpretase().Cut(GetDNA(), marker);
-                if (dna == null)
-                    Fail();
-                else
-                {
-                    Polymer polymer = GetRibozyme(dna.Sequence);
-                    if (polymer != null)
-                        dna = polymer as DNA;
+            else if(Interpretase.GetSegmentLength(GetDNA(), marker)== 0)
+                Fail();
 
-                    OutputtedCompound = new Compound(dna, 1);
-                }
-            }
+            return !HasFailed;
+        }
+
+        public override void Begin()
+        {
+            base.Begin();
+
+            DNA dna = GetInterpretase().Cut(GetDNA(), marker);
+                
+            Polymer polymer = GetRibozyme(dna.Sequence);
+            if (polymer != null)
+                dna = polymer as DNA;
+
+            OutputtedCompound = new Compound(dna, 1);
         }
     }
 
@@ -396,14 +418,19 @@ public class Interpretase : Ribozyme
             activation_count = activation_count_;
         }
 
-        public override void Beginning()
+        public override bool Prepare()
         {
-            base.Beginning();
-
             if (!IsMoleculeValidForOutput(Molecule.ATP))
                 Fail();
-            else
-                OutputtedCompound = Cell.Organism.Cytozol.RemoveCompound(Molecule.ATP, activation_count);
+
+            return !HasFailed;
+        }
+
+        public override void Begin()
+        {
+            base.Begin();
+
+            OutputtedCompound = Cell.Organism.Cytozol.RemoveCompound(Molecule.ATP, activation_count);
         }
     }
 
@@ -423,14 +450,19 @@ public class Interpretase : Ribozyme
             move_entire_stack = move_entire_stack_;
         }
 
-        public override void Beginning()
+        public override bool Prepare()
         {
-            base.Beginning();
-
             if (!IsMoleculeValidForOutput(input_slot.Compound.Molecule))
                 Fail();
-            else
-                OutputtedCompound = move_entire_stack ? input_slot.RemoveCompound() : input_slot.Compound.Split(1);
+
+            return !HasFailed;
+        }
+
+        public override void Begin()
+        {
+            base.Begin();
+
+            OutputtedCompound = move_entire_stack ? input_slot.RemoveCompound() : input_slot.Compound.Split(1);
         }
     }
 

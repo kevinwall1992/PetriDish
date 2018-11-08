@@ -154,8 +154,9 @@ public class Organism : Chronal
 
     static void ExecuteActions<T>(List<T> actions) where T : Action
     {
-        foreach (Action action in actions) action.Beginning();
-        foreach (Action action in actions) action.End();
+        foreach (Action action in actions) action.Prepare();
+        foreach (Action action in actions) if (!action.HasFailed) action.Begin();
+        foreach (Action action in actions) if (!action.HasFailed) action.End();
     }
 
     public void Step()
@@ -171,7 +172,7 @@ public class Organism : Chronal
 
         ExecuteActions(actions.OfType<Interpretase.Command>().ToList());
         ExecuteActions(actions.OfType<ReactionAction>().ToList());
-        ExecuteActions(actions.OfType<PipeAction>().ToList());
+        ExecuteActions(actions.OfType<Pipase.PipeAction>().ToList());
         ExecuteActions(actions.OfType<PoweredAction>().ToList());
     }
 }

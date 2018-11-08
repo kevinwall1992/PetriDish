@@ -104,7 +104,7 @@ public abstract class Molecule
         get
         {
             foreach (string name in molecules.Keys)
-                if (molecules[name] == this)
+                if (ReferenceEquals(molecules[name], this))
                     return name;
 
             return "Unnamed";
@@ -126,7 +126,36 @@ public abstract class Molecule
 
     }
 
-    public abstract bool CompareMolecule(Molecule other);
+    public override bool Equals(object other)
+    {
+        if (!(other is Molecule))
+            return false;
+
+        if (other is Polymer)
+            return false;
+
+        Molecule other_molecule = other as Molecule;
+
+        if (Name != "Unnamed" || other_molecule.Name != "Unnamed")
+            return Name == other_molecule.Name;
+
+        foreach (Element element in this.Elements.Keys)
+            if (!other_molecule.Elements.ContainsKey(element) ||
+                this.Elements[element] != other_molecule.Elements[element])
+                return false;
+
+        return true;
+    }
+
+    public override int GetHashCode()
+    {
+        int hash = 17;
+
+        foreach (Element element in Elements.Keys)
+            hash = hash * 23 + element.GetHashCode() * Elements[element];
+
+        return hash;
+    }
 }
 
 public class SimpleMolecule : Molecule
@@ -161,18 +190,5 @@ public class SimpleMolecule : Molecule
 
         charge = charge_;
         enthalpy = enthalpy_;
-    }
-
-    public override bool CompareMolecule(Molecule other)
-    {
-        if (!(other is SimpleMolecule))
-            return false;
-
-        foreach (Element element in this.Elements.Keys)
-            if (!other.Elements.ContainsKey(element) || 
-                this.Elements[element] != other.Elements[element])
-                return false;
-
-        return true;
     }
 }

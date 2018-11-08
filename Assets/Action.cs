@@ -117,12 +117,12 @@ public class ReactionAction : Action
     {
         foreach (Cell.Slot destination in slot_products.Keys)
             if (destination.Compound != null &&
-                !destination.Compound.Molecule.CompareMolecule(slot_products[destination].Molecule))
+                destination.Compound.Molecule != slot_products[destination].Molecule)
                 Fail();
 
         foreach (Cell.Slot source in slot_reactants.Keys)
             if (source.Compound == null ||
-                !source.Compound.Molecule.CompareMolecule(slot_reactants[source].Molecule) ||
+                source.Compound.Molecule != slot_reactants[source].Molecule ||
                 source.Compound.Quantity < slot_reactants[source].Quantity)
                 Fail();
 

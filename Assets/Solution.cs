@@ -181,9 +181,9 @@ public class Solution : Volume
             if (compound.quantity == 0)
                 return;
 
-            bool is_proton = compound.molecule.CompareMolecule(Molecule.Proton);
-            bool is_proton_or_hydronium = is_proton || compound.molecule.CompareMolecule(Molecule.Hydronium);
-            bool is_primitive_ion = is_proton_or_hydronium || compound.molecule.CompareMolecule(Molecule.Hydroxide);
+            bool is_proton = compound.molecule == Molecule.Proton;
+            bool is_proton_or_hydronium = is_proton || compound.molecule == Molecule.Hydronium;
+            bool is_primitive_ion = is_proton_or_hydronium || compound.molecule == Molecule.Hydroxide;
 
             if (is_primitive_ion)
                 foreach (Buffer buffer in buffers)
@@ -193,7 +193,7 @@ public class Solution : Volume
                     Molecule consumed = consume_conjugate ? buffer.Conjugate : buffer.Molecule;
                     Molecule produced = consume_conjugate ? buffer.Molecule : buffer.Conjugate;
 
-                    if (produced.CompareMolecule(compound.molecule))
+                    if (produced == compound.molecule)
                         continue;
 
                     decimal quantity = compound.Split(GetQuantity(consumed)).quantity;

@@ -154,7 +154,7 @@ public class Cell
 
             if (Compound == null)
                 Compound = compound;
-            else if(Compound.Molecule.CompareMolecule(compound.Molecule))
+            else if(Compound.Molecule == compound.Molecule)
                 Compound.Quantity += compound.Quantity;
 
             if (CatalystCompound == null && Compound.Molecule is Catalyst)

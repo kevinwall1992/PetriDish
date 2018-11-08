@@ -367,7 +367,7 @@ public class Interpretase : Ribozyme
             if (output_slot.Compound == null)
                 return true;
 
-            return molecule.CompareMolecule(output_slot.Compound.Molecule);
+            return molecule == output_slot.Compound.Molecule;
         }
     }
 

@@ -160,12 +160,4 @@ public class Nucleotide : Polymer.Monomer
     {
         nucleobase = nucleobase_;
     }
-
-    public override bool CompareMolecule(Molecule other)
-    {
-        if (!(other is Nucleotide))
-            return false;
-
-        return ((Nucleotide)other).nucleobase.CompareMolecule(this.nucleobase);
-    }
 }

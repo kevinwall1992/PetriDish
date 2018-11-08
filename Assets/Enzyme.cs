@@ -140,12 +140,4 @@ public class AminoAcid : Polymer.Monomer
     {
         side_chain = side_chain_;
     }
-
-    public override bool CompareMolecule(Molecule other)
-    {
-        if (!(other is AminoAcid))
-            return false;
-
-        return ((AminoAcid)other).side_chain.CompareMolecule(this.side_chain);
-    }
 }

@@ -68,20 +68,31 @@ public class Polymer : Molecule
         return monomers.Count;
     }
 
-    public override bool CompareMolecule(Molecule other)
+    public override bool Equals(object other)
     {
         if (!(other is Polymer))
             return false;
 
-        Polymer other_polymer = (Polymer)other;
-        if (other_polymer.monomers.Count != this.monomers.Count)
+        Polymer other_polymer = other as Polymer;
+
+        if (Monomers.Count != other_polymer.Monomers.Count)
             return false;
 
-        for (int i = 0; i < monomers.Count; i++)
-            if (!monomers[i].CompareMolecule(other_polymer.monomers[i]))
+        for (int i = 0; i < Monomers.Count; i++)
+            if (Monomers[i] != other_polymer.Monomers[i])
                 return false;
 
         return true;
+    }
+
+    public override int GetHashCode()
+    {
+        int hash = 17;
+
+        foreach (Monomer monomer in Monomers)
+            hash = hash * 23 + monomer.GetHashCode();
+
+        return hash;
     }
 
 
@@ -138,14 +149,6 @@ public class Polymer : Molecule
         public WrapperMonomer(Molecule molecule_, Molecule condensate) : base(condensate)
         {
             molecule = molecule_;
-        }
-
-        public override bool CompareMolecule(Molecule other)
-        {
-            if (!(other is WrapperMonomer))
-                return false;
-
-            return ((WrapperMonomer)other).molecule.CompareMolecule(this.molecule);
         }
     }
 }

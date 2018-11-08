@@ -12,6 +12,7 @@ public abstract class Ribozyme : DNA, Catalyst
     public static Pipase Pipase { get; private set; }
     public static Exopumpase Exopumpase { get; private set; }
     public static Endopumpase Endopumpase { get; private set; }
+    public static Transcriptase Transcriptase { get; private set; }
 
     static Ribozyme()
     {
@@ -21,7 +22,7 @@ public abstract class Ribozyme : DNA, Catalyst
         Pipase = new Pipase();
         Exopumpase = new Exopumpase();
         Endopumpase = new Endopumpase();
-
+        Transcriptase = new Transcriptase();
     }
 
     public static void RegisterNamedRibozyme(Ribozyme ribozyme, string name)

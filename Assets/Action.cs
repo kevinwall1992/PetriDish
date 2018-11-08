@@ -186,9 +186,20 @@ public class ReactionAction : Action
 
 public class ATPConsumptionAction : ReactionAction
 {
-    public ATPConsumptionAction(Cell.Slot slot, float quantity, Cell.Slot atp_slot = null)
+    public ATPConsumptionAction(Cell.Slot slot, float quantity)
+        : base(slot,
+                null, null,
+                Utility.CreateList<Compound>(new Compound(Molecule.ATP, quantity),
+                                             new Compound(Molecule.Water, quantity)),
+                Utility.CreateList<Compound>(new Compound(Molecule.ADP, quantity),
+                                             new Compound(Molecule.Phosphate, quantity)))
+    {
+
+    }
+
+    public ATPConsumptionAction(Cell.Slot slot, float quantity, Cell.Slot atp_slot)
         : base(slot, 
-                Utility.CreateDictionary<Cell.Slot, Compound>(atp_slot != null ? atp_slot : slot, new Compound(Molecule.ATP, quantity)), null,
+                Utility.CreateDictionary<Cell.Slot, Compound>(atp_slot, new Compound(Molecule.ATP, quantity)), null,
                 Utility.CreateList<Compound>(new Compound(Molecule.Water, quantity)),
                 Utility.CreateList<Compound>(new Compound(Molecule.ADP, quantity),
                                              new Compound(Molecule.Phosphate, quantity)))

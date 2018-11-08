@@ -247,3 +247,71 @@ public class PumpAction : Action
         Destination.AddCompound(PumpedCompound);
     }
 }
+
+
+public class Transcriptase : Ribozyme
+{
+    public Transcriptase() : base("Transcriptase", 6)
+    {
+
+    }
+
+    public override Action Catalyze(Cell.Slot slot)
+    {
+        if (slot.Compound == null || !(slot.Compound.Molecule is DNA))
+            return null;
+
+        int amp_count = 0, 
+            cmp_count = 0, 
+            gmp_count = 0, 
+            tmp_count = 0;
+        foreach (Nucleotide nucleotide in (slot.Compound.Molecule as DNA).Monomers)
+        {
+            if (nucleotide == Nucleotide.AMP)
+                amp_count++;
+            else if (nucleotide == Nucleotide.CMP)
+                cmp_count++;
+            else if (nucleotide == Nucleotide.GMP)
+                gmp_count++;
+            else if (nucleotide == Nucleotide.TMP)
+                tmp_count++;
+        }
+
+        Cell.Slot amp_slot = null, 
+                  cmp_slot = null, 
+                  gmp_slot = null, 
+                  tmp_slot = null,
+                  empty_slot = null;
+
+        foreach (Cell.Slot other_slot in slot.Cell.Slots)
+            if (other_slot.Compound == null)
+                empty_slot = other_slot;
+            else if (other_slot.Compound.Molecule == Nucleotide.AMP)
+                amp_slot = other_slot;
+            else if (other_slot.Compound.Molecule == Nucleotide.CMP)
+                cmp_slot = other_slot;
+            else if (other_slot.Compound.Molecule == Nucleotide.GMP)
+                gmp_slot = other_slot;
+            else if (other_slot.Compound.Molecule == Nucleotide.TMP)
+                tmp_slot = other_slot;
+
+        foreach (Cell.Slot other_slot in Utility.CreateList(amp_slot, cmp_slot, gmp_slot, tmp_slot, empty_slot))
+            if (other_slot == null)
+                return null;
+
+        return new CompositeAction( 
+            slot, 
+            new ReactionAction(
+                slot, 
+                Utility.CreateDictionary<Cell.Slot, Compound>(
+                    amp_slot, new Compound(Nucleotide.AMP, amp_count),
+                    cmp_slot, new Compound(Nucleotide.CMP, cmp_count),
+                    gmp_slot, new Compound(Nucleotide.GMP, gmp_count),
+                    tmp_slot, new Compound(Nucleotide.TMP, tmp_count)), 
+                Utility.CreateDictionary<Cell.Slot, Compound>(
+                    empty_slot, new Compound(slot.Compound.Molecule, 1)), 
+                null, 
+                Utility.CreateList(new Compound(Molecule.Water, (slot.Compound.Molecule as DNA).Monomers.Count - 1))), 
+            new ATPConsumptionAction(slot, 2));
+    }
+}

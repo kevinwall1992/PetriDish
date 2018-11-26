@@ -10,7 +10,7 @@ public class MicroVisualization : MonoBehaviour
 
     OrganismComponent organism_component;
 
-    WaterLocale water_locale = new WaterLocale();
+    WaterLocale water_locale;
 
     public List<OrganismComponent> OrganismComponents
     {
@@ -20,6 +20,8 @@ public class MicroVisualization : MonoBehaviour
     private void Awake()
     {
         camera = GameObject.Find("Main Camera").GetComponent<Camera>();
+
+        water_locale = new WaterLocale();
     }
 
     void Start()

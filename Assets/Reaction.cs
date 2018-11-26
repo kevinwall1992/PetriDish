@@ -19,19 +19,9 @@ public class Reaction
         return reactions[name];
     }
 
-    public static void LoadReactionFile(string filename)
+    public static void LoadReactions(string filename)
     {
         JObject reactions_file = JObject.Parse(Resources.Load<TextAsset>(filename).text);
-
-        if (reactions_file["Molecules"] != null)
-        {
-            JObject molecules = reactions_file["Molecules"] as JObject;
-            foreach (var molecule in molecules)
-                Molecule.RegisterNamedMolecule(molecule.Key, new SimpleMolecule(molecule.Value["Formula"].ToString(),
-                                                                                Utility.JTokenToFloat(molecule.Value["Enthalpy"]),
-                                                                                Utility.JTokenToInt(molecule.Value["Charge"])));
-        }
-
 
         if (reactions_file["Reactions"] == null)
             return;
@@ -110,7 +100,7 @@ public class Reaction
 
     static Reaction()
     {
-        LoadReactionFile("reactions");
+        LoadReactions("reactions");
     }
 
 

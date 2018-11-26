@@ -1,0 +1,35 @@
+{
+  "Molecules" : 
+  {
+    "Carbon Dioxide" :        { "Formula" : "C O2",  "Enthalpy" : -393.5 },
+    "Oxygen" :                { "Formula" : "O2",  "Enthalpy" : 0 },
+    "Nitrogen" :              { "Formula" : "N2",  "Enthalpy" : 0 },
+    "Hydrogen" :              { "Formula" : "H2",  "Enthalpy" : 0 },
+
+    "Water" :                 { "Formula" : "H2 O",  "Enthalpy" : -285.3 },
+    "Proton" :                { "Formula" : "H",  "Enthalpy" : 0.0, "Charge" : 1 },
+    "Hydronium" :             { "Formula" : "H3 O",  "Enthalpy" : -265.0, "Charge" : 1 },
+    "Hydroxide" :             { "Formula" : "H O",  "Enthalpy" : -229.9, "Charge" : -1 },
+
+    "Salt" :                  { "Formula" : "Na Cl",  "Enthalpy" : -411.1 },
+    "Glucose" :               { "Formula" : "C6 H12 O6",  "Enthalpy" : -1271 },
+
+    "ATP" :                   { "Formula" : "C10 H12 N5 O13 P3",  "Enthalpy" : -2995.6, "Charge" : -4 },
+    "ADP" :                   { "Formula" : "C10 H12 N5 O10 P2",  "Enthalpy" : -2005.9, "Charge" : -3 },
+    "Phosphate" :             { "Formula" : "P O4 H2",  "Enthalpy" : -1308.0, "Charge" : -1 },
+
+    "CarbonicAcid" :          { "Formula" : "C H2 O3",  "Enthalpy" : 31.5 },
+    "Bicarbonate" :           { "Formula" : "C H O3",  "Enthalpy" : 31.5, "Charge" : -1 },
+
+    "Imidazole" :             { "Formula" : "C3 H4 N2",  "Enthalpy" : 49.8 },
+    "Methane" :               { "Formula" : "C H4",  "Enthalpy" : -74.9 },
+
+    "Hydrogen Sulfide" :      { "Formula" : "H2 S", "Enthalpy" : -21 },
+    "Sulfur" :                { "Formula" : "S8", "Enthalpy" : 0 },
+    "Ammonia" :               { "Formula" : "N H3", "Enthalpy" : -46 },
+    "Pyruvate" :              { "Formula" : "C3 H4 O3", "Enthalpy" : -586.9 },
+    "Pyrimidine" :            { "Formula" : "C4 H4 N2", "Enthalpy" : 143.2 },
+    "Purine" :                { "Formula" : "C5 H4 N4", "Enthalpy" : 169.4 },
+    "Vinegar" :               { "Formula" : "C2 H4 O2", "Enthalpy" : -483 }
+  }
+}

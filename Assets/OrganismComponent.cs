@@ -6,7 +6,7 @@ using System.Reflection;
 
 public class OrganismComponent : MonoBehaviour
 {
-    Organism organism = new Organism();
+    Organism organism;
 
     List<CellComponent> cell_components= new List<CellComponent>();
 
@@ -19,9 +19,14 @@ public class OrganismComponent : MonoBehaviour
 
     public bool IsVisualizingStep { get { return actions.Count > 0; } }
 
+    void Awake()
+    {
+        organism = new Organism();
+    }
+
     void Start()
     {
-
+        
     }
 
     void Update()

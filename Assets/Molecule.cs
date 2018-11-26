@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Linq;
-
+using Newtonsoft.Json.Linq;
+using UnityEngine;
 
 public abstract class Molecule
 {
@@ -25,31 +26,46 @@ public abstract class Molecule
     public static Molecule Imidazole { get; private set; }
     public static Molecule Methane { get; private set; }
 
-    //Consider phasing this out once we get data for this stuff working
+    static void LoadMolecules(string filename)
+    {
+        JObject molecules_file = JObject.Parse(Resources.Load<TextAsset>(filename).text);
+
+        if (molecules_file["Molecules"] != null)
+        {
+            JObject molecules = molecules_file["Molecules"] as JObject;
+            foreach (var molecule in molecules)
+                Molecule.RegisterNamedMolecule(molecule.Key, new SimpleMolecule(molecule.Value["Formula"].ToString(),
+                                                                                Utility.JTokenToFloat(molecule.Value["Enthalpy"]),
+                                                                                Utility.JTokenToInt(molecule.Value["Charge"])));
+        }
+    }
+
     static Molecule()
     {
-        CarbonDioxide = RegisterNamedMolecule("Carbon Dioxide", new SimpleMolecule("C O2", -393.5f));
-        Oxygen = RegisterNamedMolecule("Oxygen", new SimpleMolecule("O2", 0));
-        Nitrogen = RegisterNamedMolecule("Nitrogen", new SimpleMolecule("N2", 0));
-        Hydrogen = RegisterNamedMolecule("Hydrogen", new SimpleMolecule("H2", 0));
+        LoadMolecules("molecules");
 
-        Water = RegisterNamedMolecule("Water", new SimpleMolecule("H2 O", -285.3f));
-        Proton = RegisterNamedMolecule("Proton", new SimpleMolecule("H", 0.0f, 1));
-        Hydronium = RegisterNamedMolecule("Hydronium", new SimpleMolecule("H3 O", -265.0f, 1));
-        Hydroxide = RegisterNamedMolecule("Hydroxide", new SimpleMolecule("H O", -229.9f, -1));
+        CarbonDioxide = GetMolecule("Carbon Dioxide");
+        Oxygen = GetMolecule("Oxygen");
+        Nitrogen = GetMolecule("Nitrogen");
+        Hydrogen = GetMolecule("Hydrogen");
 
-        Salt = RegisterNamedMolecule("Salt", new SimpleMolecule("Na Cl", -411.1f));
-        Glucose = RegisterNamedMolecule("Glucose", new SimpleMolecule("C6 H12 O6", -1271));
+        Water = GetMolecule("Water");
+        Proton = GetMolecule("Proton");
+        Hydronium = GetMolecule("Hydronium");
+        Hydroxide = GetMolecule("Hydroxide");
 
-        ATP = RegisterNamedMolecule("ATP", new SimpleMolecule("C10 H12 N5 O13 P3", -2995.6f, -4));
-        ADP = RegisterNamedMolecule("ADP", new SimpleMolecule("C10 H12 N5 O10 P2", -2005.9f, -3));
-        Phosphate = RegisterNamedMolecule("Phosphate", new SimpleMolecule("P O4 H2", -1308.0f, -1));
+        Salt = GetMolecule("Salt");
+        Glucose = GetMolecule("Glucose");
 
-        CarbonicAcid = RegisterNamedMolecule("CarbonicAcid", new SimpleMolecule("C H2 O3", 31.5f));
-        Bicarbonate = RegisterNamedMolecule("Bicarbonate", new SimpleMolecule("C H O3", 31.5f, -1));
+        ATP = GetMolecule("ATP");
+        ADP = GetMolecule("ADP");
+        Phosphate = GetMolecule("Phosphate");
 
-        Imidazole = RegisterNamedMolecule("Imidazole", new SimpleMolecule("C3 H4 N2", 49.8f));
-        Methane = RegisterNamedMolecule("Methane", new SimpleMolecule("C H4", -74.9f));
+        CarbonicAcid = GetMolecule("CarbonicAcid");
+        Bicarbonate = GetMolecule("Bicarbonate");
+
+        Imidazole = GetMolecule("Imidazole");
+        Methane = GetMolecule("Methane");
 
         RegisterNamedMolecule("AMP", Nucleotide.AMP);
         RegisterNamedMolecule("CMP", Nucleotide.CMP);

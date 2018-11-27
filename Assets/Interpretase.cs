@@ -101,7 +101,7 @@ public class Interpretase : Ribozyme
         return null;
     }
 
-    public void SeekToCommand(DNA dna, bool seek_backwards = false)
+    public static void SeekToCommand(DNA dna, bool seek_backwards = false)
     {
         while (dna.ActiveCodonIndex < dna.GetCodonCount() &&
                 dna.ActiveCodonIndex >= 0 &&
@@ -115,7 +115,7 @@ public class Interpretase : Ribozyme
         dna.ActiveCodonIndex = Mathf.Clamp(dna.ActiveCodonIndex, 0, dna.GetCodonCount() - 1);
     }
 
-    public void SeekToMarker(DNA dna, string marker, bool seek_backwards = false)
+    public static void SeekToMarker(DNA dna, string marker, bool seek_backwards = false)
     {
         int original_codon_index = dna.ActiveCodonIndex;
 
@@ -199,7 +199,7 @@ public class Interpretase : Ribozyme
     //Would like to not replicate above code.
     //Also, need to see if we can refactor this whole 
     //class to avoid changing ActiveCodonIndex temporarily
-    int GetSegmentLength(DNA dna, string marker)
+    public static int GetSegmentLength(DNA dna, string marker)
     {
         int length = 0;
 
@@ -245,7 +245,7 @@ public class Interpretase : Ribozyme
         return total;
     }
 
-    object CodonToLocation(Cell.Slot dna_slot, string codon)
+    public static object CodonToLocation(Cell.Slot dna_slot, string codon)
     {
         int value = CodonToValue(codon);
 
@@ -260,7 +260,7 @@ public class Interpretase : Ribozyme
             return codon;
     }
 
-    public int ComputeFunction(Cell.Slot dna_slot, int function_codon_index, out int next_codon_index)
+    public static int ComputeFunction(Cell.Slot dna_slot, int function_codon_index, out int next_codon_index)
     {
         DNA dna = dna_slot.Compound.Molecule as DNA;
 
@@ -297,7 +297,7 @@ public class Interpretase : Ribozyme
         return 0;
     }
 
-    int ComputeFunction(Cell.Slot dna_slot, int function_codon_index)
+    public static int ComputeFunction(Cell.Slot dna_slot, int function_codon_index)
     {
         int next_codon_index;
 
@@ -310,11 +310,6 @@ public class Interpretase : Ribozyme
         public Command(Cell.Slot slot) : base(slot)
         {
 
-        }
-
-        public Interpretase GetInterpretase()
-        {
-            return Slot.CatalystCompound.Molecule as Interpretase;
         }
 
         public override bool Prepare() { return true; }
@@ -394,7 +389,7 @@ public class Interpretase : Ribozyme
         {
             base.Begin();
 
-            DNA dna = GetInterpretase().Cut(GetDNA(), marker);
+            DNA dna = Interpretase.Cut(GetDNA(), marker);
                 
             Polymer polymer = GetRibozyme(dna.Sequence);
             if (polymer != null)
@@ -452,7 +447,7 @@ public class Interpretase : Ribozyme
 
         public override bool Prepare()
         {
-            if (!IsMoleculeValidForOutput(input_slot.Compound.Molecule))
+            if (input_slot.Compound == null || !IsMoleculeValidForOutput(input_slot.Compound.Molecule))
                 Fail();
 
             return !HasFailed;
@@ -480,7 +475,7 @@ public class Interpretase : Ribozyme
         public override void End()
         {
             for (int i = 0; i < seek_count; i++)
-                GetInterpretase().SeekToMarker(GetDNA(), marker, seek_count < 0);
+                Interpretase.SeekToMarker(GetDNA(), marker, seek_count < 0);
         }
     }
 

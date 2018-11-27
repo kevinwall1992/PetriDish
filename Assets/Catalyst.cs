@@ -315,3 +315,33 @@ public class Transcriptase : Ribozyme
             new ATPConsumptionAction(slot, 2));
     }
 }
+
+public class Actuase : Ribozyme
+{
+    public Actuase() : base("Actuase", 4)
+    {
+
+    }
+
+    public override Action Catalyze(Cell.Slot slot)
+    {
+        if (slot.Compound == null || !(slot.Compound.Molecule is DNA))
+            return null;
+
+        DNA dna = slot.Compound.Molecule as DNA;
+
+        if (dna.ActiveCodonIndex >= dna.GetCodonCount())
+            dna.ActiveCodonIndex = 0;
+
+        object location0 = Interpretase.CodonToLocation(slot, dna.ActiveCodon);
+        dna.ActiveCodonIndex++;
+        
+        object location1= Interpretase.CodonToLocation(slot, dna.ActiveCodon);
+        dna.ActiveCodonIndex++;
+
+        if (!(location0 is Cell.Slot) || !(location1 is Cell.Slot))
+            return null;
+
+        return new Interpretase.MoveCommand(slot, location1 as Cell.Slot, location0 as Cell.Slot, false);
+    }
+}

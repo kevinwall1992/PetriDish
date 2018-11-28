@@ -33,12 +33,12 @@ public class Organism : Chronal
 
     public Locale Locale { get; set; }
 
-    public Organism()
+    public Organism(Cell cell = null)
     {
         membrane = new Membrane(this, new Dictionary<Molecule, float>());
 
         cells.Add(new List<Cell>());
-        cells[0].Add(new Cell(this));
+        cells[0].Add(cell != null ? cell : new Cell(this));
     }
 
     public Vector2Int GetCellPosition(Cell cell)

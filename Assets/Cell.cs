@@ -46,6 +46,11 @@ public class Cell
         }
     }
 
+    public void Detatch()
+    {
+        Organism.Locale.AddOrganism(organism = new Organism(this));
+    }
+
     public List<Action> GetActions()
     {
         List<Action> actions = new List<Action>();

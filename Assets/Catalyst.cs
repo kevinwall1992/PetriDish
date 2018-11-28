@@ -345,3 +345,33 @@ public class Actuase : Ribozyme
         return new Interpretase.MoveCommand(slot, location1 as Cell.Slot, location0 as Cell.Slot, false);
     }
 }
+
+public class Sporulase : Ribozyme
+{
+    public Sporulase() : base("Sporulase", 8)
+    {
+
+    }
+
+    public override Action Catalyze(Cell.Slot slot)
+    {
+        return new PoweredAction(slot, slot, 4, new SporulateAction(slot));
+    }
+
+    public class SporulateAction : Action
+    {
+        public SporulateAction(Cell.Slot slot) : base(slot)
+        {
+
+        }
+
+        public override bool Prepare() { return true; }
+
+        public override void Begin() { }
+
+        public override void End()
+        {
+            Cell.Detatch();
+        }
+    }
+}

@@ -38,7 +38,13 @@ public class Organism : Chronal
         membrane = new Membrane(this, new Dictionary<Molecule, float>());
 
         cells.Add(new List<Cell>());
-        cells[0].Add(cell != null ? cell : new Cell(this));
+        if (cell != null)
+        {
+            cells[0].Add(cell);
+            cell.Organism = this;
+        }
+        else
+            cells[0].Add(new Cell(this));
     }
 
     public Vector2Int GetCellPosition(Cell cell)
@@ -81,6 +87,56 @@ public class Organism : Chronal
         return cell_position + GetDisplacement(cell_position.x % 2 == 0, direction);
     }
 
+    void CheckForBreaks()
+    {
+        HashSet<Cell> keep_set = null;
+        while (true)
+        {
+            HashSet<Cell> cell_set = new HashSet<Cell>();
+
+            Stack<Cell> cell_stack = new Stack<Cell>();
+            foreach (Cell cell in GetCells())
+                if (keep_set== null || !keep_set.Contains(cell))
+                {
+                    cell_stack.Push(cell);
+                    break;
+                }
+            if (cell_stack.Count == 0)
+                break;
+
+            Organism organism = null;
+            if (keep_set != null)
+                Locale.AddOrganism(organism = new Organism(cell_stack.First()));
+
+            while (cell_stack.Count > 0)
+            {
+                Cell cell = cell_stack.Pop();
+
+                if (cell_set.Contains(cell))
+                    continue;
+                cell_set.Add(cell);
+
+                foreach (HexagonalDirection direction in Enum.GetValues(typeof(HexagonalDirection)))
+                {
+                    Cell neighbor = GetNeighbor(cell, direction);
+                    if (neighbor != null)
+                    {
+                        cell_stack.Push(neighbor);
+
+                        if (keep_set != null)
+                            organism.AddCell(cell, direction, neighbor);
+                    }
+                }
+            }
+
+            if (keep_set == null)
+                keep_set = cell_set;
+            else
+                foreach (Cell cell in cell_set)
+                    RemoveCell_NoSideEffects(cell);
+        }
+    }
+
     bool IsPositionWithinBounds(Vector2Int position)
     {
         return position.x >= 0 && position.x < cells.Count &&
@@ -113,26 +169,42 @@ public class Organism : Chronal
         return null;
     }
 
-    public Cell AddCell(Cell host_cell, HexagonalDirection direction)
+    public Cell AddCell(Cell host_cell, HexagonalDirection direction, Cell new_cell = null)
     {
+        if (new_cell == null)
+            new_cell = new Cell(this);
+        else
+            new_cell.Organism = this;
+
         ExpandTowardsPosition(GetNeighborPosition(host_cell, direction));
 
         Vector2Int position = GetNeighborPosition(host_cell, direction);
 
         if (IsPositionWithinBounds(position))
-            cells[position.x][position.y] = new Cell(this);
+            cells[position.x][position.y] = new_cell;
 
         return GetCell(position);
     }
 
-    public void RemoveCell(Cell cell)
+    Cell RemoveCell_NoSideEffects(Cell cell)
     {
         Vector2Int position = GetCellPosition(cell);
 
         cells[position.x][position.y] = null;
 
+        return cell;
+    }
+
+    public Cell RemoveCell(Cell cell)
+    {
+        RemoveCell_NoSideEffects(cell);
+
         if (GetCellCount() == 0)
             cells[0][0] = new Cell(this);
+
+        CheckForBreaks();
+
+        return cell;
     }
 
     public List<Cell> GetCells()

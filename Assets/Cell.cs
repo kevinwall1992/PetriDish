@@ -15,6 +15,7 @@ public class Cell
     public Organism Organism
     {
         get { return organism; }
+        set { organism = value; }
     }
 
     public Cell(Organism organism_)
@@ -48,7 +49,7 @@ public class Cell
 
     public void Detatch()
     {
-        Organism.Locale.AddOrganism(organism = new Organism(this));
+        Organism.Locale.AddOrganism(new Organism(Organism.RemoveCell(this)));
     }
 
     public List<Action> GetActions()

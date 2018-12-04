@@ -132,7 +132,7 @@ public class DetailPane : GoodBehavior
             grouping_panel.transform.parent = grouping_panels_container.transform;
             grouping_panel.transform.localPosition = grouping_panel_prefab_local_position;
 
-            Vector2 size_change = new Vector2(0 * indentation_levels[command_index], (element_height + 5) * command_groups[command_index]);
+            Vector2 size_change = new Vector2(0 * indentation_levels[command_index], (element_height + 5) * (command_groups[command_index] - 1));
             (grouping_panel.transform as RectTransform).sizeDelta += size_change;
             grouping_panel.transform.localPosition += new Vector3(0, (-(element_height + 5) * (command_index) - size_change.y / 2), 0);
 
@@ -148,53 +148,34 @@ public class DetailPane : GoodBehavior
 
         int indentation_level = 0;
 
-        Interpretase interpretase = Ribozyme.Interpretase;
         DNA dna = new DNA(GetDNASequence());
+        int codon_index = 0;
 
-        int operand_count = 0;
-
-        while (dna.ActiveCodonIndex < dna.GetCodonCount())
+        while(codon_index < dna.CodonCount)
         {
-            indentation_levels[dna.ActiveCodonIndex] = indentation_level;
-
-            if (operand_count > 0)
-            {
-                operand_count--;
-                dna.ActiveCodonIndex++;
-                continue;
-            }
-
-            string codon = dna.GetCodon(dna.ActiveCodonIndex);
+            string codon = dna.GetCodon(codon_index);
             if (codon[0] == 'C')
             {
-                switch (codon)
-                {
-                    case "CAA":
-                    case "CCC":
-                    case "CAC":
-                    case "CAT":
-                        operand_count = 2;
-                        break;
+                int command_length = Interpretase.GetCommandLength(dna, codon_index);
 
-                    case "CAG":
-                        operand_count = 1;
-                        break;
-                }
+                for (int i = 0; i < command_length; i++)
+                    indentation_levels[codon_index++] = indentation_level;
+
+                continue;
             }
-            else if (codon[0] == 'T')
+            else
+                indentation_levels[codon_index] = indentation_level;
+
+            int value = Interpretase.CodonToValue(codon);
+            if (codon[0]== 'T' && value >= 55)
             {
-                int value = Interpretase.CodonToValue(codon);
-
-                if (value >= 55)
-                {
-                    if (value < 63)
-                        indentation_level++;
-                    else
-                        indentation_levels[dna.ActiveCodonIndex] = --indentation_level;
-                }
+                if (value < 63)
+                    indentation_level++;
+                else
+                    indentation_levels[codon_index] = --indentation_level;
             }
 
-            dna.ActiveCodonIndex++;
+            codon_index++;
         }
 
         return indentation_levels;
@@ -204,58 +185,16 @@ public class DetailPane : GoodBehavior
     {
         Dictionary<int, int> command_groups = new Dictionary<int, int>();
 
-        Interpretase interpretase = Ribozyme.Interpretase;
         DNA dna = new DNA(GetDNASequence());
 
-        int command_codon_index = -1;
-
-        while (dna.ActiveCodonIndex < dna.GetCodonCount())
+        int command_codon_index = Interpretase.FindCommandCodon(dna, 0);
+        while (command_codon_index >= 0)
         {
-            string codon = dna.GetCodon(dna.ActiveCodonIndex);
+            int command_length = Interpretase.GetCommandLength(dna, command_codon_index);
 
-            bool in_group = command_codon_index >= 0 && (dna.ActiveCodonIndex <= (command_codon_index + command_groups[command_codon_index]));
+            command_groups[command_codon_index] = command_length;
 
-            switch (codon[0])
-            {
-                case 'A':
-                    break;
-
-                case 'C':
-                    if (in_group)
-                        command_groups[command_codon_index] = dna.ActiveCodonIndex- command_codon_index - 1;
-
-                    command_codon_index = dna.ActiveCodonIndex;
-
-                    switch (codon)
-                    {
-                        case "CAA":
-                        case "CCC":
-                        case "CAC":
-                        case "CAG":
-                        case "CAT": command_groups[command_codon_index] = 2; break;
-                    }
-
-                    in_group = true;
-
-                    break;
-
-                case 'G':
-                    if (in_group)
-                        switch (codon)
-                        {
-                            case "GAA": command_groups[command_codon_index] += 1; break;
-                            case "GAC":
-                            case "GAG":
-                            case "GAT": command_groups[command_codon_index] += 2; break;
-                        }
-                    break;
-
-                case 'T':
-                    break;
-
-            }
-
-            dna.ActiveCodonIndex++;
+            command_codon_index = Interpretase.FindCommandCodon(dna, command_codon_index + command_length);
         }
 
         return command_groups;

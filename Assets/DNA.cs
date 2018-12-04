@@ -22,12 +22,14 @@ public class DNA : Polymer
         {
             string sequence = "";
 
-            for (int i = 0; i < GetCodonCount(); i++)
+            for (int i = 0; i < CodonCount; i++)
                 sequence += GetCodon(i);
 
             return sequence;
         }
     }
+
+    public int CodonCount { get { return Monomers.Count / 3; } }
 
     public DNA(string sequence)
     {
@@ -105,9 +107,28 @@ public class DNA : Polymer
         return codon;
     }
 
-    public int GetCodonCount()
+    public string GetSubsequence(int starting_index, int length)
     {
-        return Monomers.Count / 3;
+        string subsequence = "";
+
+        for (int i = 0; i < length && (i + starting_index) < CodonCount; i++)
+            subsequence += GetCodon(starting_index + i);
+
+        return subsequence;
+    }
+
+    public DNA RemoveStrand(int starting_index, int length)
+    {
+        DNA removed_dna = new DNA();
+
+        for (int i = 0; i < length; i++)
+        {
+            removed_dna.AddMonomer(RemoveMonomer(starting_index * 3));
+            removed_dna.AddMonomer(RemoveMonomer(starting_index * 3));
+            removed_dna.AddMonomer(RemoveMonomer(starting_index * 3));
+        }
+
+        return removed_dna;
     }
 }
 

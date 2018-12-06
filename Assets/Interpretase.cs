@@ -486,7 +486,8 @@ public class Interpretase : Ribozyme
         {
             base.Begin();
 
-            OutputtedCompound = move_entire_stack ? input_slot.RemoveCompound() : input_slot.Compound.Split(1);
+            OutputtedCompound = move_entire_stack ? input_slot.RemoveCompound() : 
+                                                    input_slot.Compound.Split(input_slot.Compound.Quantity / 2);
         }
     }
 

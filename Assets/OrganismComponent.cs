@@ -95,6 +95,11 @@ public class OrganismComponent : MonoBehaviour
         return GetCellComponent(cell);
     }
 
+    List<Action> FilterActions<T>(List<Action> actions)
+    {
+        return actions.OfType<T>().OfType<Action>().ToList();
+    }
+
     public void BeginStepVisualization()
     {
         Organism.Membrane.Step();
@@ -104,10 +109,11 @@ public class OrganismComponent : MonoBehaviour
         foreach (CellComponent cell_component in cell_components)
             new_actions.AddRange(cell_component.Cell.GetActions());
 
-        actions.Enqueue(new_actions.OfType<Interpretase.Command>().OfType<Action>().ToList());
-        actions.Enqueue(new_actions.OfType<ReactionAction>().OfType<Action>().ToList());
-        actions.Enqueue(new_actions.OfType<Pipase.PipeAction>().OfType<Action>().ToList());
-        actions.Enqueue(new_actions.OfType<PoweredAction>().OfType<Action>().ToList());
+        actions.Enqueue(FilterActions<Interpretase.Command>(new_actions));
+        actions.Enqueue(Utility.Concatenate(FilterActions<ReactionAction>(new_actions), 
+                                            FilterActions<EnergeticReactionAction>(new_actions)));
+        actions.Enqueue(FilterActions<Pipase.PipeAction>(new_actions));
+        actions.Enqueue(FilterActions<PoweredAction>(new_actions));
     }
 
     public void ResetExperiment(string dna_sequence= "")
@@ -123,7 +129,7 @@ public class OrganismComponent : MonoBehaviour
 
         if (dna_sequence != "")
         {
-            cell.Slots[0].AddCompound(new Compound(Ribozyme.Interpretase, 1));
+            cell.Slots[0].AddCompound(new Compound(Ribozyme.GetRibozymeFamily("Interpretase")[0], 1));
             cell.Slots[0].AddCompound(new Compound(new DNA(dna_sequence), 1));
             Organism.Cytozol.AddCompound(new Compound(Molecule.ATP, 10));
         }

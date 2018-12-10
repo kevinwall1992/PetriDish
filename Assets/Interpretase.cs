@@ -1,61 +1,22 @@
 ﻿using UnityEngine;
 
 
-public class Interpretase : Ribozyme
+public class Interpretase : ProgressiveCatalyst
 {
-    public Interpretase() : base("Interpretase", 6)
+    public Interpretase() : base("Interpretase")
     {
 
     }
 
-    public static int GetCommandLength(DNA dna, int command_codon_index)
+    protected override Action GetAction(Cell.Slot slot)
     {
-        string command_codon = dna.GetCodon(command_codon_index);
-        if (command_codon[0] != 'C')
-            return 0;
+        if (slot.Compound == null || !(slot.Compound.Molecule is DNA))
+            return null;
 
-        int length = 0;
-        int operand_count = 0;
-
-        do
-        {
-            string codon = dna.GetCodon(command_codon_index + length);
-
-            if (length > 0)
-                operand_count--;
-            length++;
-
-            switch (codon[0])
-            {
-                case 'A': break;
-
-                case 'C':
-                    operand_count += 2;
-                    break;
-
-                case 'G':
-                    switch (codon)
-                    {
-                        case "GAA":
-                            operand_count++;
-                            break;
-
-                        case "GAC":
-                        case "GAG":
-                        case "GAT":
-                            operand_count += 2;
-                            break;
-                    }
-                    break;
-
-                case 'T': break;
-            }
-        } while (operand_count > 0);
-
-        return length;
+        return Interpret(slot, FindCommandCodon(slot.Compound.Molecule as DNA));
     }
 
-    Command Interpret(Cell.Slot slot, int command_codon_index)
+    public static Command Interpret(Cell.Slot slot, int command_codon_index)
     {
         if (command_codon_index < 0)
             return null;
@@ -75,6 +36,8 @@ public class Interpretase : Ribozyme
         {
             case "CAA":
             case "CCC":
+            case "CGG":
+            case "CTT":
                 object source_location = CodonToLocation(slot, dna.GetCodon(command_codon_index + 1));
                 if (!(source_location is Cell.Slot))
                     return new NullCommand(slot, step_codon_index);
@@ -83,7 +46,19 @@ public class Interpretase : Ribozyme
                 if (!(destination_location is Cell.Slot))
                     return new NullCommand(slot, step_codon_index);
 
-                return new MoveCommand(slot, step_codon_index, destination_location as Cell.Slot, source_location as Cell.Slot, codon == "CAA");
+                MoveCommand.Type move_type = MoveCommand.Type.Max;
+                switch(codon)
+                {
+                    case "CAA": move_type = MoveCommand.Type.Single; break;
+                    case "CCC": move_type = MoveCommand.Type.Half; break;
+                    case "CGG": move_type = MoveCommand.Type.Full; break;
+                    case "CTT": move_type = MoveCommand.Type.Max; break;
+                }
+
+                return new MoveCommand(slot, step_codon_index, 
+                                        destination_location as Cell.Slot, 
+                                        source_location as Cell.Slot,
+                                        move_type);
 
             case "CAC":
                 object activation_location = CodonToLocation(slot, dna.GetCodon(command_codon_index + 1));
@@ -140,12 +115,51 @@ public class Interpretase : Ribozyme
         return null;
     }
 
-    public override Action Catalyze(Cell.Slot slot)
+    public static int GetCommandLength(DNA dna, int command_codon_index)
     {
-        if (slot.Compound == null || !(slot.Compound.Molecule is DNA))
-            return null;
+        string command_codon = dna.GetCodon(command_codon_index);
+        if (command_codon[0] != 'C')
+            return 0;
 
-        return Interpret(slot, FindCommandCodon(slot.Compound.Molecule as DNA));
+        int length = 0;
+        int operand_count = 0;
+
+        do
+        {
+            string codon = dna.GetCodon(command_codon_index + length);
+
+            if (length > 0)
+                operand_count--;
+            length++;
+
+            switch (codon[0])
+            {
+                case 'A': break;
+
+                case 'C':
+                    operand_count += 2;
+                    break;
+
+                case 'G':
+                    switch (codon)
+                    {
+                        case "GAA":
+                            operand_count++;
+                            break;
+
+                        case "GAC":
+                        case "GAG":
+                        case "GAT":
+                            operand_count += 2;
+                            break;
+                    }
+                    break;
+
+                case 'T': break;
+            }
+        } while (operand_count > 0);
+
+        return length;
     }
 
     public static int FindCommandCodon(DNA dna, int starting_codon_index, bool search_backwards = false)
@@ -328,12 +342,11 @@ public class Interpretase : Ribozyme
         return ComputeFunction(dna_slot, function_codon_index, out next_codon_index);
     }
 
-
     public class Command : Action
     {
         int step_codon_index;
 
-        public Command(Cell.Slot slot, int step_codon_index_) : base(slot)
+        public Command(Cell.Slot slot, int step_codon_index_, float cost) : base(slot, cost)
         {
             step_codon_index = step_codon_index_;
         }
@@ -372,7 +385,7 @@ public class Interpretase : Ribozyme
             protected set { outputted_compound = value; }
         }
 
-        public OutputCommand(Cell.Slot slot, int step_codon_index, Cell.Slot output_slot_) : base(slot, step_codon_index)
+        public OutputCommand(Cell.Slot slot, int step_codon_index, Cell.Slot output_slot_) : base(slot, step_codon_index, 1)
         {
             output_slot = output_slot_;
         }
@@ -398,6 +411,16 @@ public class Interpretase : Ribozyme
         string marker;
         int local_codon_index;
 
+        public override float Scale
+        {
+            get
+            {
+                base.Scale = Slot.Compound.Quantity;
+
+                return base.Scale;
+            }
+        }
+
         public CutCommand(Cell.Slot slot, int step_codon_index, Cell.Slot output_slot, string marker_, int local_codon_index_) : base(slot, step_codon_index, output_slot)
         {
             marker = marker_;
@@ -420,7 +443,7 @@ public class Interpretase : Ribozyme
 
             DNA dna = Interpretase.Cut(GetDNA(), marker, local_codon_index);
                 
-            Polymer polymer = GetRibozyme(dna.Sequence);
+            Polymer polymer = Ribozyme.GetRibozyme(dna.Sequence);
             if (polymer != null)
                 dna = polymer as DNA;
 
@@ -440,6 +463,8 @@ public class Interpretase : Ribozyme
         public ActivateCommand(Cell.Slot slot, int step_codon_index, Cell.Slot output_slot, int activation_count_) : base(slot, step_codon_index, output_slot)
         {
             activation_count = activation_count_;
+
+            Cost = activation_count;
         }
 
         public override bool Prepare()
@@ -461,22 +486,62 @@ public class Interpretase : Ribozyme
     public class MoveCommand : OutputCommand
     {
         Cell.Slot input_slot;
-        bool move_entire_stack;
+        Type type;
+
+        Compound MovedCompound
+        {
+            get
+            {
+                if (input_slot.Compound != null)
+                    return input_slot.Compound;
+
+                if (input_slot.CatalystCompound != null)
+                    return input_slot.CatalystCompound;
+
+                return null;
+            }
+        }
 
         public Cell.Slot InputSlot
         {
             get { return input_slot; }
         }
 
-        public MoveCommand(Cell.Slot slot, int step_codon_index, Cell.Slot output_slot, Cell.Slot input_slot_, bool move_entire_stack_) : base(slot, step_codon_index, output_slot)
+        public MoveCommand(Cell.Slot slot, int step_codon_index, Cell.Slot output_slot, Cell.Slot input_slot_, Type type_) 
+            : base(slot, step_codon_index, output_slot)
         {
             input_slot = input_slot_;
-            move_entire_stack = move_entire_stack_;
+
+            type = type_;
+
+            if (MovedCompound == null)
+                Scale = 0;
+            else
+                switch (type)
+                {
+                    case Type.Single:
+                        Scale = 1;
+                        break;
+
+                    case Type.Half:
+                        Scale = MovedCompound.Quantity / 2;
+                        break;
+
+                    case Type.Full:
+                        Scale = MovedCompound.Quantity;
+                        break;
+
+                    case Type.Max:
+                        Scale = MovedCompound.Quantity;
+                        break;
+                }
         }
 
         public override bool Prepare()
         {
-            if (input_slot.Compound == null || !IsMoleculeValidForOutput(input_slot.Compound.Molecule))
+            if (MovedCompound == null || !IsMoleculeValidForOutput(MovedCompound.Molecule))
+                Fail();
+            else if (type == Type.Single && MovedCompound.Quantity < 1)
                 Fail();
 
             return !HasFailed;
@@ -486,9 +551,10 @@ public class Interpretase : Ribozyme
         {
             base.Begin();
 
-            OutputtedCompound = move_entire_stack ? input_slot.RemoveCompound() : 
-                                                    input_slot.Compound.Split(input_slot.Compound.Quantity / 2);
+            OutputtedCompound = MovedCompound.Split(Scale);
         }
+
+        public enum Type { Single, Half, Full, Max }
     }
 
     public class GoToCommand : Command
@@ -496,7 +562,7 @@ public class Interpretase : Ribozyme
         string marker;
         int seek_count;
 
-        public GoToCommand(Cell.Slot slot, int step_codon_index, string marker_, int seek_count_) : base(slot, step_codon_index)
+        public GoToCommand(Cell.Slot slot, int step_codon_index, string marker_, int seek_count_) : base(slot, step_codon_index, 0)
         {
             marker = marker_;
             seek_count = seek_count_;
@@ -514,7 +580,7 @@ public class Interpretase : Ribozyme
         Command command;
         string marker;
 
-        public TryCommand(Cell.Slot slot, int step_codon_index, Command command_, string marker_) : base(slot, step_codon_index)
+        public TryCommand(Cell.Slot slot, int step_codon_index, Command command_, string marker_) : base(slot, step_codon_index, command_.Cost)
         {
             command = command_;
             marker = marker_;
@@ -549,7 +615,7 @@ public class Interpretase : Ribozyme
 
     class NullCommand : Command
     {
-        public NullCommand(Cell.Slot slot, int step_codon_index) : base(slot, step_codon_index)
+        public NullCommand(Cell.Slot slot, int step_codon_index) : base(slot, step_codon_index, 0)
         {
 
         }

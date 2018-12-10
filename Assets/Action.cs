@@ -5,12 +5,20 @@ using System.Linq;
 
 public abstract class Action
 {
-    Cell.Slot slot;
+    float base_cost;
 
-    public Cell.Slot Slot
+    protected float BaseCost
     {
-        get { return slot; }
+        get { return base_cost; }
+
+        set
+        {
+            base_cost = value;
+            Scale = 1;
+        }
     }
+
+    public Cell.Slot Slot { get; private set; }
 
     public Cell Cell
     {
@@ -22,13 +30,40 @@ public abstract class Action
         get { return Cell.Organism; }
     }
 
-    
+    public virtual float Scale { get; set; }
+
+    public float Cost
+    {
+        get { return Scale * BaseCost; }
+
+        set
+        {
+            if(BaseCost != 0)
+                Scale = value / BaseCost;
+        }
+    }
+
+    public float AmountPaid { get; private set; }
+
+    public bool IsPaidFor
+    {
+        get
+        {
+            return AmountPaid >= Cost;
+        }
+    }
 
     public bool HasFailed { get; private set; }
 
-    public Action(Cell.Slot slot_)
+    public Action(Cell.Slot slot, float cost)
     {
-        slot = slot_;
+        Slot = slot;
+        BaseCost = cost;
+    }
+
+    public void Pay(float payment)
+    {
+        AmountPaid += payment;
     }
 
     public abstract bool Prepare();
@@ -46,17 +81,30 @@ public class CompositeAction : Action
 {
     List<Action> actions= new List<Action>();
 
+    public override float Scale
+    {
+        set
+        {
+            float ratio = value / Scale;
+
+            base.Scale = value;
+
+            foreach (Action action in actions)
+                action.Scale *= ratio;
+        }
+    }
+
     public List<Action> Actions { get { return actions; } }
 
-
-    public CompositeAction(Cell.Slot slot, params Action[] actions_) : base(slot)
+    public CompositeAction(Cell.Slot slot, params Action[] actions_) 
+        : base(slot, MathUtility.Sum(actions_, delegate(Action action) { return action.Cost; }))
     {
         actions.AddRange(actions_);
     }
 
-    public void AddAction(Action action)
+    public CompositeAction(Cell.Slot slot, float cost, params Action[] actions_) : base(slot, cost)
     {
-        actions.Add(action);
+        actions.AddRange(actions_);
     }
 
     public override bool Prepare()
@@ -81,6 +129,14 @@ public class CompositeAction : Action
     }
 }
 
+public class WrapperAction : CompositeAction
+{
+    public WrapperAction(Cell.Slot slot, Action action, float cost) : base(slot, cost, action)
+    {
+
+    }
+}
+
 
 public class ReactionAction : Action
 {
@@ -93,7 +149,8 @@ public class ReactionAction : Action
                     Dictionary<Cell.Slot, Compound> slot_reactants_, 
                     Dictionary<Cell.Slot, Compound> slot_products_, 
                     List<Compound> cytozol_reactants_, 
-                    List<Compound> cytozol_products_) : base(slot)
+                    List<Compound> cytozol_products_,
+                    float cost = 1) : base(slot, cost)
     {
         if(slot_reactants_ != null)
             slot_reactants = slot_reactants_;
@@ -108,7 +165,7 @@ public class ReactionAction : Action
             cytozol_products = cytozol_products_;
     }
 
-    protected ReactionAction(Cell.Slot slot) : base(slot)
+    protected ReactionAction(Cell.Slot slot) : base(slot, 1)
     {
 
     }
@@ -183,6 +240,18 @@ public class ReactionAction : Action
     }
 }
 
+public class EnergeticReactionAction : CompositeAction
+{
+    public EnergeticReactionAction(Cell.Slot slot, ReactionAction reaction_action, float atp_balance)
+        : base(slot,
+              reaction_action,
+              atp_balance > 0 ? (Action)new ATPProductionAction(slot, atp_balance) :
+                                (Action)new ATPConsumptionAction(slot, -atp_balance))
+    {
+
+    }
+}
+
 
 public class ATPConsumptionAction : ReactionAction
 {
@@ -194,7 +263,7 @@ public class ATPConsumptionAction : ReactionAction
                 Utility.CreateList<Compound>(new Compound(Molecule.ADP, quantity),
                                              new Compound(Molecule.Phosphate, quantity)))
     {
-
+        BaseCost = 0;
     }
 
     public ATPConsumptionAction(Cell.Slot slot, float quantity, Cell.Slot atp_slot)
@@ -204,7 +273,7 @@ public class ATPConsumptionAction : ReactionAction
                 Utility.CreateList<Compound>(new Compound(Molecule.ADP, quantity),
                                              new Compound(Molecule.Phosphate, quantity)))
     {
-
+        BaseCost = 0;
     }
 }
 
@@ -219,16 +288,39 @@ public class ATPProductionAction : ReactionAction
                 Utility.CreateList<Compound>(new Compound(Molecule.ATP, quantity),
                                              new Compound(Molecule.Water, quantity)))
     {
-
+        BaseCost = 0;
     }
 }
 
 
 public class PoweredAction : CompositeAction
 {
-    public PoweredAction(Cell.Slot slot, Cell.Slot atp_slot, float cost, Action action) : base(slot)
+    public PoweredAction(Cell.Slot slot, Cell.Slot atp_slot, float atp_cost, Action action) 
+        : base(slot, action, new ATPConsumptionAction(slot, atp_cost, atp_slot))
     {
-        AddAction(action);
-        AddAction(new ATPConsumptionAction(slot, cost, atp_slot));
+        
+    }
+}
+
+public class NullAction : Action
+{
+    public NullAction() : base(null, 0)
+    {
+
+    }
+
+    public override bool Prepare()
+    {
+        return true;
+    }
+
+    public override void Begin()
+    {
+        
+    }
+
+    public override void End()
+    {
+        
     }
 }

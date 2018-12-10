@@ -204,7 +204,7 @@ public abstract class Function : GenericFunction<float>
         float width = (x1 - x0) / sample_count;
 
         for (int i = 0; i < sample_count; i++)
-            total += Compute(Mathf.Lerp(x0, x1, i / (float)(sample_count - 1)) + (width / 2)) * width;
+            total += Compute(Mathf.Lerp(x0, x1, i / (float)sample_count) + (width / 2)) * width;
 
         return total;
     } 
@@ -236,7 +236,7 @@ public abstract class ProbabilityDistribution : Function
     {
         float test_percentile = CDF(test_sample);
 
-        if (iteration < 5)
+        if (iteration < 10)
         {
             if (percentile > test_percentile)
                 return InverseCDF(percentile, test_sample + Mathf.Pow(0.5f, iteration + 2) * Range, iteration + 1);
@@ -330,6 +330,7 @@ public class NormalDistribution : ProbabilityDistribution
     }
 }
 
+//This needs a separate skew value for bottom half and top half of samples
 public class SkewedNormalDistribution : ProbabilityDistribution
 {
     NormalDistribution normal_distribtion;
@@ -338,14 +339,23 @@ public class SkewedNormalDistribution : ProbabilityDistribution
 
     public override float Minimum
     {
-        get { return normal_distribtion.Minimum; }
+        get
+        {
+            if(skew < 1)
+                return base_mean + (normal_distribtion.Minimum - base_mean) / skew;
+            else
+                return normal_distribtion.Minimum;
+        }
     }
 
     public override float Maximum
     {
         get
         {
-            return base_mean + (normal_distribtion.Maximum - base_mean) * skew;
+            if (skew >= 1)
+                return base_mean + (normal_distribtion.Maximum - base_mean) * skew;
+            else
+                return normal_distribtion.Maximum;
         }
     }
 
@@ -359,7 +369,10 @@ public class SkewedNormalDistribution : ProbabilityDistribution
 
     public override float Compute(float x)
     {
-        return normal_distribtion.Compute(x < base_mean ? x : (x / skew));
+        if(skew < 1)
+            return normal_distribtion.Compute(x > base_mean ? x : base_mean + ((x - base_mean) * skew));
+        else
+            return normal_distribtion.Compute(x < base_mean ? x : base_mean + ((x - base_mean) / skew));
     }
 }
 

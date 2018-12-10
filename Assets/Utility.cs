@@ -117,6 +117,27 @@ public class Utility
         return without_duplicates;
     }
 
+    public static List<T> AddElement<T>(ref List<T> list, T element)
+    {
+        list.Add(element);
+
+        return list;
+    }
+
+    public static List<T> AddElement<T>(List<T> list, T element)
+    {
+        AddElement(ref list, element);
+
+        return list;
+    }
+
+    public static List<T> Concatenate<T>(List<T> a, List<T> b)
+    {
+        a.AddRange(b);
+
+        return a;
+    }
+
 
     public static string JTokenToString(JToken json, string default_value = "")
     {

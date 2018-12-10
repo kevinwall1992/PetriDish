@@ -314,6 +314,7 @@ public class Reaction
             optimal_temperature = new Attribute(new SkewedNormalDistribution(mean_optimal_temperature, 
                                                                              equally_thermophilic ? 30 : 20, 
                                                                              equally_thermophilic ? 1 : cryophilic ? 0.5f : 2.0f), 1);
+
             temperature_tolerance = new Attribute(new NormalDistribution(0, relative_temperature_tolerance * 5 * (equally_thermophilic ? 3 : 2)), 1);
         }
         else
@@ -506,7 +507,7 @@ public class Reaction
         }
     }
 
-    class CatalystImplementation : Catalyst
+    class CatalystImplementation : InstantCatalyst
     {
         Dictionary<Compound, int> slot_reactants= new Dictionary<Compound, int>(), 
                                   slot_products= new Dictionary<Compound, int>();
@@ -516,7 +517,7 @@ public class Reaction
 
         float ATP_balance;
 
-        public CatalystImplementation(Reaction reaction)
+        public CatalystImplementation(string name, Reaction reaction) : base(name)
         {
             List<int> available_slots = new List<int> { 1, 2, 3, 4, 5 };
             available_slots.Sort(delegate (int a, int b) { return reaction.slot_order[a].Value.CompareTo(reaction.slot_order[b].Value); });
@@ -557,13 +558,13 @@ public class Reaction
             List<ActivityFunction> activity_functions = Utility.CreateList<ActivityFunction>(new ConstantActivityFunction(reaction.productivity.Value));
 
             activity_functions.Add(new NormalActivityFunction(reaction.optimal_temperature.Value,
-                                                                    8 * Mathf.Abs(reaction.temperature_tolerance.Value) * (reaction.is_ribozyme.IsTrue ? 0.7f : 1),
-                                                                    0.15f,
-                                                                    delegate (Solution solution) { return solution.Temperature; }));
+                                                                4 * (0.5f + Mathf.Abs(reaction.temperature_tolerance.Value)) * (reaction.is_ribozyme.IsTrue ? 0.7f : 1),
+                                                                0.15f,
+                                                                delegate (Solution solution) { return solution.Temperature; }));
             activity_functions.Add(new NormalActivityFunction(reaction.optimal_pH.Value,
-                                                                    Mathf.Abs(reaction.pH_tolerance.Value) * (reaction.is_ribozyme.IsTrue ? 0.7f : 1),
-                                                                    1,
-                                                                    delegate (Solution solution) { return solution.pH; }));
+                                                                1.0f * (0.25f + Mathf.Abs(reaction.pH_tolerance.Value)) * (reaction.is_ribozyme.IsTrue ? 0.7f : 1),
+                                                                1,
+                                                                delegate (Solution solution) { return solution.pH; }));
 
             foreach (Molecule molecule in reaction.inhibitors.Keys)
                 activity_functions.Add(new InhibitionFunction(molecule, reaction.inhibitors[molecule].Value));
@@ -573,13 +574,13 @@ public class Reaction
             activity_function = new CompoundActivityFunction(activity_functions);
         }
 
-        public Action Catalyze(Cell.Slot slot)
+        protected override Action GetAction(Cell.Slot slot)
         {
-            float activity = activity_function.Compute(slot.Cell.Organism.Cytozol);
+            float activity = activity_function.Compute(slot.Cell.Organism.Cytozol) * slot.CatalystCompound.Quantity;
 
             Dictionary<Cell.Slot, Compound> slot_reactants = new Dictionary<Cell.Slot, Compound>();
             foreach (Compound compound in this.slot_reactants.Keys)
-                slot_reactants[slot.Cell.Slots[slot.Index + this.slot_reactants[compound]]] = new Compound(compound.Molecule, compound.Quantity* activity);
+                slot_reactants[slot.Cell.Slots[slot.Index + this.slot_reactants[compound]]] = new Compound(compound.Molecule, compound.Quantity * activity);
 
             Dictionary<Cell.Slot, Compound> slot_products = new Dictionary<Cell.Slot, Compound>();
             foreach (Compound compound in this.slot_products.Keys)
@@ -593,15 +594,13 @@ public class Reaction
             foreach (Compound compound in this.cytozol_products)
                 cytozol_products.Add(new Compound(compound.Molecule, compound.Quantity * activity));
 
-            return new CompositeAction(slot, 
-                                       new ReactionAction(slot, 
-                                                          slot_reactants, 
-                                                          slot_products,
-                                                          cytozol_reactants, 
-                                                          cytozol_products), 
-                                       ATP_balance > 0 ?
-                                       (Action) new ATPProductionAction(slot, ATP_balance) :
-                                       (Action) new ATPConsumptionAction(slot, -ATP_balance));
+            return new EnergeticReactionAction(slot, 
+                                               new ReactionAction(slot,
+                                                                  slot_reactants,
+                                                                  slot_products,
+                                                                  cytozol_reactants,
+                                                                  cytozol_products), 
+                                               ATP_balance * activity);
         }
     }
 
@@ -672,21 +671,14 @@ public class Reaction
     class MutantRibozyme : Ribozyme, MutantCatalyst
     {
         Reaction reaction;
-        Catalyst catalyst;
 
         public MutantRibozyme(string name, Reaction reaction_) 
-            : base(name, (int)(8 * 
+            : base(new CatalystImplementation(name, reaction_), (int)(8 * 
                                reaction_.potential.Value / 
                                reaction_.GetMaxWeight() / 
                                PotentialFunction.BasePotential))
         {
             reaction = reaction_;
-            catalyst = new CatalystImplementation(reaction);
-        }
-
-        public override Action Catalyze(Cell.Slot slot)
-        {
-            return catalyst.Catalyze(slot);
         }
 
         public MutantCatalyst Mutate()
@@ -701,18 +693,12 @@ public class Reaction
         Catalyst catalyst;
 
         public MutantEnzyme(string name, Reaction reaction_)
-            : base(name, (int)(16 *
+            : base(new CatalystImplementation(name, reaction_), (int)(16 *
                                reaction_.potential.Value /
                                reaction_.GetMaxWeight() /
                                PotentialFunction.BasePotential))
         {
             reaction = reaction_;
-            catalyst = new CatalystImplementation(reaction);
-        }
-
-        public override Action Catalyze(Cell.Slot slot)
-        {
-            return catalyst.Catalyze(slot);
         }
 
         public MutantCatalyst Mutate()

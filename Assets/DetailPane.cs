@@ -55,7 +55,7 @@ public class DetailPane : GoodBehavior
 
     private void Start()
     {
-        AddDNASequence("CACTCCAATTCT" + Ribozyme.Rotase.Sequence + "TTTCATTCTTACTGACCCTCCTACCAGTGAGACGAATCCAAATTT");
+        AddDNASequence("CACTCCAATTCT" + Ribozyme.GetRibozymeFamily("Rotase")[0].Sequence + "TTTCATTCTTACTGACAATCCTACCAGTGAGACGAATCCAAATTT");
 
         InitializeSequenceElements();
     }
@@ -81,8 +81,10 @@ public class DetailPane : GoodBehavior
 
     void InitializeSequenceElements()
     {
+        AddDNASequenceElement("CAATAATAC", "Move One Unit");
         AddDNASequenceElement("CCCTAATAC", "Move Half Stack");
-        AddDNASequenceElement("CAATAATAC", "Move Stack");
+        AddDNASequenceElement("CGGTAATAC", "Move Full Stack");
+        AddDNASequenceElement("CTTTAATAC", "Move Max");
         AddDNASequenceElement("CATTCTTAA", "Cut and Paste DNA");
         AddDNASequenceElement("CACTAAAAC", "Activate Slot");
         AddDNASequenceElement("CAGTCTAAC", "Go To Marker");

@@ -1,36 +1,105 @@
-﻿
-
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public interface Catalyst
 {
+    string Name { get; }
+
     Action Catalyze(Cell.Slot slot);
 }
 
-
-public class Rotase : Ribozyme
+//This Catalyst executes the action in its entirety 
+//all at once, and therefore may have to wait several
+//turns building up to it. 
+public abstract class ProgressiveCatalyst : Catalyst
 {
-    public Rotase() : base("Rotase", 6)
+    static Dictionary<Cell.Slot, Action> actions_in_progress = new Dictionary<Cell.Slot, Action>();
+
+    public string Name { get; private set; }
+
+    public ProgressiveCatalyst(string name)
+    {
+        Name = name;
+    }
+
+    protected abstract Action GetAction(Cell.Slot slot);
+
+    protected Action GetActionInProgress(Cell.Slot slot)
+    {
+        if (!actions_in_progress.ContainsKey(slot))
+            actions_in_progress[slot] = null;
+
+        Action action = actions_in_progress[slot];
+
+        if (action == null || action.HasFailed || action.IsPaidFor)
+            actions_in_progress[slot] = GetAction(slot);
+
+        action = actions_in_progress[slot];
+        if (action != null && action.Prepare())
+            return action;
+        else
+            return null;
+    }
+
+    public virtual Action Catalyze(Cell.Slot slot)
+    {
+        Action action = GetActionInProgress(slot);
+        if (action == null)
+            return null;
+
+        action.Pay(slot.CatalystCompound.Quantity);
+
+        if (action.IsPaidFor)
+            return action;
+        else
+            return null;
+    }
+}
+
+//This Catalyst always returns an action (if able), 
+//scaling the effect of the action to fit the 
+//productivity of the Catalyst. 
+public abstract class InstantCatalyst : ProgressiveCatalyst
+{
+    public InstantCatalyst(string name) : base(name)
+    {
+        
+    }
+
+    //Enforce productivity from above?
+    public override Action Catalyze(Cell.Slot slot)
+    { 
+        Action action = GetActionInProgress(slot);
+        if (action == null)
+            return null;
+
+        action.Pay(slot.CatalystCompound.Quantity);
+        action.Cost = action.AmountPaid;
+
+        return action;
+    }
+}
+
+
+
+
+public class Rotase : ProgressiveCatalyst
+{
+    public Rotase() : base("Rotase")
     {
 
     }
 
-    //Should Catalysts check if action is possible? Or should Actions? Both?
-    public override Action Catalyze(Cell.Slot slot)
+    protected override Action GetAction(Cell.Slot slot)
     {
-        Cell.Slot atp_slot = slot;
-
-        if (atp_slot.Compound == null || atp_slot.Compound.Molecule != Molecule.ATP)
-            return null;
-
-        return new PoweredAction(slot, atp_slot, 1, new RotateAction(slot));
+        return new PoweredAction(slot, slot, 1, new RotateAction(slot));
     }
 
 
     //Powered action?
     public class RotateAction : Action
     {
-        public RotateAction(Cell.Slot slot) : base(slot)
+        public RotateAction(Cell.Slot slot) : base(slot, 1)
         {
 
         }
@@ -47,18 +116,15 @@ public class Rotase : Ribozyme
 }
 
 
-public class Constructase : Ribozyme
+public class Constructase : ProgressiveCatalyst
 {
-    public Constructase() : base("Constructase", 6)
+    public Constructase() : base("Constructase")
     {
 
     }
 
-    public override Action Catalyze(Cell.Slot slot)
+    protected override Action GetAction(Cell.Slot slot)
     {
-        if (slot.Cell.Organism.GetNeighbor(slot.Cell, slot.Direction) != null)
-            return null;
-
         return new ConstructCell(slot);
     }
 
@@ -69,8 +135,8 @@ public class Constructase : Ribozyme
             : base(slot, slot, 5,
                    new ReactionAction(slot,
                                       null, null,
-                                      Utility.CreateList<Compound>(new Compound(Glucose, 7), 
-                                                                   new Compound(Phosphate, 1)), null))
+                                      Utility.CreateList<Compound>(new Compound(Molecule.Glucose, 7), 
+                                                                   new Compound(Molecule.Phosphate, 1)), null))
         {
 
         }
@@ -89,14 +155,14 @@ public class Constructase : Ribozyme
     }
 }
 
-public class Pipase : Ribozyme
+public class Pipase : InstantCatalyst
 {
-    public Pipase() : base("Pipase", 4)
+    public Pipase() : base("Pipase")
     {
 
     }
 
-    public override Action Catalyze(Cell.Slot slot)
+    protected override Action GetAction(Cell.Slot slot)
     {
         return new PipeAction(slot, 1);
     }
@@ -108,7 +174,7 @@ public class Pipase : Ribozyme
 
         public Compound PipedCompound { get; private set; }
 
-        public PipeAction(Cell.Slot slot, float rate_) : base(slot)
+        public PipeAction(Cell.Slot slot, float rate_) : base(slot, 1)
         {
             rate = rate_;
         }
@@ -129,7 +195,7 @@ public class Pipase : Ribozyme
 
         public override void Begin()
         {
-            PipedCompound = Slot.Compound.Split(rate);
+            PipedCompound = Slot.Compound.Split(rate * Scale);
         }
 
         public override void End()
@@ -147,29 +213,29 @@ public class Pipase : Ribozyme
     }
 }
 
-public class Exopumpase : Ribozyme
+public class Exopumpase : InstantCatalyst
 {
-    public Exopumpase() : base("Exopumpase", 6)
+    public Exopumpase() : base("Exopumpase")
     {
 
     }
 
-    public override Action Catalyze(Cell.Slot slot)
+    protected override Action GetAction(Cell.Slot slot)
     {
         return new PoweredAction(slot, slot.NextSlot, 0.1f, new PumpAction(slot, true, 1));
     }
 }
 
-public class Endopumpase : Ribozyme
+public class Endopumpase : InstantCatalyst
 {
-    public Endopumpase() : base("Endopumpase", 6)
+    public Endopumpase() : base("Endopumpase")
     {
 
     }
 
-    public override Action Catalyze(Cell.Slot slot)
+    protected override Action GetAction(Cell.Slot slot)
     {
-        return new PoweredAction(slot, slot.NextSlot, 0.1f, new PumpAction(slot, true, 1));
+        return new PoweredAction(slot, slot.NextSlot, 0.1f, new PumpAction(slot, false, 1));
     }
 }
 
@@ -215,13 +281,13 @@ public class PumpAction : Action
     {
         get
         {
-            return rate * Source.GetConcentration(PumpedMolecule) * 10000000;
+            return rate * Source.GetConcentration(PumpedMolecule) * 10000000 * Scale;
         }
     }
 
     public Compound PumpedCompound { get; private set; }
 
-    public PumpAction(Cell.Slot slot, bool cytozol_to_locale_, float rate_) : base(slot)
+    public PumpAction(Cell.Slot slot, bool cytozol_to_locale_, float rate_) : base(slot, 1)
     {
         cytozol_to_locale = cytozol_to_locale_;
         rate = rate_;
@@ -239,7 +305,7 @@ public class PumpAction : Action
 
     public override void Begin()
     {
-        PumpedCompound = Source.RemoveCompound(new Compound(PumpedMolecule, EffectiveRate));
+        PumpedCompound = Source.RemoveCompound(new Compound(PumpedMolecule, EffectiveRate * Slot.CatalystCompound.Quantity));
     }
 
     public override void End()
@@ -249,21 +315,21 @@ public class PumpAction : Action
 }
 
 
-public class Transcriptase : Ribozyme
+public class Transcriptase : InstantCatalyst
 {
-    public Transcriptase() : base("Transcriptase", 6)
+    public Transcriptase() : base("Transcriptase")
     {
 
     }
 
-    public override Action Catalyze(Cell.Slot slot)
+    protected override Action GetAction(Cell.Slot slot)
     {
         if (slot.Compound == null || !(slot.Compound.Molecule is DNA))
             return null;
 
-        int amp_count = 0, 
-            cmp_count = 0, 
-            gmp_count = 0, 
+        int amp_count = 0,
+            cmp_count = 0,
+            gmp_count = 0,
             tmp_count = 0;
         foreach (Nucleotide nucleotide in (slot.Compound.Molecule as DNA).Monomers)
         {
@@ -277,9 +343,9 @@ public class Transcriptase : Ribozyme
                 tmp_count++;
         }
 
-        Cell.Slot amp_slot = null, 
-                  cmp_slot = null, 
-                  gmp_slot = null, 
+        Cell.Slot amp_slot = null,
+                  cmp_slot = null,
+                  gmp_slot = null,
                   tmp_slot = null,
                   empty_slot = null;
 
@@ -299,31 +365,32 @@ public class Transcriptase : Ribozyme
             if (other_slot == null)
                 return null;
 
-        return new CompositeAction( 
-            slot, 
+        return new CompositeAction(
+            slot,
             new ReactionAction(
-                slot, 
+                slot,
                 Utility.CreateDictionary<Cell.Slot, Compound>(
                     amp_slot, new Compound(Nucleotide.AMP, amp_count),
                     cmp_slot, new Compound(Nucleotide.CMP, cmp_count),
                     gmp_slot, new Compound(Nucleotide.GMP, gmp_count),
-                    tmp_slot, new Compound(Nucleotide.TMP, tmp_count)), 
+                    tmp_slot, new Compound(Nucleotide.TMP, tmp_count)),
                 Utility.CreateDictionary<Cell.Slot, Compound>(
-                    empty_slot, new Compound(slot.Compound.Molecule, 1)), 
-                null, 
-                Utility.CreateList(new Compound(Molecule.Water, (slot.Compound.Molecule as DNA).Monomers.Count - 1))), 
-            new ATPConsumptionAction(slot, 2));
+                    empty_slot, new Compound(slot.Compound.Molecule, 1)),
+                null,
+                Utility.CreateList(new Compound(Molecule.Water, (slot.Compound.Molecule as DNA).Monomers.Count - 1)),
+                (amp_count + cmp_count + gmp_count + tmp_count) / (6.0f / 4.0f)),
+            new ATPConsumptionAction(slot, 1));
     }
 }
 
-public class Actuase : Ribozyme
+public class Actuase : InstantCatalyst
 {
-    public Actuase() : base("Actuase", 4)
+    public Actuase() : base("Actuase")
     {
 
     }
 
-    public override Action Catalyze(Cell.Slot slot)
+    protected override Action GetAction(Cell.Slot slot)
     {
         if (slot.Compound == null || !(slot.Compound.Molecule is DNA))
             return null;
@@ -334,30 +401,34 @@ public class Actuase : Ribozyme
             dna.ActiveCodonIndex = 0;
 
         object location0 = Interpretase.CodonToLocation(slot, dna.GetCodon(dna.ActiveCodonIndex + 0));
-        object location1= Interpretase.CodonToLocation(slot, dna.GetCodon(dna.ActiveCodonIndex + 1));
+        object location1 = Interpretase.CodonToLocation(slot, dna.GetCodon(dna.ActiveCodonIndex + 1));
 
         if (!(location0 is Cell.Slot) || !(location1 is Cell.Slot))
             return null;
 
-        return new Interpretase.MoveCommand(slot, dna.ActiveCodonIndex + 2, location1 as Cell.Slot, location0 as Cell.Slot, false);
+        return new Interpretase.MoveCommand(slot, 
+                                            dna.ActiveCodonIndex + 2, 
+                                            location1 as Cell.Slot, 
+                                            location0 as Cell.Slot, 
+                                            Interpretase.MoveCommand.Type.Max);
     }
 }
 
-public class Sporulase : Ribozyme
+public class Sporulase : ProgressiveCatalyst
 {
-    public Sporulase() : base("Sporulase", 8)
+    public Sporulase() : base("Sporulase")
     {
 
     }
 
-    public override Action Catalyze(Cell.Slot slot)
+    protected override Action GetAction(Cell.Slot slot)
     {
         return new PoweredAction(slot, slot, 4, new SporulateAction(slot));
     }
 
     public class SporulateAction : Action
     {
-        public SporulateAction(Cell.Slot slot) : base(slot)
+        public SporulateAction(Cell.Slot slot) : base(slot, 2)
         {
 
         }

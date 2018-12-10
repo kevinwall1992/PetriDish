@@ -1,32 +1,22 @@
 ﻿using System.Collections.Generic;
 
 
-public abstract class Ribozyme : DNA, Catalyst
+public class Ribozyme : DNA, Catalyst
 {
     static Dictionary<string, Ribozyme> ribozymes = new Dictionary<string, Ribozyme>();
     static Dictionary<string, List<Ribozyme>> ribozyme_families = new Dictionary<string, List<Ribozyme>>();
 
-    public static Interpretase Interpretase { get; private set; }
-    public static Rotase Rotase { get; private set; }
-    public static Constructase Constructase { get; private set; }
-    public static Pipase Pipase { get; private set; }
-    public static Exopumpase Exopumpase { get; private set; }
-    public static Endopumpase Endopumpase { get; private set; }
-    public static Transcriptase Transcriptase { get; private set; }
-    public static Actuase Actuase { get; private set; }
-    public static Sporulase Sporulase { get; private set; }
-
     static Ribozyme()
     {
-        Interpretase = new Interpretase();
-        Rotase = new Rotase();
-        Constructase = new Constructase();
-        Pipase = new Pipase();
-        Exopumpase = new Exopumpase();
-        Endopumpase = new Endopumpase();
-        Transcriptase = new Transcriptase();
-        Actuase = new Actuase();
-        Sporulase = new Sporulase();
+        new Ribozyme(new Interpretase(), 10);
+        new Ribozyme(new Rotase(), 6);
+        new Ribozyme(new Constructase(), 6);
+        new Ribozyme(new Pipase(), 4);
+        new Ribozyme(new Exopumpase(), 6);
+        new Ribozyme(new Endopumpase(), 6);
+        new Ribozyme(new Transcriptase(), 8);
+        new Ribozyme(new Actuase(), 6);
+        new Ribozyme(new Sporulase(), 10);
     }
 
     public static void RegisterNamedRibozyme(Ribozyme ribozyme, string name)
@@ -72,6 +62,8 @@ public abstract class Ribozyme : DNA, Catalyst
     }
 
 
+    Catalyst catalyst;
+
     public override string Name
     {
         get
@@ -84,9 +76,11 @@ public abstract class Ribozyme : DNA, Catalyst
         }
     }
 
-    public Ribozyme(string name, int codon_count) : base(GenerateUniqueDNASequence(codon_count))
+    public Ribozyme(Catalyst catalyst_, int codon_count) : base(GenerateUniqueDNASequence(codon_count))
     {
-        RegisterNamedRibozyme(this, name);
+        catalyst = catalyst_;
+
+        RegisterNamedRibozyme(this, catalyst.Name);
     }
 
     public Ribozyme(int codon_count)
@@ -94,5 +88,8 @@ public abstract class Ribozyme : DNA, Catalyst
 
     }
 
-    public abstract Action Catalyze(Cell.Slot slot);
+    public Action Catalyze(Cell.Slot slot)
+    {
+        return catalyst.Catalyze(slot);
+    }
 }

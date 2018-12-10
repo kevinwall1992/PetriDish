@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
 
-public abstract class Enzyme : Polymer, Catalyst
+public class Enzyme : Polymer, Catalyst
 {
     static Dictionary<string, Enzyme> enzymes = new Dictionary<string, Enzyme>();
     static Dictionary<string, List<Enzyme>> enzyme_families = new Dictionary<string, List<Enzyme>>();
@@ -44,6 +44,8 @@ public abstract class Enzyme : Polymer, Catalyst
     }
 
 
+    Catalyst catalyst;
+
     public override string Name
     {
         get
@@ -69,12 +71,14 @@ public abstract class Enzyme : Polymer, Catalyst
         }
     }
 
-    public Enzyme(string name, int length)
+    public Enzyme(Catalyst catalyst_, int length)
     {
+        catalyst = catalyst_;
+
         foreach (AminoAcid amino_acid in GenerateAminoAcidSequence(length))
             AddMonomer(amino_acid);
 
-        RegisterNamedEnzyme(this, name);
+        RegisterNamedEnzyme(this, catalyst.Name);
     }
 
     public Enzyme()
@@ -88,7 +92,10 @@ public abstract class Enzyme : Polymer, Catalyst
             base.AddMonomer(monomer);
     }
 
-    public abstract Action Catalyze(Cell.Slot slot);
+    public Action Catalyze(Cell.Slot slot)
+    {
+        return catalyst.Catalyze(slot);
+    }
 }
 
 

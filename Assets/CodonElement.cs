@@ -39,7 +39,7 @@ public class CodonElement : DetailPaneElement
 
     List<string> GetCodonOptions(string codon)
     {
-        List<string> command_codons = new List<string> { "CAA", "CAC", "CAG", "CAT", "CCC", "CCG" };
+        List<string> command_codons = new List<string> { "CAA", "CCC", "CGG", "CTT", "CAC", "CAG", "CAT", "CCG" };
         List<string> marker_codons = new List<string> { "TCT", "TGA", "TGC", "TGT", "TTA", "TTC", "TTG" };
         List<string> location_codons = new List<string> { "TAA", "TAC", "TAG", "TAT", "TCA", "TCC", "TCG" };
         List<string> value_codons = new List<string> { "AAA", "AAC", "AAG", "AAT", "ACA", "ACC", "ACG", "ACT", "AGA", "AGC", "AGG", "AGT", "ATA", "ATC", "ATG", "ATT" };
@@ -116,8 +116,10 @@ public class CodonElement : DetailPaneElement
             case 'C':
                 switch (codon)
                 {
-                    case "CAA": Description = "Move Stack"; break;
-                    case "CCC": Description = "Move"; break;
+                    case "CAA": Description = "Move Single Unit"; break;
+                    case "CCC": Description = "Move Half Stack"; break;
+                    case "CGG": Description = "Move Full Stack"; break;
+                    case "CTT": Description = "Move Max"; break;
                     case "CAC": Description = "Activate"; break;
                     case "CAG": Description = "Goto"; break;
                     case "CCG": Description = "Try"; break;

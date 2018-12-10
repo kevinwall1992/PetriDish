@@ -160,12 +160,20 @@ public class Cell
 
             if (Compound == null)
                 Compound = compound;
-            else if(Compound.Molecule == compound.Molecule)
+            else if (Compound.Molecule == compound.Molecule)
                 Compound.Quantity += compound.Quantity;
 
-            if (CatalystCompound == null && Compound.Molecule is Catalyst)
+            if (CatalystCompound == null)
             {
-                catalyst_compound = Compound;
+                if (Compound.Molecule is Catalyst)
+                {
+                    catalyst_compound = Compound;
+                    Compound = null;
+                }
+            }
+            else if (CatalystCompound.Molecule == Compound.Molecule)
+            {
+                CatalystCompound.Quantity += Compound.Quantity;
                 Compound = null;
             }
         }

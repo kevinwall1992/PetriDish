@@ -213,47 +213,62 @@ public class Pipase : InstantCatalyst
     }
 }
 
-public class Exopumpase : InstantCatalyst
+public class Pumpase : InstantCatalyst
 {
-    public Exopumpase() : base("Exopumpase")
-    {
+    bool pump_out;
+    Molecule molecule;
 
+    protected Pumpase(bool pump_out_, Molecule molecule_, string name) 
+        : base(name)
+    {
+        pump_out = pump_out_;
+        molecule = molecule_;
+    }
+
+    Molecule GetMolecule(Cell.Slot slot)
+    {
+        if (molecule != null)
+            return molecule;
+
+        if (slot.Compound == null)
+            return null;
+
+        return slot.Compound.Molecule;
     }
 
     protected override Action GetAction(Cell.Slot slot)
     {
-        return new PoweredAction(slot, slot.NextSlot, 0.1f, new PumpAction(slot, true, 1));
+        if (molecule == null && slot.Compound == null)
+            return null;
+
+        return new PoweredAction(slot, 
+                                 slot.NextSlot, 
+                                 0.1f, 
+                                 new PumpAction(slot, pump_out, GetMolecule(slot), 1));
     }
 }
 
-public class Endopumpase : InstantCatalyst
+public class Endopumpase : Pumpase
 {
-    public Endopumpase() : base("Endopumpase")
+    public Endopumpase(Molecule molecule = null) : base(false, molecule, "Endopumpase")
     {
 
     }
+}
 
-    protected override Action GetAction(Cell.Slot slot)
+public class Exopumpase : Pumpase
+{
+    public Exopumpase(Molecule molecule = null) : base(true, molecule, "Exopumpase")
     {
-        return new PoweredAction(slot, slot.NextSlot, 0.1f, new PumpAction(slot, false, 1));
+
     }
 }
 
 public class PumpAction : Action
 {
-    bool cytozol_to_locale;
+    bool pump_out;
+    Molecule molecule;
     float rate;
-
-    Molecule PumpedMolecule
-    {
-        get
-        {
-            if (Slot.Compound == null)
-                return null;
-
-            return Slot.Compound.Molecule;
-        }
-    }
 
     Solution Source
     {
@@ -262,7 +277,7 @@ public class PumpAction : Action
             if (!(Organism.Locale is WaterLocale))
                 throw new System.NotImplementedException();
 
-            return cytozol_to_locale ? Organism.Cytozol : (Organism.Locale as WaterLocale).Solution;
+            return pump_out ? Organism.Cytozol : (Organism.Locale as WaterLocale).Solution;
         }
     }
 
@@ -273,7 +288,7 @@ public class PumpAction : Action
             if (!(Organism.Locale is WaterLocale))
                 throw new System.NotImplementedException();
 
-            return cytozol_to_locale ? (Organism.Locale as WaterLocale).Solution : Organism.Cytozol;
+            return pump_out ? (Organism.Locale as WaterLocale).Solution : Organism.Cytozol;
         }
     }
 
@@ -281,23 +296,28 @@ public class PumpAction : Action
     {
         get
         {
-            return rate * Source.GetConcentration(PumpedMolecule) * 10000000 * Scale;
+            float source_concentration = Source.GetConcentration(molecule);
+            float destination_concentration = Destination.GetConcentration(molecule);
+
+            return rate * 
+                source_concentration * 10000000 *
+                Mathf.Min(source_concentration / destination_concentration, 10) *
+                Scale;
         }
     }
 
     public Compound PumpedCompound { get; private set; }
 
-    public PumpAction(Cell.Slot slot, bool cytozol_to_locale_, float rate_) : base(slot, 1)
+    public PumpAction(Cell.Slot slot, bool pump_out_, Molecule molecule_, float rate_) : base(slot, 1)
     {
-        cytozol_to_locale = cytozol_to_locale_;
+        pump_out = pump_out_;
+        molecule = molecule_;
         rate = rate_;
     }
 
     public override bool Prepare()
     {
-        if (PumpedMolecule == null)
-            Fail();
-        else if (Source.GetQuantity(PumpedMolecule) == 0)
+        if (!Slot.IsExposed)
             Fail();
 
         return !HasFailed;
@@ -305,7 +325,7 @@ public class PumpAction : Action
 
     public override void Begin()
     {
-        PumpedCompound = Source.RemoveCompound(new Compound(PumpedMolecule, EffectiveRate * Slot.CatalystCompound.Quantity));
+        PumpedCompound = Source.RemoveCompound(new Compound(molecule, EffectiveRate));
     }
 
     public override void End()

@@ -12,8 +12,9 @@ public class Ribozyme : DNA, Catalyst
         new Ribozyme(new Rotase(), 6);
         new Ribozyme(new Constructase(), 6);
         new Ribozyme(new Pipase(), 4);
-        new Ribozyme(new Exopumpase(), 6);
-        new Ribozyme(new Endopumpase(), 6);
+        new Ribozyme(new Endopumpase(Hydrogen), 6);
+        new Ribozyme(new Endopumpase(CarbonDioxide), 6);
+        new Ribozyme(new Exopumpase(Methane), 6);
         new Ribozyme(new Transcriptase(), 8);
         new Ribozyme(new Actuase(), 6);
         new Ribozyme(new Sporulase(), 10);

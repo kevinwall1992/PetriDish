@@ -165,6 +165,25 @@ public class ActionComponent : MonoBehaviour
                                                             .SetParameters(CellComponent.GetSlotComponent(move_command.InputSlot).CompoundComponent.gameObject, CellComponent.GetSlotComponent(move_command.OutputSlot).CompoundComponent.gameObject)
                                                             .SetLength(1.0f * length));
             }
+
+            if (action is Interpretase.SwapCommand)
+            {
+                Interpretase.SwapCommand swap_command = action as Interpretase.SwapCommand;
+
+                CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
+                compound_component.SetCompound(swap_command.CompoundA);
+
+                animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
+                                                            .SetParameters(CellComponent.GetSlotComponent(swap_command.SlotA).CompoundComponent.gameObject, CellComponent.GetSlotComponent(swap_command.SlotB).CompoundComponent.gameObject)
+                                                            .SetLength(1.0f * length));
+
+                compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
+                compound_component.SetCompound(swap_command.CompoundB);
+
+                animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
+                                                            .SetParameters(CellComponent.GetSlotComponent(swap_command.SlotB).CompoundComponent.gameObject, CellComponent.GetSlotComponent(swap_command.SlotA).CompoundComponent.gameObject)
+                                                            .SetLength(1.0f * length));
+            }
         }
     }
 

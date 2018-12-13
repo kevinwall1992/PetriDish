@@ -85,6 +85,7 @@ public class DetailPane : GoodBehavior
         AddDNASequenceElement("CCCTAATAC", "Move Half Stack");
         AddDNASequenceElement("CGGTAATAC", "Move Full Stack");
         AddDNASequenceElement("CTTTAATAC", "Move Max");
+        AddDNASequenceElement("CCATAATAC", "Swap");
         AddDNASequenceElement("CATTCTTAA", "Cut and Paste DNA");
         AddDNASequenceElement("CACTAAAAC", "Activate Slot");
         AddDNASequenceElement("CAGTCTAAC", "Go To Marker");

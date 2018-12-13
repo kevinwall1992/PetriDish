@@ -60,6 +60,17 @@ public class Interpretase : ProgressiveCatalyst
                                         source_location as Cell.Slot,
                                         move_type);
 
+            case "CCA":
+                object a_location = CodonToLocation(slot, dna.GetCodon(command_codon_index + 1));
+                if (!(a_location is Cell.Slot))
+                    return new NullCommand(slot, step_codon_index);
+
+                object b_location = CodonToLocation(slot, dna.GetCodon(command_codon_index + 2));
+                if (!(b_location is Cell.Slot))
+                    return new NullCommand(slot, step_codon_index);
+
+                return new SwapCommand(slot, step_codon_index, a_location as Cell.Slot, b_location as Cell.Slot);
+
             case "CAC":
                 object activation_location = CodonToLocation(slot, dna.GetCodon(command_codon_index + 1));
                 if (!(activation_location is Cell.Slot))
@@ -515,24 +526,24 @@ public class Interpretase : ProgressiveCatalyst
             type = type_;
 
             if (MovedCompound == null)
-                Scale = 0;
+                Cost = 0;
             else
                 switch (type)
                 {
                     case Type.Single:
-                        Scale = 1;
+                        Cost = 1;
                         break;
 
                     case Type.Half:
-                        Scale = MovedCompound.Quantity / 2;
+                        Cost = MovedCompound.Quantity / 2;
                         break;
 
                     case Type.Full:
-                        Scale = MovedCompound.Quantity;
+                        Cost = MovedCompound.Quantity;
                         break;
 
                     case Type.Max:
-                        Scale = MovedCompound.Quantity;
+                        Cost = MovedCompound.Quantity;
                         break;
                 }
         }
@@ -544,7 +555,7 @@ public class Interpretase : ProgressiveCatalyst
             else if (type == Type.Single && MovedCompound.Quantity < 1)
                 Fail();
 
-            return !HasFailed;
+            return base.Prepare();
         }
 
         public override void Begin()
@@ -555,6 +566,48 @@ public class Interpretase : ProgressiveCatalyst
         }
 
         public enum Type { Single, Half, Full, Max }
+    }
+
+    public class SwapCommand : Command
+    {
+        public Cell.Slot SlotA { get; private set; }
+        public Cell.Slot SlotB { get; private set; }
+
+        public Compound CompoundA { get; private set; }
+        public Compound CompoundB { get; private set; }
+
+        public SwapCommand(Cell.Slot slot, int step_codon_index, Cell.Slot slot_a, Cell.Slot slot_b) : base(slot, step_codon_index, 1)
+        {
+            SlotA = slot_a;
+            SlotB = slot_b;
+
+            Cost = (SlotA.Compound != null ? SlotA.Compound.Quantity : 0) + 
+                   (SlotB.Compound != null ? SlotB.Compound.Quantity : 0);
+        }
+
+        public override bool Prepare()
+        {
+            return base.Prepare();
+        }
+
+        public override void Begin()
+        {
+            CompoundA = SlotA.RemoveCompound();
+            CompoundB = SlotB.RemoveCompound();
+
+            base.Begin();
+        }
+
+        public override void End()
+        {
+            if (CompoundA != null)
+                SlotB.AddCompound(CompoundA);
+
+            if (CompoundB != null)
+                SlotA.AddCompound(CompoundB);
+
+            base.End();
+        }
     }
 
     public class GoToCommand : Command

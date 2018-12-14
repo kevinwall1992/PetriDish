@@ -519,9 +519,13 @@ public class Reaction
 
         public CatalystImplementation(string name, Reaction reaction) : base(name)
         {
+            //Until we actually have a way to mutate reactions in game, 
+            //need to have least disruptive slot order
+            //This ordering may also be useful later as a possible mutation
+            bool simple_slot_order = true;
             List<int> available_slots = new List<int> { 1, 2, 3, 4, 5 };
-            available_slots.Sort(delegate (int a, int b) { return reaction.slot_order[a].Value.CompareTo(reaction.slot_order[b].Value); });
-            available_slots.Insert(0, 0);
+            if(!simple_slot_order)
+                available_slots.Sort(delegate (int a, int b) { return reaction.slot_order[a].Value.CompareTo(reaction.slot_order[b].Value); });
 
             float enthalpy = 0;
             foreach (Compound compound in reaction.reactants.Keys)
@@ -576,7 +580,7 @@ public class Reaction
 
         protected override Action GetAction(Cell.Slot slot)
         {
-            float activity = activity_function.Compute(slot.Cell.Organism.Cytozol) * slot.CatalystCompound.Quantity;
+            float activity = activity_function.Compute(slot.Cell.Organism.Cytozol);
 
             Dictionary<Cell.Slot, Compound> slot_reactants = new Dictionary<Cell.Slot, Compound>();
             foreach (Compound compound in this.slot_reactants.Keys)

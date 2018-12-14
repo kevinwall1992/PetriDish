@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-
+using UnityEngine;
 
 public abstract class Action
 {
@@ -137,6 +137,45 @@ public class WrapperAction : CompositeAction
     }
 }
 
+
+public class MoveAction : Action
+{
+    public Cell.Slot InputSlot { get; private set; }
+    public Cell.Slot OutputSlot { get; private set; }
+
+    public Compound Compound { get; private set; }
+
+    public MoveAction(Cell.Slot slot, Cell.Slot input_slot, Cell.Slot output_slot, float quantity)
+        : base(slot, 1)
+    {
+        InputSlot = input_slot;
+        OutputSlot = output_slot;
+
+        if (InputSlot.Compound == null)
+            Cost = 0;
+        else
+            Cost = Mathf.Min(quantity, InputSlot.Compound.Quantity);
+    }
+
+    public override bool Prepare()
+    {
+        if (InputSlot.Compound == null || 
+            (OutputSlot.Compound != null && OutputSlot.Compound.Molecule != InputSlot.Compound.Molecule))
+            Fail();
+
+        return !HasFailed;
+    }
+
+    public override void Begin()
+    {
+        Compound = InputSlot.Compound.Split(Scale);
+    }
+
+    public override void End()
+    {
+        OutputSlot.AddCompound(Compound);
+    }
+}
 
 public class ReactionAction : Action
 {

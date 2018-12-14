@@ -235,17 +235,30 @@ public class Organism : Chronal
     {
         Membrane.Step();
 
-        List<Action> actions= new List<Action>();
+        List<Action> commands = new List<Action>(),
+                     reactions = new List<Action>(),
+                     move_actions = new List<Action>(),
+                     powered_actions = new List<Action>();
 
         foreach (List<Cell> column in cells)
             foreach (Cell cell in column)
                 if (cell != null)
-                    actions.AddRange(cell.GetActions());
+                    foreach (Action action in cell.GetActions())
+                    {
+                        if (action is Interpretase.Command)
+                            commands.Add(action);
+                        else if (action is ReactionAction)
+                            reactions.Add(action);
+                        else if (action is MoveAction)
+                            move_actions.Add(action);
+                        else if (action is PoweredAction)
+                            powered_actions.Add(action);
+                    }
 
-        ExecuteActions(actions.OfType<Interpretase.Command>().ToList());
-        ExecuteActions(actions.OfType<ReactionAction>().ToList());
-        ExecuteActions(actions.OfType<Pipase.PipeAction>().ToList());
-        ExecuteActions(actions.OfType<PoweredAction>().ToList());
+        ExecuteActions(commands);
+        ExecuteActions(reactions);
+        ExecuteActions(move_actions);
+        ExecuteActions(powered_actions);
     }
 }
 

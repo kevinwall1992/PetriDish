@@ -55,7 +55,7 @@ public class DetailPane : GoodBehavior
 
     private void Start()
     {
-        AddDNASequence("CACACCAATTCT" + Ribozyme.GetRibozymeFamily("Rotase")[0].Sequence + "TTTCATTCTAACTGACAAACCAACCAGTGAGACGAAACCAAATTT");
+        AddDNASequence("CACACAAATTCT" + Ribozyme.GetRibozymeFamily("Rotase")[0].Sequence + "TTTCATTCTAAGTGACAAACAAACCAGTGAGACGAAACAAAATTT");
 
         InitializeSequenceElements();
     }

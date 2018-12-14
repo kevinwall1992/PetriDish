@@ -4,37 +4,13 @@ using UnityEngine;
 
 public class SlotComponent : MonoBehaviour
 {
-    Cell.Slot slot;
+    public Cell.Slot Slot { get; private set; }
 
-    CompoundComponent compound_component;
-    CompoundComponent catalyst_compound_component;
+    public GameObject LeftCorner { get; private set; }
 
-    GameObject left_corner, right_corner;
+    public GameObject RightCorner { get; private set; }
 
-    public Cell.Slot Slot
-    {
-        get { return slot; }
-    }
-
-    public GameObject LeftCorner
-    {
-        get { return left_corner; }
-    }
-
-    public GameObject RightCorner
-    {
-        get { return right_corner; }
-    }
-
-    public CompoundComponent CompoundComponent
-    {
-        get { return compound_component; }
-    }
-
-    public CompoundComponent CatalystCompoundComponent
-    {
-        get { return catalyst_compound_component; }
-    }
+    public CompoundComponent CompoundComponent { get; private set; }
 
     public CellComponent CellComponent
     {
@@ -43,20 +19,20 @@ public class SlotComponent : MonoBehaviour
 
     public Vector2 Center
     {
-        get { return compound_component.transform.position; }
+        get { return CompoundComponent.transform.position; }
     }
 
     private void Awake()
     {
         gameObject.AddComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("slot");
 
-        left_corner = new GameObject("left_corner");
-        left_corner.transform.parent = transform;
-        left_corner.transform.localPosition = new Vector3(-0.4f, 1.5f);
+        LeftCorner = new GameObject("left_corner");
+        LeftCorner.transform.parent = transform;
+        LeftCorner.transform.localPosition = new Vector3(-0.4f, 1.5f);
 
-        right_corner = new GameObject("right_corner");
-        right_corner.transform.parent = transform;
-        right_corner.transform.localPosition = new Vector3(0.4f, 1.5f);
+        RightCorner = new GameObject("right_corner");
+        RightCorner.transform.parent = transform;
+        RightCorner.transform.localPosition = new Vector3(0.4f, 1.5f);
     }
 
     void Start()
@@ -66,23 +42,18 @@ public class SlotComponent : MonoBehaviour
 
     void Update()
     {
-        compound_component.SetCompound(Slot.Compound);
-        catalyst_compound_component.SetCompound(Slot.CatalystCompound);
+        CompoundComponent.SetCompound(Slot.Compound);
     }
 
-    public SlotComponent SetSlot(Cell.Slot slot_)
+    public SlotComponent SetSlot(Cell.Slot slot)
     {
-        slot = slot_;
+        Slot = slot;
 
-        if(compound_component== null)
+        if(CompoundComponent == null)
         {
-            compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
-            compound_component.transform.parent = this.transform;
-            compound_component.transform.localPosition = new Vector3(0, 1.5f, 0);
-
-            catalyst_compound_component = new GameObject("catalyst").AddComponent<CompoundComponent>();
-            catalyst_compound_component.transform.parent = this.transform;
-            catalyst_compound_component.transform.localPosition = new Vector3(0, 1.5f, 0);
+            CompoundComponent = new GameObject("compound").AddComponent<CompoundComponent>();
+            CompoundComponent.transform.parent = this.transform;
+            CompoundComponent.transform.localPosition = new Vector3(0, 1.5f, 0);
         }
 
         return this;

@@ -104,16 +104,28 @@ public class OrganismComponent : MonoBehaviour
     {
         Organism.Membrane.Step();
 
-        List<Action> new_actions= new List<Action>();
+        List<Action> commands = new List<Action>(),
+                     reactions = new List<Action>(),
+                     move_actions = new List<Action>(),
+                     powered_actions = new List<Action>();
 
         foreach (CellComponent cell_component in cell_components)
-            new_actions.AddRange(cell_component.Cell.GetActions());
+            foreach (Action action in cell_component.Cell.GetActions())
+            {
+                if (action is Interpretase.Command)
+                    commands.Add(action);
+                else if (action is ReactionAction)
+                    reactions.Add(action);
+                else if (action is MoveAction)
+                    move_actions.Add(action);
+                else if (action is PoweredAction)
+                    powered_actions.Add(action);
+            }
 
-        actions.Enqueue(FilterActions<Interpretase.Command>(new_actions));
-        actions.Enqueue(Utility.Concatenate(FilterActions<ReactionAction>(new_actions), 
-                                            FilterActions<EnergeticReactionAction>(new_actions)));
-        actions.Enqueue(FilterActions<Pipase.PipeAction>(new_actions));
-        actions.Enqueue(FilterActions<PoweredAction>(new_actions));
+        actions.Enqueue(commands);
+        actions.Enqueue(reactions);
+        actions.Enqueue(move_actions);
+        actions.Enqueue(powered_actions);
     }
 
     public void ResetExperiment(string dna_sequence= "")
@@ -130,7 +142,7 @@ public class OrganismComponent : MonoBehaviour
         if (dna_sequence != "")
         {
             cell.Slots[0].AddCompound(new Compound(Ribozyme.GetRibozymeFamily("Interpretase")[0], 1));
-            cell.Slots[0].AddCompound(new Compound(new DNA(dna_sequence), 1));
+            cell.Slots[5].AddCompound(new Compound(new DNA(dna_sequence), 1));
             Organism.Cytozol.AddCompound(new Compound(Molecule.ATP, 10));
         }
     }

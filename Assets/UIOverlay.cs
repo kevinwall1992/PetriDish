@@ -27,7 +27,7 @@ public class UIOverlay : GoodBehavior
         Dictionary<CompoundComponent, Text>.KeyCollection keys = compound_quantity_texts.Keys;
         List<CompoundComponent> deleted_compound_components= new List<CompoundComponent>();
         foreach (CompoundComponent compound_component in keys)
-            if (compound_component == null || compound_component.Compound== null || IsActiveCatalyst(compound_component))
+            if (compound_component == null || compound_component.Compound== null)
                 deleted_compound_components.Add(compound_component);
         foreach (CompoundComponent compound_component in deleted_compound_components)
         {
@@ -39,7 +39,7 @@ public class UIOverlay : GoodBehavior
         CompoundComponent[] compound_components = GameObject.FindObjectsOfType<CompoundComponent>();
         foreach (CompoundComponent compound_component in compound_components)
         {
-            if (!compound_quantity_texts.ContainsKey(compound_component) && compound_component.Compound!= null && !IsActiveCatalyst(compound_component))
+            if (!compound_quantity_texts.ContainsKey(compound_component) && compound_component.Compound!= null)
             {
                 compound_quantity_texts[compound_component] = GameObject.Instantiate(quantity_text_prefab);
                 compound_quantity_texts[compound_component].transform.parent = transform;
@@ -57,13 +57,5 @@ public class UIOverlay : GoodBehavior
             text_color.a = compound_component.GetComponent<SpriteRenderer>().color.a;
             compound_quantity_texts[compound_component].color = text_color;
         }
-    }
-
-    bool IsActiveCatalyst(CompoundComponent compound_component)
-    {
-        if (compound_component.SlotComponent == null)
-            return false;
-
-        return compound_component.SlotComponent.CatalystCompoundComponent == compound_component;
     }
 }

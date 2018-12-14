@@ -57,8 +57,8 @@ public class Cell
         List<Action> actions = new List<Action>();
 
         foreach (Slot slot in slots)
-            if (slot.CatalystCompound != null)
-                actions.Add((slot.CatalystCompound.Molecule as Catalyst).Catalyze(slot));
+            if (slot.Compound != null && slot.Compound.Molecule is Catalyst)
+                actions.Add((slot.Compound.Molecule as Catalyst).Catalyze(slot));
 
         return actions;
     }
@@ -69,7 +69,6 @@ public class Cell
         Cell cell;
 
         Compound compound;
-        Compound catalyst_compound;
 
         public Cell Cell
         {
@@ -92,33 +91,6 @@ public class Cell
             }
 
             private set { compound = value; }
-        }
-
-        public Compound CatalystCompound
-        {
-            get
-            {
-                if (catalyst_compound != null && catalyst_compound.Quantity == 0)
-                    catalyst_compound = null;
-
-                return catalyst_compound;
-            }
-
-            private set { catalyst_compound = value; }
-        }
-
-        public Compound ExposedCompound
-        {
-            get
-            {
-                if (Compound != null)
-                    return Compound;
-
-                if (CatalystCompound != null)
-                    return CatalystCompound;
-
-                return null;
-            }
         }
 
         public int Index
@@ -171,45 +143,15 @@ public class Cell
 
         public void AddCompound(Compound compound)
         {
-            if (compound.Quantity <= 0)
-                return;
-
             if (Compound == null)
                 Compound = compound;
             else if (Compound.Molecule == compound.Molecule)
                 Compound.Quantity += compound.Quantity;
-
-            if (CatalystCompound == null)
-            {
-                if (Compound.Molecule is Catalyst)
-                {
-                    catalyst_compound = Compound;
-                    Compound = null;
-                }
-            }
-            else if (CatalystCompound.Molecule == Compound.Molecule)
-            {
-                CatalystCompound.Quantity += Compound.Quantity;
-                Compound = null;
-            }
         }
 
-        public Compound RemoveExposedCompound()
+        public Compound RemoveCompound()
         {
-            Compound removed_compound;
-
-            if (Compound != null)
-            {
-                removed_compound = Compound;
-                Compound = null;
-            }
-            else
-            {
-                removed_compound = CatalystCompound;
-                CatalystCompound = null;
-            }
-
-            return removed_compound;
+            return Compound.Split(Compound.Quantity);
         }
     }
 

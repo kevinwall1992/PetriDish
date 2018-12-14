@@ -47,12 +47,20 @@ public abstract class ProgressiveCatalyst : Catalyst
         if (action == null)
             return null;
 
-        action.Pay(slot.CatalystCompound.Quantity);
+        action.Pay(slot.Compound.Quantity);
 
         if (action.IsPaidFor)
             return action;
         else
             return null;
+    }
+
+    protected static T GetMoleculeInSlotAs<T>(Cell.Slot slot) where T : Molecule
+    {
+        if (slot.Compound == null)
+            return null;
+
+        return slot.Compound.Molecule as T;
     }
 }
 
@@ -73,7 +81,7 @@ public abstract class InstantCatalyst : ProgressiveCatalyst
         if (action == null)
             return null;
 
-        action.Pay(slot.CatalystCompound.Quantity);
+        action.Pay(slot.Compound.Quantity);
         action.Cost = action.AmountPaid;
 
         return action;
@@ -92,7 +100,7 @@ public class Rotase : ProgressiveCatalyst
 
     protected override Action GetAction(Cell.Slot slot)
     {
-        return new PoweredAction(slot, slot, 1, new RotateAction(slot));
+        return new PoweredAction(slot, slot.PreviousSlot, 1, new RotateAction(slot));
     }
 
 
@@ -132,7 +140,7 @@ public class Constructase : ProgressiveCatalyst
     public class ConstructCell : PoweredAction
     {
         public ConstructCell(Cell.Slot slot)
-            : base(slot, slot, 5,
+            : base(slot, slot.PreviousSlot, 5,
                    new ReactionAction(slot,
                                       null, null,
                                       Utility.CreateList<Compound>(new Compound(Molecule.Glucose, 7), 
@@ -164,53 +172,7 @@ public class Pipase : InstantCatalyst
 
     protected override Action GetAction(Cell.Slot slot)
     {
-        return new PipeAction(slot, 1);
-    }
-
-
-    public class PipeAction : Action
-    {
-        float rate;
-
-        public Compound PipedCompound { get; private set; }
-
-        //Change rate to quantity
-        public PipeAction(Cell.Slot slot, float rate_) : base(slot, 1)
-        {
-            rate = rate_;
-        }
-
-        public override bool Prepare()
-        {
-            if (Slot.Compound == null)
-                Fail();
-
-            if (Slot.AcrossSlot != null)
-                if (Slot.AcrossSlot.Compound != null &&
-                    Slot.AcrossSlot.Compound.Molecule != Slot.Compound.Molecule)
-                    Fail();
-
-            return !HasFailed;
-        }
-
-
-        public override void Begin()
-        {
-            PipedCompound = Slot.Compound.Split(rate * Scale);
-        }
-
-        public override void End()
-        {
-            if (Slot.AcrossSlot != null)
-                Slot.AcrossSlot.AddCompound(PipedCompound);
-            else
-            {
-                if (Organism.Locale is WaterLocale)
-                    (Organism.Locale as WaterLocale).Solution.AddCompound(PipedCompound);
-                else
-                    throw new System.NotImplementedException();
-            }
-        }
+        return new MoveAction(slot, slot.PreviousSlot, slot.AcrossSlot, 1);
     }
 }
 
@@ -234,7 +196,7 @@ public class Pumpase : InstantCatalyst
         if (slot.Compound == null)
             return null;
 
-        return slot.Compound.Molecule;
+        return slot.PreviousSlot.Compound.Molecule;
     }
 
     protected override Action GetAction(Cell.Slot slot)
@@ -243,7 +205,7 @@ public class Pumpase : InstantCatalyst
             return null;
 
         return new PoweredAction(slot, 
-                                 slot.NextSlot, 
+                                 slot.PreviousSlot, 
                                  0.1f, 
                                  new PumpAction(slot, pump_out, GetMolecule(slot), 1));
     }
@@ -345,14 +307,16 @@ public class Transcriptase : InstantCatalyst
 
     protected override Action GetAction(Cell.Slot slot)
     {
-        if (slot.Compound == null || !(slot.Compound.Molecule is DNA))
+        Cell.Slot dna_slot = slot.PreviousSlot;
+        DNA dna = GetMoleculeInSlotAs<DNA>(dna_slot);
+        if (dna == null)
             return null;
 
         int amp_count = 0,
             cmp_count = 0,
             gmp_count = 0,
             tmp_count = 0;
-        foreach (Nucleotide nucleotide in (slot.Compound.Molecule as DNA).Monomers)
+        foreach (Nucleotide nucleotide in dna.Monomers)
         {
             if (nucleotide == Nucleotide.AMP)
                 amp_count++;
@@ -367,13 +331,10 @@ public class Transcriptase : InstantCatalyst
         Cell.Slot amp_slot = null,
                   cmp_slot = null,
                   gmp_slot = null,
-                  tmp_slot = null,
-                  empty_slot = null;
+                  tmp_slot = null;
 
         foreach (Cell.Slot other_slot in slot.Cell.Slots)
-            if (other_slot.Compound == null)
-                empty_slot = other_slot;
-            else if (other_slot.Compound.Molecule == Nucleotide.AMP)
+            if (other_slot.Compound.Molecule == Nucleotide.AMP)
                 amp_slot = other_slot;
             else if (other_slot.Compound.Molecule == Nucleotide.CMP)
                 cmp_slot = other_slot;
@@ -382,7 +343,7 @@ public class Transcriptase : InstantCatalyst
             else if (other_slot.Compound.Molecule == Nucleotide.TMP)
                 tmp_slot = other_slot;
 
-        foreach (Cell.Slot other_slot in Utility.CreateList(amp_slot, cmp_slot, gmp_slot, tmp_slot, empty_slot))
+        foreach (Cell.Slot other_slot in Utility.CreateList(amp_slot, cmp_slot, gmp_slot, tmp_slot))
             if (other_slot == null)
                 return null;
 
@@ -396,9 +357,9 @@ public class Transcriptase : InstantCatalyst
                     gmp_slot, new Compound(Nucleotide.GMP, gmp_count),
                     tmp_slot, new Compound(Nucleotide.TMP, tmp_count)),
                 Utility.CreateDictionary<Cell.Slot, Compound>(
-                    empty_slot, new Compound(slot.Compound.Molecule, 1)),
+                    slot.AcrossSlot, new Compound(dna_slot.Compound.Molecule, 1)),
                 null,
-                Utility.CreateList(new Compound(Molecule.Water, (slot.Compound.Molecule as DNA).Monomers.Count - 1)),
+                Utility.CreateList(new Compound(Molecule.Water, dna.Monomers.Count - 1)),
                 (amp_count + cmp_count + gmp_count + tmp_count) / (6.0f / 4.0f)),
             new ATPConsumptionAction(slot, 1));
     }
@@ -413,27 +374,28 @@ public class Actuase : InstantCatalyst
 
     protected override Action GetAction(Cell.Slot slot)
     {
-        if (slot.Compound == null || !(slot.Compound.Molecule is DNA))
+        Cell.Slot dna_slot = slot.PreviousSlot;
+        DNA dna = GetMoleculeInSlotAs<DNA>(dna_slot);
+        if (dna == null)
             return null;
-
-        DNA dna = slot.Compound.Molecule as DNA;
 
         if (dna.ActiveCodonIndex >= dna.CodonCount)
             dna.ActiveCodonIndex = 0;
 
         int codon_index = dna.ActiveCodonIndex;
 
-        object location0 = Interpretase.CodonToLocation(slot, codon_index, out codon_index);
-        object location1 = Interpretase.CodonToLocation(slot, codon_index, out codon_index);
+        object location0 = Interpretase.CodonToLocation(dna_slot, codon_index, out codon_index);
+        object location1 = Interpretase.CodonToLocation(dna_slot, codon_index, out codon_index);
 
         if (!(location0 is Cell.Slot) || !(location1 is Cell.Slot))
             return null;
 
-        return new Interpretase.MoveCommand(slot, 
+        return new Interpretase.MoveCommand(slot,
+                                            dna_slot,
                                             dna.ActiveCodonIndex + 2, 
                                             location1 as Cell.Slot, 
                                             location0 as Cell.Slot, 
-                                            slot.CatalystCompound.Quantity);
+                                            1);
     }
 }
 
@@ -446,7 +408,7 @@ public class Sporulase : ProgressiveCatalyst
 
     protected override Action GetAction(Cell.Slot slot)
     {
-        return new PoweredAction(slot, slot, 4, new SporulateAction(slot));
+        return new PoweredAction(slot, slot.PreviousSlot, 4, new SporulateAction(slot));
     }
 
     public class SporulateAction : Action

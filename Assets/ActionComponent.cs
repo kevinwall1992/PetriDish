@@ -160,17 +160,17 @@ public class ActionComponent : MonoBehaviour
                                                             .SetLength(0.5f));
             }
 
-            if (action is Interpretase.MoveCommand)
+            if (action is MoveAction)
             {
-                Interpretase.MoveCommand move_command = action as Interpretase.MoveCommand;
+                MoveAction move_action = action as MoveAction;
 
                 CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
-                compound_component.SetCompound(move_command.OutputtedCompound);
+                compound_component.SetCompound(move_action.Compound);
 
-                SlotComponent output_slot_component = CellComponent.OrganismComponent.GetCellComponent(move_command.OutputSlot.Cell).GetSlotComponent(move_command.OutputSlot);
+                SlotComponent output_slot_component = CellComponent.OrganismComponent.GetCellComponent(move_action.OutputSlot.Cell).GetSlotComponent(move_action.OutputSlot);
 
                 animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
-                                                            .SetParameters(CellComponent.GetSlotComponent(move_command.InputSlot).CompoundComponent.gameObject, output_slot_component.CompoundComponent.gameObject)
+                                                            .SetParameters(CellComponent.GetSlotComponent(move_action.InputSlot).CompoundComponent.gameObject, output_slot_component.CompoundComponent.gameObject)
                                                             .SetLength(1.0f * length));
             }
 

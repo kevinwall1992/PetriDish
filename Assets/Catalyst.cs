@@ -172,7 +172,7 @@ public class Pipase : InstantCatalyst
 
     protected override Action GetAction(Cell.Slot slot)
     {
-        return new MoveAction(slot, slot.PreviousSlot, slot.AcrossSlot, 1);
+        return new MoveToSlotAction(slot, slot.PreviousSlot, slot.AcrossSlot, 1);
     }
 }
 

@@ -160,17 +160,48 @@ public class ActionComponent : MonoBehaviour
                                                             .SetLength(0.5f));
             }
 
-            if (action is MoveAction)
+            if (action is MoveToSlotAction || 
+                action is MoveToCytozolAction ||
+                action is MoveToLocaleAction)
             {
-                MoveAction move_action = action as MoveAction;
-
                 CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
-                compound_component.SetCompound(move_action.Compound);
+                GameObject source_game_object = null, 
+                           destination_game_object = null;
 
-                SlotComponent output_slot_component = CellComponent.OrganismComponent.GetCellComponent(move_action.OutputSlot.Cell).GetSlotComponent(move_action.OutputSlot);
+                Cell.Slot source_slot = null;
+
+                if (action is MoveToSlotAction)
+                {
+                    MoveToSlotAction move_to_slot_action = action as MoveToSlotAction;
+
+                    compound_component.SetCompound(move_to_slot_action.MovedCompound);
+
+                    source_slot = move_to_slot_action.Source;
+                    destination_game_object = OrganismComponent.GetSlotComponent(move_to_slot_action.Destination).CompoundComponent.gameObject;
+                }
+                else if (action is MoveToCytozolAction)
+                {
+                    MoveToCytozolAction move_to_cytozol_action = action as MoveToCytozolAction;
+
+                    compound_component.SetCompound(move_to_cytozol_action.MovedCompound);
+
+                    source_slot = move_to_cytozol_action.Source;
+                    destination_game_object = OrganismComponent.gameObject;
+                }
+                else if (action is MoveToLocaleAction)
+                {
+                    MoveToLocaleAction move_to_locale_action = action as MoveToLocaleAction;
+
+                    compound_component.SetCompound(move_to_locale_action.MovedCompound);
+
+                    source_slot = move_to_locale_action.Source;
+                    destination_game_object = OrganismComponent.GetSlotComponent(source_slot).Outside;
+                }
+
+                source_game_object = OrganismComponent.GetSlotComponent(source_slot).CompoundComponent.gameObject;
 
                 animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
-                                                            .SetParameters(CellComponent.GetSlotComponent(move_action.InputSlot).CompoundComponent.gameObject, output_slot_component.CompoundComponent.gameObject)
+                                                            .SetParameters(source_game_object, destination_game_object)
                                                             .SetLength(1.0f * length));
             }
 
@@ -190,18 +221,6 @@ public class ActionComponent : MonoBehaviour
 
                 animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
                                                             .SetParameters(CellComponent.GetSlotComponent(swap_command.SlotB).CompoundComponent.gameObject, CellComponent.GetSlotComponent(swap_command.SlotA).CompoundComponent.gameObject)
-                                                            .SetLength(1.0f * length));
-            }
-
-            if (action is Interpretase.DissolveCommand)
-            {
-                Interpretase.DissolveCommand dissolve_command = action as Interpretase.DissolveCommand;
-
-                CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
-                compound_component.SetCompound(dissolve_command.DissolvedCompound);
-
-                animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
-                                                            .SetParameters(CellComponent.GetSlotComponent(dissolve_command.SlotToDissolve).CompoundComponent.gameObject, CellComponent.gameObject)
                                                             .SetLength(1.0f * length));
             }
         }

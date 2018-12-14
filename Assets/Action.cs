@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 
@@ -138,29 +137,24 @@ public class WrapperAction : CompositeAction
 }
 
 
-public class MoveAction : Action
+public abstract class MoveAction<T> : Action
 {
-    public Cell.Slot InputSlot { get; private set; }
-    public Cell.Slot OutputSlot { get; private set; }
+    public Cell.Slot Source { get; private set; }
+    public T Destination { get; private set; }
 
-    public Compound Compound { get; private set; }
+    public Compound MovedCompound { get; private set; }
 
-    public MoveAction(Cell.Slot slot, Cell.Slot input_slot, Cell.Slot output_slot, float quantity)
-        : base(slot, 1)
+    public MoveAction(Cell.Slot slot, Cell.Slot source, T destination, float quantity) : base(slot, 1)
     {
-        InputSlot = input_slot;
-        OutputSlot = output_slot;
+        Source = source;
+        Destination = destination;
 
-        if (InputSlot.Compound == null)
-            Cost = 0;
-        else
-            Cost = Mathf.Min(quantity, InputSlot.Compound.Quantity);
+        Cost = source.Compound == null ? 0 : Mathf.Min(quantity, source.Compound.Quantity);
     }
 
     public override bool Prepare()
     {
-        if (InputSlot.Compound == null || 
-            (OutputSlot.Compound != null && OutputSlot.Compound.Molecule != InputSlot.Compound.Molecule))
+        if (Source.Compound == null)
             Fail();
 
         return !HasFailed;
@@ -168,14 +162,64 @@ public class MoveAction : Action
 
     public override void Begin()
     {
-        Compound = InputSlot.Compound.Split(Scale);
+        MovedCompound = Source.Compound.Split(Scale);
+    }
+}
+
+public class MoveToSlotAction : MoveAction<Cell.Slot>
+{
+    public MoveToSlotAction(Cell.Slot slot, Cell.Slot source, Cell.Slot destination, float quantity)
+        : base(slot, source, destination, quantity)
+    {
+
+    }
+
+    public override bool Prepare()
+    {
+        if (Source.Compound == null ||
+            (Destination.Compound != null && Destination.Compound.Molecule != Source.Compound.Molecule))
+            Fail();
+
+        return base.Prepare();
     }
 
     public override void End()
     {
-        OutputSlot.AddCompound(Compound);
+        Destination.AddCompound(MovedCompound);
     }
 }
+
+public class MoveToCytozolAction : MoveAction<Cytozol>
+{
+    public MoveToCytozolAction(Cell.Slot slot, Cell.Slot source, Cytozol destination, float quantity)
+        : base(slot, source, destination, quantity)
+    {
+
+    }
+
+    public override void End()
+    {
+        Destination.AddCompound(MovedCompound);
+    }
+}
+
+public class MoveToLocaleAction : MoveAction<Locale>
+{
+    public MoveToLocaleAction(Cell.Slot slot, Cell.Slot source, Locale destination, float quantity)
+        : base(slot, source, destination, quantity)
+    {
+
+    }
+
+    public override void End()
+    {
+        if (!(Organism.Locale is WaterLocale))
+            throw new System.NotImplementedException();
+
+        (Destination as WaterLocale).Solution.AddCompound(MovedCompound);
+    }
+}
+
 
 public class ReactionAction : Action
 {

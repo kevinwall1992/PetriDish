@@ -8,7 +8,6 @@ public class Interpretase : ProgressiveCatalyst
 
     }
 
-    //Change slot to catalyst_slot
     protected override Action GetAction(Cell.Slot catalyst_slot)
     {
         DNA dna = GetDNA(catalyst_slot);
@@ -53,22 +52,8 @@ public class Interpretase : ProgressiveCatalyst
                 }
 
                 object destination_location = CodonToLocation(slot, operand_index, out operand_index);
-                if (destination_location is Cytozol)
-                    return new DissolveCommand(slot, dna_slot, step_codon_index, source_location as Cell.Slot, quantity);
-                else if (destination_location is Locale)
-                {
-                    if (!(destination_location is WaterLocale))
-                        throw new System.NotImplementedException();
 
-                    throw new System.NotImplementedException();
-                }
-                else if (!(destination_location is Cell.Slot))
-                    return new NullCommand(slot, dna_slot, step_codon_index);
-
-                return new MoveCommand(slot, dna_slot, step_codon_index, 
-                                        source_location as Cell.Slot,
-                                        destination_location as Cell.Slot,
-                                        quantity);
+                return new MoveCommand(slot, dna_slot, step_codon_index, source_slot, destination_location, quantity);
 
             case "CCA":
                 object a_location = CodonToLocation(slot, operand_index, out operand_index);
@@ -329,10 +314,10 @@ public class Interpretase : ProgressiveCatalyst
             return catalyst_slot.Cell.Slots[catalyst_slot.Index + value];
         else if (value == 6)
         {
-            if (catalyst_slot.AcrossSlot != null)
-                return catalyst_slot.AcrossSlot;
-            else
+            if (catalyst_slot.IsExposed)
                 return catalyst_slot.Cell.Organism.Locale;
+            else
+                return catalyst_slot.AcrossSlot;  
         }
         else if (value == 7)
             return catalyst_slot.Cell.Organism.Cytozol;
@@ -538,10 +523,23 @@ public class Interpretase : ProgressiveCatalyst
 
     public class MoveCommand : ActionCommand
     {
-        public MoveCommand(Cell.Slot slot, Cell.Slot dna_slot, int step_codon_index, Cell.Slot input_slot, Cell.Slot output_slot, float quantity) 
-            : base(slot, dna_slot, step_codon_index, new MoveAction(slot, input_slot, output_slot, quantity))
+        public MoveCommand(Cell.Slot slot, Cell.Slot dna_slot, int step_codon_index, Cell.Slot source, object destination, float quantity)
+            : base(slot, dna_slot, step_codon_index, CreateMoveAction(slot, source, destination, quantity))
         {
-            
+
+        }
+
+        static Action CreateMoveAction(Cell.Slot slot, Cell.Slot source, object destination, float quantity)
+        {
+            if (destination is Cell.Slot)
+                return new MoveToSlotAction(slot, source, destination as Cell.Slot, quantity);
+            else if (destination is Cytozol)
+                return new MoveToCytozolAction(slot, source, destination as Cytozol, quantity);
+            else if (destination is Locale)
+                return new MoveToLocaleAction(slot, source, destination as Locale, quantity);
+
+            Debug.Assert(false, "Invalid destination.");
+            return null;
         }
     }
 
@@ -591,41 +589,6 @@ public class Interpretase : ProgressiveCatalyst
 
             if (CompoundB != null)
                 SlotA.AddCompound(CompoundB);
-
-            base.End();
-        }
-    }
-
-    public class DissolveCommand : Command
-    {
-        float quantity;
-
-        public Cell.Slot SlotToDissolve { get; private set; }
-        public Compound DissolvedCompound { get; private set; }
-
-        public DissolveCommand(Cell.Slot slot, Cell.Slot dna_slot, int step_codon_index, Cell.Slot slot_to_dissolve, float quantity_) 
-            : base(slot, dna_slot, step_codon_index, 1)
-        {
-            SlotToDissolve = slot_to_dissolve;
-
-            quantity = quantity_;
-
-            if (SlotToDissolve.Compound == null)
-                Cost = 0;
-
-            Cost = Mathf.Min(quantity, SlotToDissolve.Compound.Quantity);
-        }
-
-        public override void Begin()
-        {
-            DissolvedCompound = SlotToDissolve.Compound.Split(Scale);
-
-            base.Begin();
-        }
-
-        public override void End()
-        {
-            Organism.Cytozol.AddCompound(DissolvedCompound);
 
             base.End();
         }

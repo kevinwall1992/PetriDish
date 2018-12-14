@@ -95,6 +95,11 @@ public class OrganismComponent : MonoBehaviour
         return GetCellComponent(cell);
     }
 
+    public SlotComponent GetSlotComponent(Cell.Slot slot)
+    {
+        return GetCellComponent(slot.Cell).GetSlotComponent(slot);
+    }
+
     List<Action> FilterActions<T>(List<Action> actions)
     {
         return actions.OfType<T>().OfType<Action>().ToList();
@@ -116,7 +121,7 @@ public class OrganismComponent : MonoBehaviour
                     commands.Add(action);
                 else if (action is ReactionAction)
                     reactions.Add(action);
-                else if (action is MoveAction)
+                else if (action is MoveToSlotAction)
                     move_actions.Add(action);
                 else if (action is PoweredAction)
                     powered_actions.Add(action);

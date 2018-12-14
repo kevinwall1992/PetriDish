@@ -10,6 +10,8 @@ public class SlotComponent : MonoBehaviour
 
     public GameObject RightCorner { get; private set; }
 
+    public GameObject Outside { get; private set; }
+
     public CompoundComponent CompoundComponent { get; private set; }
 
     public CellComponent CellComponent
@@ -33,6 +35,10 @@ public class SlotComponent : MonoBehaviour
         RightCorner = new GameObject("right_corner");
         RightCorner.transform.parent = transform;
         RightCorner.transform.localPosition = new Vector3(0.4f, 1.5f);
+
+        Outside = new GameObject("outside");
+        Outside.transform.parent = transform;
+        Outside.transform.localPosition = new Vector3(0.0f, 3.0f);
     }
 
     void Start()

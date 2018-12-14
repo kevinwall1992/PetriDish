@@ -6,7 +6,6 @@ using UnityEngine.UI;
 public class CompoundComponent : MonoBehaviour
 {
     Compound compound;
-    Text quantity_text;
 
     string current_molecule_name= "";
 

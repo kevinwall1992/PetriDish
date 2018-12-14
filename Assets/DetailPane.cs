@@ -55,7 +55,7 @@ public class DetailPane : GoodBehavior
 
     private void Start()
     {
-        AddDNASequence("CACTCCAATTCT" + Ribozyme.GetRibozymeFamily("Rotase")[0].Sequence + "TTTCATTCTTACTGACAATCCTACCAGTGAGACGAATCCAAATTT");
+        AddDNASequence("CACACCAATTCT" + Ribozyme.GetRibozymeFamily("Rotase")[0].Sequence + "TTTCATTCTAACTGACAAACCAACCAGTGAGACGAAACCAAATTT");
 
         InitializeSequenceElements();
     }
@@ -81,24 +81,24 @@ public class DetailPane : GoodBehavior
 
     void InitializeSequenceElements()
     {
-        AddDNASequenceElement("CAATAATAC", "Move One Unit");
-        AddDNASequenceElement("CCCTAATAC", "Move Half Stack");
-        AddDNASequenceElement("CGGTAATAC", "Move Full Stack");
-        AddDNASequenceElement("CTTTAATAC", "Move Max");
-        AddDNASequenceElement("CCATAATAC", "Swap");
-        AddDNASequenceElement("CATTCTTAA", "Cut and Paste DNA");
-        AddDNASequenceElement("CACTAAAAC", "Activate Slot");
+        AddDNASequenceElement("CAAAAAAAC", "Move One Unit");
+        AddDNASequenceElement("CCCAAAAAC", "Move Half Stack");
+        AddDNASequenceElement("CGGAAAAAC", "Move Full Stack");
+        AddDNASequenceElement("CTTAAAAAC", "Move Max");
+        AddDNASequenceElement("CCAAAAAAC", "Swap");
+        AddDNASequenceElement("CATTCTAAA", "Cut and Paste DNA");
+        AddDNASequenceElement("CACAAAAAC", "Activate Slot");
         AddDNASequenceElement("CAGTCTAAC", "Go To Marker");
-        AddDNASequenceElement("CAGTCTGAGGAATAAGAATAC", "Conditionally Go To");
+        AddDNASequenceElement("CAGTCTGAGGAAAAAGAAAAC", "Conditionally Go To");
 
         AddDNASequenceElement("TCTTTT", "Marked Group");
 
-        AddDNASequenceElement("GAATAA", "Get Size of Slot");
-        AddDNASequenceElement("GAGTAATAC", "A == B");
-        AddDNASequenceElement("GACTAATAC", "A > B");
-        AddDNASequenceElement("GATTAATAC", "A < B");
+        AddDNASequenceElement("GAAAAA", "Get Size of Slot");
+        AddDNASequenceElement("GAGAAAAAC", "A == B");
+        AddDNASequenceElement("GACAAAAAC", "A > B");
+        AddDNASequenceElement("GATAAAAAC", "A < B");
 
-        AddDNASequenceElement("TAA", "Slot 1");
+        AddDNASequenceElement("AAA", "Slot 1");
 
         AddDNASequenceElement("AAA", "0");
 

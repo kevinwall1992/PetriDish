@@ -103,6 +103,22 @@ public class Cell
 
                 return catalyst_compound;
             }
+
+            private set { catalyst_compound = value; }
+        }
+
+        public Compound ExposedCompound
+        {
+            get
+            {
+                if (Compound != null)
+                    return Compound;
+
+                if (CatalystCompound != null)
+                    return CatalystCompound;
+
+                return null;
+            }
         }
 
         public int Index
@@ -178,10 +194,20 @@ public class Cell
             }
         }
 
-        public Compound RemoveCompound()
+        public Compound RemoveExposedCompound()
         {
-            Compound removed_compound = compound;
-            compound = null;
+            Compound removed_compound;
+
+            if (Compound != null)
+            {
+                removed_compound = Compound;
+                Compound = null;
+            }
+            else
+            {
+                removed_compound = CatalystCompound;
+                CatalystCompound = null;
+            }
 
             return removed_compound;
         }

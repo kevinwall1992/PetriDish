@@ -32,87 +32,91 @@ public class Interpretase : ProgressiveCatalyst
 
         int step_codon_index = command_codon_index + GetCommandLength(dna, command_codon_index);
 
+        int operand_index = command_codon_index + 1;
+
         switch (codon)
         {
             case "CAA":
             case "CCC":
             case "CGG":
             case "CTT":
-                object source_location = CodonToLocation(slot, dna.GetCodon(command_codon_index + 1));
+                object source_location = CodonToLocation(slot, operand_index, out operand_index);
                 if (!(source_location is Cell.Slot))
                     return new NullCommand(slot, step_codon_index);
+                Cell.Slot source_slot = source_location as Cell.Slot;
 
-                object destination_location = CodonToLocation(slot, dna.GetCodon(command_codon_index + 2));
-                if (!(destination_location is Cell.Slot))
-                    return new NullCommand(slot, step_codon_index);
-
-                MoveCommand.Type move_type = MoveCommand.Type.Max;
-                switch(codon)
+                float quantity = 0;
+                switch (codon)
                 {
-                    case "CAA": move_type = MoveCommand.Type.Single; break;
-                    case "CCC": move_type = MoveCommand.Type.Half; break;
-                    case "CGG": move_type = MoveCommand.Type.Full; break;
-                    case "CTT": move_type = MoveCommand.Type.Max; break;
+                    case "CAA": quantity = 1; break;
+                    case "CCC": quantity = source_slot.ExposedCompound.Quantity / 2; break;
+                    case "CGG": quantity = source_slot.ExposedCompound.Quantity; break;
+                    case "CTT": quantity = slot.CatalystCompound.Quantity; break;
                 }
+
+                object destination_location = CodonToLocation(slot, operand_index, out operand_index);
+                if (destination_location is Cytozol)
+                    return new DissolveCommand(slot, step_codon_index, source_location as Cell.Slot, quantity);
+                else if (destination_location is Locale)
+                {
+                    if (!(destination_location is WaterLocale))
+                        throw new System.NotImplementedException();
+
+                    throw new System.NotImplementedException();
+                }
+                else if (!(destination_location is Cell.Slot))
+                    return new NullCommand(slot, step_codon_index);
 
                 return new MoveCommand(slot, step_codon_index, 
                                         destination_location as Cell.Slot, 
                                         source_location as Cell.Slot,
-                                        move_type);
+                                        quantity);
 
             case "CCA":
-                object a_location = CodonToLocation(slot, dna.GetCodon(command_codon_index + 1));
+                object a_location = CodonToLocation(slot, operand_index, out operand_index);
                 if (!(a_location is Cell.Slot))
                     return new NullCommand(slot, step_codon_index);
 
-                object b_location = CodonToLocation(slot, dna.GetCodon(command_codon_index + 2));
+                object b_location = CodonToLocation(slot, operand_index, out operand_index);
                 if (!(b_location is Cell.Slot))
                     return new NullCommand(slot, step_codon_index);
 
                 return new SwapCommand(slot, step_codon_index, a_location as Cell.Slot, b_location as Cell.Slot);
 
             case "CAC":
-                object activation_location = CodonToLocation(slot, dna.GetCodon(command_codon_index + 1));
+                object activation_location = CodonToLocation(slot, operand_index, out operand_index);
                 if (!(activation_location is Cell.Slot))
                     return new NullCommand(slot, step_codon_index);
 
-                int activation_count = CodonToValue(dna.GetCodon(command_codon_index + 2));
+                int activation_count = CodonToValue(dna.GetCodon(operand_index));
 
                 return new ActivateCommand(slot, step_codon_index, activation_location as Cell.Slot, activation_count);
 
             case "CAG":
-                object goto_location = CodonToLocation(slot, dna.GetCodon(command_codon_index + 1));
+                object goto_location = CodonToLocation(slot, operand_index, out operand_index);
                 if (!(goto_location is string))
                     return new NullCommand(slot, step_codon_index);
 
-                int condition_value = 1;
-                if ((command_codon_index + 2) < dna.CodonCount)
-                {
-                    string condition_codon = dna.GetCodon(command_codon_index + 2);
-                    if (condition_codon[0] == 'A')
-                        condition_value = CodonToValue(condition_codon);
-                    else if (condition_codon[0] == 'G')
-                        condition_value = ComputeFunction(slot, command_codon_index + 2);
-                }
-
+                int condition_value = ComputeFunction(slot, operand_index);
+                
                 if (condition_value != 0)
                     return new GoToCommand(slot, step_codon_index, goto_location as string, condition_value);
                 else
                     return new NullCommand(slot, step_codon_index);
 
             case "CCG":
-                object else_location = CodonToLocation(slot, dna.GetCodon(command_codon_index + 1));
+                object else_location = CodonToLocation(slot, operand_index, out operand_index);
                 if (!(else_location is string))
                     return new NullCommand(slot, step_codon_index);
 
                 return new TryCommand(slot, step_codon_index, Interpret(slot, FindCommandCodon(dna, command_codon_index + 1)), else_location as string);
 
             case "CAT":
-                object cut_location = CodonToLocation(slot, dna.GetCodon(command_codon_index + 1));
+                object cut_location = CodonToLocation(slot, operand_index, out operand_index);
                 if (!(cut_location is string))
                     return new NullCommand(slot, step_codon_index);
 
-                object paste_location = CodonToLocation(slot, dna.GetCodon(command_codon_index + 2));
+                object paste_location = CodonToLocation(slot, operand_index, out operand_index);
                 if (!(paste_location is Cell.Slot))
                     return new NullCommand(slot, step_codon_index);
 
@@ -294,39 +298,61 @@ public class Interpretase : ProgressiveCatalyst
         return total;
     }
 
-    public static object CodonToLocation(Cell.Slot dna_slot, string codon)
-    {
-        int value = CodonToValue(codon);
-
-        if (value < 48)
-            return null;
-
-        if (value < 54)
-            return dna_slot.Cell.Slots[dna_slot.Index + value - 48];
-        else if (value == 54)
-            return dna_slot.Cell.Organism;
-        else
-            return codon;
-    }
-
-    public static int ComputeFunction(Cell.Slot dna_slot, int function_codon_index, out int next_codon_index)
+    public static object CodonToLocation(Cell.Slot dna_slot, int codon_index, out int next_codon_index)
     {
         DNA dna = dna_slot.Compound.Molecule as DNA;
+        string codon = dna.GetCodon(codon_index);
 
-        string function_codon = dna.GetCodon(function_codon_index);
+        next_codon_index = codon_index + 1;
+
+        if (codon[0] == 'T')
+            return codon;
+        else if (codon[0] == 'G')
+            return dna_slot.Cell.Slots[dna_slot.Index + ComputeFunction(dna_slot, codon_index, out next_codon_index)];
+
+        int value = CodonToValue(codon);
+
+        if (value < 6)
+            return dna_slot.Cell.Slots[dna_slot.Index + value];
+        else if (value == 6)
+        {
+            if (dna_slot.AcrossSlot != null)
+                return dna_slot.AcrossSlot;
+            else
+                return dna_slot.Cell.Organism.Locale;
+        }
+        else if (value == 7)
+            return dna_slot.Cell.Organism.Cytozol;
+
+        return null;
+    }
+
+    public static object CodonToLocation(Cell.Slot dna_slot, int codon_index)
+    {
+        return CodonToLocation(dna_slot, codon_index, out codon_index);
+    }
+
+    public static int ComputeFunction(Cell.Slot dna_slot, int codon_index, out int next_codon_index)
+    {
+        DNA dna = dna_slot.Compound.Molecule as DNA;
+        string function_codon = dna.GetCodon(codon_index);
+
+        next_codon_index = codon_index + 1;
 
         switch (function_codon)
         {
             case "GAA":
-                next_codon_index = function_codon_index + 2;
-                Cell.Slot query_slot = CodonToLocation(dna_slot, dna.GetCodon(function_codon_index + 1)) as Cell.Slot;
+                object location = CodonToLocation(dna_slot, next_codon_index, out next_codon_index);
+                if (!(location is Cell.Slot))
+                    return 0;
 
+                Cell.Slot query_slot =  location as Cell.Slot;
                 return query_slot.Compound == null ? 0 : (int)query_slot.Compound.Quantity;
 
             case "GAC":
             case "GAT":
             case "GAG":
-                int operand0 = ComputeFunction(dna_slot, function_codon_index + 1, out next_codon_index);
+                int operand0 = ComputeFunction(dna_slot, next_codon_index, out next_codon_index);
                 int operand1 = ComputeFunction(dna_slot, next_codon_index, out next_codon_index);
 
                 switch (function_codon)
@@ -336,14 +362,9 @@ public class Interpretase : ProgressiveCatalyst
                     case "GAG": return operand0 == operand1 ? 1 : 0;
                 }
                 break;
-
-            default:
-                next_codon_index = function_codon_index + 1;
-                return CodonToValue(dna.GetCodon(function_codon_index));
         }
 
-        next_codon_index = 0;
-        return 0;
+        return CodonToValue(function_codon);
     }
 
     public static int ComputeFunction(Cell.Slot dna_slot, int function_codon_index)
@@ -496,63 +517,26 @@ public class Interpretase : ProgressiveCatalyst
 
     public class MoveCommand : OutputCommand
     {
-        Cell.Slot input_slot;
-        Type type;
+        float quantity;
 
-        Compound MovedCompound
-        {
-            get
-            {
-                if (input_slot.Compound != null)
-                    return input_slot.Compound;
+        public Cell.Slot InputSlot { get; private set; }
 
-                if (input_slot.CatalystCompound != null)
-                    return input_slot.CatalystCompound;
-
-                return null;
-            }
-        }
-
-        public Cell.Slot InputSlot
-        {
-            get { return input_slot; }
-        }
-
-        public MoveCommand(Cell.Slot slot, int step_codon_index, Cell.Slot output_slot, Cell.Slot input_slot_, Type type_) 
+        public MoveCommand(Cell.Slot slot, int step_codon_index, Cell.Slot output_slot, Cell.Slot input_slot, float quantity_) 
             : base(slot, step_codon_index, output_slot)
         {
-            input_slot = input_slot_;
+            InputSlot = input_slot;
 
-            type = type_;
+            quantity = quantity_;
 
-            if (MovedCompound == null)
+            if (InputSlot.ExposedCompound == null)
                 Cost = 0;
             else
-                switch (type)
-                {
-                    case Type.Single:
-                        Cost = 1;
-                        break;
-
-                    case Type.Half:
-                        Cost = MovedCompound.Quantity / 2;
-                        break;
-
-                    case Type.Full:
-                        Cost = MovedCompound.Quantity;
-                        break;
-
-                    case Type.Max:
-                        Cost = MovedCompound.Quantity;
-                        break;
-                }
+                Cost = Mathf.Min(quantity_, InputSlot.ExposedCompound.Quantity);
         }
 
         public override bool Prepare()
         {
-            if (MovedCompound == null || !IsMoleculeValidForOutput(MovedCompound.Molecule))
-                Fail();
-            else if (type == Type.Single && MovedCompound.Quantity < 1)
+            if (InputSlot.ExposedCompound == null || !IsMoleculeValidForOutput(InputSlot.ExposedCompound.Molecule))
                 Fail();
 
             return base.Prepare();
@@ -562,10 +546,8 @@ public class Interpretase : ProgressiveCatalyst
         {
             base.Begin();
 
-            OutputtedCompound = MovedCompound.Split(Scale);
+            OutputtedCompound = InputSlot.ExposedCompound.Split(Scale);
         }
-
-        public enum Type { Single, Half, Full, Max }
     }
 
     public class SwapCommand : Command
@@ -581,19 +563,27 @@ public class Interpretase : ProgressiveCatalyst
             SlotA = slot_a;
             SlotB = slot_b;
 
-            Cost = (SlotA.Compound != null ? SlotA.Compound.Quantity : 0) + 
+            Cost = GetTotalQuantityMoved();
+        }
+
+        float GetTotalQuantityMoved()
+        {
+            return (SlotA.Compound != null ? SlotA.Compound.Quantity : 0) +
                    (SlotB.Compound != null ? SlotB.Compound.Quantity : 0);
         }
 
         public override bool Prepare()
         {
+            if (Cost < GetTotalQuantityMoved())
+                Fail();
+
             return base.Prepare();
         }
 
         public override void Begin()
         {
-            CompoundA = SlotA.RemoveCompound();
-            CompoundB = SlotB.RemoveCompound();
+            CompoundA = SlotA.RemoveExposedCompound();
+            CompoundB = SlotB.RemoveExposedCompound();
 
             base.Begin();
         }
@@ -605,6 +595,40 @@ public class Interpretase : ProgressiveCatalyst
 
             if (CompoundB != null)
                 SlotA.AddCompound(CompoundB);
+
+            base.End();
+        }
+    }
+
+    public class DissolveCommand : Command
+    {
+        float quantity;
+
+        public Cell.Slot SlotToDissolve { get; private set; }
+        public Compound DissolvedCompound { get; private set; }
+
+        public DissolveCommand(Cell.Slot slot, int step_codon_index, Cell.Slot slot_to_dissolve, float quantity_) : base(slot, step_codon_index, 1)
+        {
+            SlotToDissolve = slot_to_dissolve;
+
+            quantity = quantity_;
+
+            if (SlotToDissolve.Compound == null)
+                Cost = 0;
+
+            Cost = Mathf.Min(quantity, SlotToDissolve.Compound.Quantity);
+        }
+
+        public override void Begin()
+        {
+            DissolvedCompound = SlotToDissolve.ExposedCompound.Split(Scale);
+
+            base.Begin();
+        }
+
+        public override void End()
+        {
+            Organism.Cytozol.AddCompound(DissolvedCompound);
 
             base.End();
         }
@@ -666,7 +690,41 @@ public class Interpretase : ProgressiveCatalyst
         }
     }
 
-    class NullCommand : Command
+    public class ActionCommand : Command
+    {
+        public Action Action { get; private set; }
+
+        public ActionCommand(Cell.Slot slot, int step_codon_index, Action action) : base(slot, step_codon_index, action.Cost)
+        {
+            Action = action;
+        }
+
+        public override bool Prepare()
+        {
+            if (!Action.Prepare())
+                Fail();
+
+            return base.Prepare();
+        }
+
+        public override void Begin()
+        {
+            if (!HasFailed)
+                Action.Begin();
+
+            base.Begin();
+        }
+
+        public override void End()
+        {
+            if (!HasFailed)
+                Action.End();
+
+            base.End();
+        }
+    }
+
+    public class NullCommand : Command
     {
         public NullCommand(Cell.Slot slot, int step_codon_index) : base(slot, step_codon_index, 0)
         {

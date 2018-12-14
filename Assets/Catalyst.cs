@@ -174,6 +174,7 @@ public class Pipase : InstantCatalyst
 
         public Compound PipedCompound { get; private set; }
 
+        //Change rate to quantity
         public PipeAction(Cell.Slot slot, float rate_) : base(slot, 1)
         {
             rate = rate_;
@@ -420,8 +421,10 @@ public class Actuase : InstantCatalyst
         if (dna.ActiveCodonIndex >= dna.CodonCount)
             dna.ActiveCodonIndex = 0;
 
-        object location0 = Interpretase.CodonToLocation(slot, dna.GetCodon(dna.ActiveCodonIndex + 0));
-        object location1 = Interpretase.CodonToLocation(slot, dna.GetCodon(dna.ActiveCodonIndex + 1));
+        int codon_index = dna.ActiveCodonIndex;
+
+        object location0 = Interpretase.CodonToLocation(slot, codon_index, out codon_index);
+        object location1 = Interpretase.CodonToLocation(slot, codon_index, out codon_index);
 
         if (!(location0 is Cell.Slot) || !(location1 is Cell.Slot))
             return null;
@@ -430,7 +433,7 @@ public class Actuase : InstantCatalyst
                                             dna.ActiveCodonIndex + 2, 
                                             location1 as Cell.Slot, 
                                             location0 as Cell.Slot, 
-                                            Interpretase.MoveCommand.Type.Max);
+                                            slot.CatalystCompound.Quantity);
     }
 }
 

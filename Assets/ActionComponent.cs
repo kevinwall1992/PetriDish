@@ -40,8 +40,10 @@ public class ActionComponent : MonoBehaviour
         {
             Action action = actions.Dequeue();
             if (action is CompositeAction)
-                foreach(Action component_action in (action as CompositeAction).Actions)
+                foreach (Action component_action in (action as CompositeAction).Actions)
                     actions.Enqueue(component_action);
+            else if (action is Interpretase.ActionCommand)
+                actions.Enqueue((action as Interpretase.ActionCommand).Action);
 
             if (action is Rotase.RotateAction)
                 animations.Add(gameObject.AddComponent<RotationAnimation>().SetParameters(CellComponent, 1).SetLength(length));
@@ -129,8 +131,10 @@ public class ActionComponent : MonoBehaviour
                 CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
                 compound_component.SetCompound(activate_command.OutputtedCompound);
 
+                SlotComponent output_slot_component = CellComponent.OrganismComponent.GetCellComponent(activate_command.OutputSlot.Cell).GetSlotComponent(activate_command.OutputSlot);
+
                 animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
-                                                            .SetParameters(CellComponent.gameObject, CellComponent.GetSlotComponent(activate_command.OutputSlot).CompoundComponent.gameObject)
+                                                            .SetParameters(CellComponent.gameObject, output_slot_component.CompoundComponent.gameObject)
                                                             .SetLength(1.0f * length));
 
                 animations.Add(compound_component.gameObject.AddComponent<FadeAnimation>()
@@ -145,8 +149,10 @@ public class ActionComponent : MonoBehaviour
                 CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
                 compound_component.SetCompound(new Compound(new DNA(), 1));
 
+                SlotComponent output_slot_component = CellComponent.OrganismComponent.GetCellComponent(cut_command.OutputSlot.Cell).GetSlotComponent(cut_command.OutputSlot);
+
                 animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
-                                                            .SetParameters(CellComponent.GetSlotComponent(cut_command.Slot).CompoundComponent.gameObject, CellComponent.GetSlotComponent(cut_command.OutputSlot).CompoundComponent.gameObject)
+                                                            .SetParameters(CellComponent.GetSlotComponent(cut_command.Slot).CompoundComponent.gameObject, output_slot_component.CompoundComponent.gameObject)
                                                             .SetLength(1.0f * length));
 
                 animations.Add(compound_component.gameObject.AddComponent<FadeAnimation>()
@@ -161,8 +167,10 @@ public class ActionComponent : MonoBehaviour
                 CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
                 compound_component.SetCompound(move_command.OutputtedCompound);
 
+                SlotComponent output_slot_component = CellComponent.OrganismComponent.GetCellComponent(move_command.OutputSlot.Cell).GetSlotComponent(move_command.OutputSlot);
+
                 animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
-                                                            .SetParameters(CellComponent.GetSlotComponent(move_command.InputSlot).CompoundComponent.gameObject, CellComponent.GetSlotComponent(move_command.OutputSlot).CompoundComponent.gameObject)
+                                                            .SetParameters(CellComponent.GetSlotComponent(move_command.InputSlot).CompoundComponent.gameObject, output_slot_component.CompoundComponent.gameObject)
                                                             .SetLength(1.0f * length));
             }
 
@@ -182,6 +190,18 @@ public class ActionComponent : MonoBehaviour
 
                 animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
                                                             .SetParameters(CellComponent.GetSlotComponent(swap_command.SlotB).CompoundComponent.gameObject, CellComponent.GetSlotComponent(swap_command.SlotA).CompoundComponent.gameObject)
+                                                            .SetLength(1.0f * length));
+            }
+
+            if (action is Interpretase.DissolveCommand)
+            {
+                Interpretase.DissolveCommand dissolve_command = action as Interpretase.DissolveCommand;
+
+                CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
+                compound_component.SetCompound(dissolve_command.DissolvedCompound);
+
+                animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
+                                                            .SetParameters(CellComponent.GetSlotComponent(dissolve_command.SlotToDissolve).CompoundComponent.gameObject, CellComponent.gameObject)
                                                             .SetLength(1.0f * length));
             }
         }

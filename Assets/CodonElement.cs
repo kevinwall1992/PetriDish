@@ -110,7 +110,17 @@ public class CodonElement : DetailPaneElement
         switch (codon[0])
         {
             case 'A':
-                Description = Interpretase.CodonToValue(codon).ToString();
+                int value = Interpretase.CodonToValue(codon);
+
+                if (value < 6)
+                    Description = "Slot " + value.ToString();
+                else if (value == 6)
+                    Description = "Across Slot";
+                else if (value == 7)
+                    Description = "Cytozol";
+                else if (value == 7)
+                    Description = "";
+
                 break;
 
             case 'C':
@@ -125,6 +135,7 @@ public class CodonElement : DetailPaneElement
                     case "CCG": Description = "Try"; break;
                     case "CAT": Description = "Cut"; break;
                     case "CCA": Description = "Swap"; break;
+                    default: Description = ""; break;
                 }
                 break;
 
@@ -143,26 +154,11 @@ public class CodonElement : DetailPaneElement
                 break;
 
             case 'T':
-                switch (codon)
-                {
-                    case "TAA": 
-                    case "TAC": 
-                    case "TAG":
-                    case "TAT": 
-                    case "TCA": 
-                    case "TCC": Description = "Slot "+ (Interpretase.CodonToValue(codon)- Interpretase.CodonToValue("TAA")).ToString(); break;
-                    case "TCG": Description = "Cytozol"; break;
+                if(codon == "TTT")
+                    Description = "End Marker";
+                else
+                    Description = "Marker " + (Interpretase.CodonToValue(codon) - Interpretase.CodonToValue("TCT")).ToString();
 
-                    case "TCT": 
-                    case "TGA": 
-                    case "TGC": 
-                    case "TGG": 
-                    case "TGT": 
-                    case "TTA": 
-                    case "TTC": 
-                    case "TTG": Description = "Marker " + (Interpretase.CodonToValue(codon)- Interpretase.CodonToValue("TCT")).ToString(); break;
-                    case "TTT": Description = "End Marker"; break;
-                }
                 break;
         }
     }

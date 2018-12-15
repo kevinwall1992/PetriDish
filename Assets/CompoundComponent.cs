@@ -66,7 +66,7 @@ public class CompoundComponent : MonoBehaviour
         if (resource_name == null)
         {
             if (Compound.Molecule is Catalyst)
-                resource_name = "enzyme";
+                resource_name = "catalyst";
             else if (Compound.Molecule is AminoAcid)
                 resource_name = "amino_acid";
             else if (Compound.Molecule is Nucleotide)

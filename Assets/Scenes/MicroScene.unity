@@ -218,6 +218,7 @@ GameObject:
   - component: {fileID: 111451231}
   - component: {fileID: 111451233}
   - component: {fileID: 111451232}
+  - component: {fileID: 111451234}
   m_Layer: 5
   m_Name: quantity_text
   m_TagString: Untagged
@@ -283,6 +284,20 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 111451230}
   m_CullTransparentMesh: 0
+--- !u!114 &111451234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 111451230}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -900027084, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 0.6156863}
+  m_EffectDistance: {x: 1, y: -1}
+  m_UseGraphicAlpha: 1
 --- !u!1 &121331839
 GameObject:
   m_ObjectHideFlags: 0
@@ -428,9 +443,9 @@ RectTransform:
   m_Father: {fileID: 1286585754}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 26.8, y: -16.95}
   m_SizeDelta: {x: 53.6, y: 33.9}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &261640851
@@ -506,7 +521,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.14517212, y: 0}
+  m_AnchoredPosition: {x: 0.14517212, y: -0.000010542032}
   m_SizeDelta: {x: -0.29034042, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &361670338
@@ -1619,7 +1634,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.000018747833}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1350734942
@@ -1648,7 +1663,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0
   m_MinWidth: -8.5
-  m_MinHeight: 127.900024
+  m_MinHeight: 127.89996
   m_PreferredWidth: -1
   m_PreferredHeight: -1
   m_FlexibleWidth: -1

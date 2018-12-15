@@ -59,7 +59,7 @@ public class SlotComponent : MonoBehaviour
         {
             CompoundComponent = new GameObject("compound").AddComponent<CompoundComponent>();
             CompoundComponent.transform.parent = this.transform;
-            CompoundComponent.transform.localPosition = new Vector3(0, 1.5f, 0);
+            CompoundComponent.transform.localPosition = new Vector3(0, 1.3f, 0);
         }
 
         return this;

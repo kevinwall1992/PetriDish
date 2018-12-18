@@ -10,6 +10,7 @@ public class Solution : Volume
     public float Temperature { get { return (float)precision_solution.Temperature; } }
     public float pH { get { return (float)precision_solution.pH; } }
     public float pOH { get { return (float)precision_solution.pOH; } }
+    public float Liters { get { return (float)precision_solution.Liters; } }
 
     public List<Molecule> Molecules { get { return precision_solution.Molecules; } }
 
@@ -152,9 +153,9 @@ public class Solution : Volume
             get { return GetQuantity(Molecule.Water); }
         }
 
-        public decimal MiniLiters
+        public decimal Liters
         {
-            get { return WaterQuantity / 55; }
+            get { return WaterQuantity / Measures.SmolesOfWaterPerLiter; }
         }
 
         public PrecisionSolution(decimal water_quantity)
@@ -238,14 +239,22 @@ public class Solution : Volume
 
         public decimal GetConcentration(Molecule molecule)
         {
-            return GetQuantity(molecule) / MiniLiters;
+            return Measures.SmolesToMoles(GetQuantity(molecule)) / Liters;
         }
 
+
+        //This attempts to approximate the number of molecules
+        //in contact with the surface of the solution by assuming # of atoms
+        //approximates the relative volume of a molecule (obviously a poor approximation).
+        //The magic number is the number of moles of water that would fit on surface of 
+        //a 3.3e-11 mole drop of water, which is the volume of our model cell.
+        //The 3 is because water has three atoms. 
+        //Disclaimer : My calculations that resulted in the magic number may not be correct ;)
         public float GetQuantityPerArea(Molecule molecule)
         {
-            return (float)((50000000.0m / 3) *
+            return (float)((Measures.MolesToSmoles(8.3e-17m) *
                    molecule.AtomCount * GetQuantity(molecule) /
-                   MathUtility.Sum(Molecules, delegate (Molecule molecule_) { return molecule_.AtomCount * GetQuantity(molecule_); }));
+                   MathUtility.Sum(Molecules, delegate (Molecule molecule_) { return molecule_.AtomCount * GetQuantity(molecule_); })));
         }
     }
 

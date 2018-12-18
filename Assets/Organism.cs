@@ -7,7 +7,10 @@ using System;
 public class Organism : Chronal
 {
     List<List<Cell>> cells= new List<List<Cell>>();
-    Cytozol cytozol= new Cytozol(20000000000.0f);
+
+    //3.3e-11 moles is based on model cell with volume of 0.6 cubic micrometers
+    Cytozol cytozol= new Cytozol(Measures.MolesToSmoles(3.3e-14f));
+
     Membrane membrane;
 
     public Cytozol Cytozol{ get { return cytozol; } }

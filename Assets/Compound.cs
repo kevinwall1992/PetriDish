@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 
 
+//Quantities are in "Smoles"
+//See Measures.cs for conversion to Moles
 public class Compound
 {
     Molecule molecule;

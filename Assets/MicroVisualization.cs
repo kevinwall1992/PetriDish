@@ -21,7 +21,7 @@ public class MicroVisualization : MonoBehaviour
     {
         camera = GameObject.Find("Main Camera").GetComponent<Camera>();
 
-        water_locale = new WaterLocale();
+        water_locale = WaterLocale.CreateVentLocale();
     }
 
     void Start()

@@ -54,13 +54,29 @@ public class CompoundComponent : MonoBehaviour
         switch (Compound.Molecule.Name)
         {
             case "Water": resource_name = "water"; break;
-            case "Oxygen": resource_name = "gas"; break;
+            case "Oxygen": resource_name = "oxygen"; break;
+            case "Nitrogen": resource_name = "nitrogen_gas"; break;
+            case "Hydrogen": resource_name = "hydrogen_gas"; break;
+            case "Carbon Monoxide": resource_name = "carbon_monoxide"; break;
+            case "Carbon Dioxide": resource_name = "carbon_dioxide"; break;
+            case "Hydrogen Sulfide": resource_name = "hydrogen_sulfide"; break;
             case "Purine": resource_name = "purine"; break;
             case "Pyrimidine": resource_name = "pyrimidine"; break;
+            case "Imidazole": resource_name = "imidazole"; break;
             case "ATP": resource_name = "atp"; break;
             case "ADP": resource_name = "adp"; break;
             case "Phospholipid": resource_name = "lipid"; break;
             case "Glucose": resource_name = "sugar"; break;
+            case "Phosphate": resource_name = "phosphate"; break;
+            case "AMP": resource_name = "amp"; break;
+            case "CMP": resource_name = "cmp"; break;
+            case "GMP": resource_name = "gmp"; break;
+            case "TMP": resource_name = "tmp"; break;
+            case "Methane": resource_name = "methane"; break;
+            case "Sulfur": resource_name = "sulfur"; break;
+            case "Ammonia": resource_name = "ammonia"; break;
+            case "Vinegar": resource_name = "vinegar"; break;
+            case "Pyruvate": resource_name = "pyruvate"; break;
             default: break;
         }
         if (resource_name == null)
@@ -69,8 +85,6 @@ public class CompoundComponent : MonoBehaviour
                 resource_name = "catalyst";
             else if (Compound.Molecule is AminoAcid)
                 resource_name = "amino_acid";
-            else if (Compound.Molecule is Nucleotide)
-                resource_name = "nucleotide";
             else if (Compound.Molecule is DNA)
                 resource_name = "dna";
         }

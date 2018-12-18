@@ -2,6 +2,7 @@
   "Molecules" : 
   {
     "Carbon Dioxide" :        { "Formula" : "C O2",  "Enthalpy" : -393.5 },
+    "Carbon Monoxide" :        { "Formula" : "C O",  "Enthalpy" : -393.5 },
     "Oxygen" :                { "Formula" : "O2",  "Enthalpy" : 0 },
     "Nitrogen" :              { "Formula" : "N2",  "Enthalpy" : 0 },
     "Hydrogen" :              { "Formula" : "H2",  "Enthalpy" : 0 },

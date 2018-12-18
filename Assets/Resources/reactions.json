@@ -1,15 +1,4 @@
 {
-  "Molecules" : 
-  {
-    "Hydrogen Sulfide" : { "Formula" : "H2 S", "Enthalpy" : -21 },
-    "Sulfur" : { "Formula" : "S8", "Enthalpy" : 0 },
-    "Ammonia" : { "Formula" : "N H3", "Enthalpy" : -46 },
-    "Pyruvate" : { "Formula" : "C3 H4 O3", "Enthalpy" : -586.9 },
-    "Pyrimidine" : { "Formula" : "C4 H4 N2", "Enthalpy" : 143.2 },
-    "Purine" : { "Formula" : "C5 H4 N4", "Enthalpy" : 169.4 },
-    "Vinegar" : { "Formula" : "C2 H4 O2", "Enthalpy" : -483 }
-  },
-
   "Reactions" :
   {
     "Methanogenesis" : 

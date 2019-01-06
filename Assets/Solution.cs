@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 //Need to add support for arbitrarily large amounts of water/ solvent
-public class Solution : Volume
+public class Solution : MutableContainer<Compound>, Volume
 {
     PrecisionSolution precision_solution;
 
@@ -32,6 +32,7 @@ public class Solution : Volume
     public void AddCompound(Molecule molecule, float quantity)
     {
         precision_solution.AddCompound(molecule, (decimal)quantity);
+        Touch();
     }
 
     public Compound RemoveCompound(Compound compound)
@@ -41,7 +42,10 @@ public class Solution : Volume
 
     public Compound RemoveCompound(Molecule molecule, float quantity = -1)
     {
-        return new Compound(molecule, (float)precision_solution.RemoveCompound(molecule, (decimal)quantity).quantity);
+        Compound compound = new Compound(molecule, (float)precision_solution.RemoveCompound(molecule, (decimal)quantity).quantity);
+        Touch();
+
+        return compound;
     }
 
     public float GetConcentration(Molecule molecule)
@@ -258,5 +262,26 @@ public class Solution : Volume
         }
     }
 
-    
+    public override List<Compound> Elements
+    {
+        get
+        {
+            List<Compound> compounds = new List<Compound>();
+
+            foreach (Molecule molecule in Molecules)
+                compounds.Add(new Compound(molecule, GetQuantity(molecule)));
+
+            return compounds;
+        }
+    }
+
+    public override void AddElement(Compound compound)
+    {
+        AddCompound(compound);
+    }
+
+    public override Compound RemoveElement(Compound compound)
+    {
+        return RemoveCompound(compound);
+    }
 }

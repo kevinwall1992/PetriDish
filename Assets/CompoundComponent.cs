@@ -50,8 +50,22 @@ public class CompoundComponent : MonoBehaviour
             return;
 
 
+        gameObject.GetComponent<SpriteRenderer>().sprite = GetSprite(compound.Molecule);
+        current_molecule_name = Compound.Molecule.Name;
+    }
+
+    public CompoundComponent SetCompound(Compound compound_)
+    {
+        compound = compound_;
+
+        return this;
+    }
+
+    //Move this somewhere else
+    public static Sprite GetSprite(Molecule molecule)
+    {
         string resource_name = null;
-        switch (Compound.Molecule.Name)
+        switch (molecule.Name)
         {
             case "Water": resource_name = "water"; break;
             case "Oxygen": resource_name = "oxygen"; break;
@@ -81,24 +95,16 @@ public class CompoundComponent : MonoBehaviour
         }
         if (resource_name == null)
         {
-            if (Compound.Molecule is Catalyst)
+            if (molecule is Catalyst)
                 resource_name = "catalyst";
-            else if (Compound.Molecule is AminoAcid)
+            else if (molecule is AminoAcid)
                 resource_name = "amino_acid";
-            else if (Compound.Molecule is DNA)
+            else if (molecule is DNA)
                 resource_name = "dna";
         }
         if (resource_name == null)
             resource_name = "generic_molecule";
 
-        gameObject.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(resource_name);
-        current_molecule_name = Compound.Molecule.Name;
-    }
-
-    public CompoundComponent SetCompound(Compound compound_)
-    {
-        compound = compound_;
-
-        return this;
+        return Resources.Load<Sprite>(resource_name);
     }
 }

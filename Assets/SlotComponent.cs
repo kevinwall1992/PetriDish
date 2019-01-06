@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SlotComponent : MonoBehaviour
+public class SlotComponent : MonoBehaviour, HasDetailPanel
 {
     public Cell.Slot Slot { get; private set; }
 
@@ -22,6 +22,22 @@ public class SlotComponent : MonoBehaviour
     public Vector2 Center
     {
         get { return CompoundComponent.transform.position; }
+    }
+
+    DetailPanel detail_panel;
+    public DetailPanel DetailPanel
+    {
+        get
+        {
+            if (detail_panel == null &&
+                CompoundComponent.Compound != null && 
+                CompoundComponent.Compound.Molecule is DNA && 
+                !(CompoundComponent.Compound.Molecule is Catalyst))
+
+                detail_panel = DNAPanel.Create(CompoundComponent.Compound.Molecule as DNA);
+
+            return detail_panel;
+        }
     }
 
     private void Awake()
@@ -48,7 +64,11 @@ public class SlotComponent : MonoBehaviour
 
     void Update()
     {
-        CompoundComponent.SetCompound(Slot.Compound);
+        if (CompoundComponent.Compound != Slot.Compound)
+        {
+            CompoundComponent.SetCompound(Slot.Compound);
+            detail_panel = null;
+        }
     }
 
     public SlotComponent SetSlot(Cell.Slot slot)

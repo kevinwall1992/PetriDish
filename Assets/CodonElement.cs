@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
 
-public class CodonElement : DetailPaneElement
+public class CodonElement : DNAPanelElement
 {
     CodonSelector codon_selector;
 
@@ -167,17 +167,17 @@ public class CodonElement : DetailPaneElement
     {
         base.OnDrag(eventData);
 
-        if (DetailPane.CodonLayout.IsHovered())
-            DetailPane.CodonLayout.AddCodonElement(this, DetailPane.CodonLayout.GetHoveredInsertionIndex());
-        else if (DetailPane.CodonLayout.Contains(this))
-            DetailPane.CodonLayout.RemoveCodonElement(this);
+        if (DNAPanel.CodonLayout.IsHovered())
+            DNAPanel.CodonLayout.AddCodonElement(this, DNAPanel.CodonLayout.GetHoveredInsertionIndex());
+        else if (DNAPanel.CodonLayout.Contains(this))
+            DNAPanel.CodonLayout.RemoveCodonElement(this);
     }
 
     public override void OnEndDrag(PointerEventData eventData)
     {
         base.OnEndDrag(eventData);
 
-        if (!DetailPane.CodonLayout.IsHovered())
+        if (!DNAPanel.CodonLayout.IsHovered())
             GameObject.Destroy(this.gameObject);
     }
 }

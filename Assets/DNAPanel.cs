@@ -1,29 +1,26 @@
 ﻿using UnityEngine;
 using System.Collections;
-using UnityEngine.UI;
 using System.Collections.Generic;
-using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
-
-public class DetailPane : GoodBehavior
+public class DNAPanel : DetailPanel
 {
-    CodonElementLayout codon_layout;
-    DNASequenceElementLayout sequence_layout;
+    static GameObject codon_element_prefab;
+    static GameObject sequence_element_prefab;
 
-    GameObject codon_element_prefab;
-    GameObject sequence_element_prefab;
+    static GameObject grouping_panel_prefab;
+    static Vector3 grouping_panel_prefab_local_position;
 
-    GameObject grouping_panel_prefab;
-    Vector3 grouping_panel_prefab_local_position;
+    DNA DNA { get { return Data as DNA; } }
 
     public CodonElementLayout CodonLayout
     {
-        get { return codon_layout; }
+        get { return FindDescendent<CodonElementLayout>("codon_list"); }
     }
 
     public DNASequenceElementLayout SequenceLayout
     {
-        get { return sequence_layout; }
+        get { return FindDescendent<DNASequenceElementLayout>("sequence_list"); }
     }
 
     public Vector3 SpawnPosition
@@ -34,33 +31,19 @@ public class DetailPane : GoodBehavior
 
     private void Awake()
     {
-        codon_layout = FindDescendent<CodonElementLayout>("codon_list");
-        sequence_layout = FindDescendent<DNASequenceElementLayout>("sequence_list");
-
-        codon_element_prefab = codon_layout.FindDescendent("element");
-        codon_element_prefab.transform.parent = null;
-        codon_element_prefab.SetActive(false);
-
-        sequence_element_prefab = sequence_layout.FindDescendent("element");
-        sequence_element_prefab.transform.parent = null;
-        sequence_element_prefab.SetActive(false);
-
-        grouping_panel_prefab = FindDescendent("command_group");
-        grouping_panel_prefab_local_position = grouping_panel_prefab.transform.localPosition;
-        grouping_panel_prefab.transform.parent = null;
-        grouping_panel_prefab.SetActive(false);
-
         SpawnPosition = transform.position;
     }
 
     private void Start()
     {
-        AddDNASequence("CACACAAATTCT" + Ribozyme.GetRibozymeFamily("Rotase")[0].Sequence + "TTTCATTCTAAGTGACAAACAAACCAGTGAGACGAAACAAAATTT");
+        Scene.Micro.Visualization.IsPaused = true;
+
+        AddDNASequence(DNA.Sequence);
 
         InitializeSequenceElements();
     }
 
-    private void Update()
+    protected override void Update()
     {
         if (Input.GetKeyUp(KeyCode.C))
             GUIUtility.systemCopyBuffer = GetDNASequence();
@@ -69,14 +52,20 @@ public class DetailPane : GoodBehavior
         if (Input.GetKeyUp(KeyCode.B))
             ClearDNASequence();
 
-        if (Input.GetKeyUp(KeyCode.Q))
-        {
-            gameObject.SetActive(false);
-            Scene.Micro.Visualization.OrganismComponents[0].ResetExperiment(GetDNASequence());
-        }
-
-        if (!codon_layout.Validate())
+        if (!CodonLayout.Validate())
             FormatCodons();
+
+        base.Update();
+    }
+
+    private void OnDisable()
+    {
+        if (DNA == null)
+            return;
+
+        DNA.RemoveStrand(0, DNA.CodonCount);
+        DNA.AddSequence(GetDNASequence());
+        DNA.ActiveCodonIndex = 0;
     }
 
     void InitializeSequenceElements()
@@ -106,8 +95,8 @@ public class DetailPane : GoodBehavior
         AddDNASequenceElement(Ribozyme.GetRibozymeFamily("Rotase")[0].Sequence, "Rotase");
         AddDNASequenceElement(Ribozyme.GetRibozymeFamily("Constructase")[0].Sequence, "Constructase");
 
-        foreach(Reaction reaction in Reaction.Reactions)
-            if(reaction.Catalyst is Ribozyme)
+        foreach (Reaction reaction in Reaction.Reactions)
+            if (reaction.Catalyst is Ribozyme)
                 AddDNASequenceElement((reaction.Catalyst as Ribozyme).Sequence, (reaction.Catalyst as Ribozyme).Name);
     }
 
@@ -115,7 +104,7 @@ public class DetailPane : GoodBehavior
     {
         Dictionary<int, int> indentation_levels = GetIndentationLevels();
         foreach (int index in indentation_levels.Keys)
-            codon_layout.SetElementOffset(index, new Vector2(20 * indentation_levels[index], 0));
+            CodonLayout.SetElementOffset(index, new Vector2(20 * indentation_levels[index], 0));
 
 
         GameObject grouping_panels_container = FindDescendent("command_groups");
@@ -154,7 +143,7 @@ public class DetailPane : GoodBehavior
         DNA dna = new DNA(GetDNASequence());
         int codon_index = 0;
 
-        while(codon_index < dna.CodonCount)
+        while (codon_index < dna.CodonCount)
         {
             string codon = dna.GetCodon(codon_index);
             if (codon[0] == 'C')
@@ -170,7 +159,7 @@ public class DetailPane : GoodBehavior
                 indentation_levels[codon_index] = indentation_level;
 
             int value = Interpretase.CodonToValue(codon);
-            if (codon[0]== 'T' && value >= 55)
+            if (codon[0] == 'T' && value >= 55)
             {
                 if (value < 63)
                     indentation_level++;
@@ -214,8 +203,8 @@ public class DetailPane : GoodBehavior
     {
         string sequence = "";
 
-        for (int i = 0; i < codon_layout.ElementCount; i++)
-            sequence += codon_layout.GetCodonElement(i).Codon;
+        for (int i = 0; i < CodonLayout.ElementCount; i++)
+            sequence += CodonLayout.GetCodonElement(i).Codon;
 
         return sequence;
     }
@@ -229,7 +218,7 @@ public class DetailPane : GoodBehavior
                 continue;
 
             CodonElement codon_element = GameObject.Instantiate(codon_element_prefab).GetComponent<CodonElement>();
-            codon_layout.AddCodonElement(codon_element, index < 0 ? -1 : index++);
+            CodonLayout.AddCodonElement(codon_element, index < 0 ? -1 : index++);
 
             codon_element.transform.position = SpawnPosition;
 
@@ -239,17 +228,52 @@ public class DetailPane : GoodBehavior
 
     public void ClearDNASequence()
     {
-        codon_layout.Clear();
+        CodonLayout.Clear();
     }
 
     public void AddDNASequenceElement(string sequence, string description)
     {
         DNASequenceElement dna_seqence_element = GameObject.Instantiate(sequence_element_prefab).GetComponent<DNASequenceElement>();
-        sequence_layout.AddDNASequenceElement(dna_seqence_element);
+        SequenceLayout.AddDNASequenceElement(dna_seqence_element);
 
         dna_seqence_element.transform.position = SpawnPosition;
 
         dna_seqence_element.DNASequence = sequence;
         dna_seqence_element.Description = description;
+    }
+
+    static DNAPanel dna_panel_prefab;
+    public static DNAPanel Create(DNA dna)
+    {
+        InitializePrefabs();
+
+        DNAPanel dna_panel = GameObject.Instantiate(dna_panel_prefab.gameObject).GetComponent<DNAPanel>();
+        dna_panel.transform.SetParent(dna_panel_prefab.transform.parent, false);
+
+        dna_panel.Data = dna;
+
+        return dna_panel;
+    }
+
+    static void InitializePrefabs()
+    {
+        if (dna_panel_prefab != null)
+            return;
+
+        //Find better way to do this. And maybe generally streamline prefab stuff
+        dna_panel_prefab = FindObjectsOfTypeAll(typeof(DNAPanel))[0] as DNAPanel;
+
+        codon_element_prefab = dna_panel_prefab.CodonLayout.FindDescendent("element");
+        codon_element_prefab.transform.parent = null;
+        codon_element_prefab.SetActive(false);
+
+        sequence_element_prefab = dna_panel_prefab.SequenceLayout.FindDescendent("element");
+        sequence_element_prefab.transform.parent = null;
+        sequence_element_prefab.SetActive(false);
+
+        grouping_panel_prefab = dna_panel_prefab.FindDescendent("command_group");
+        grouping_panel_prefab_local_position = grouping_panel_prefab.transform.localPosition;
+        grouping_panel_prefab.transform.parent = null;
+        grouping_panel_prefab.SetActive(false);
     }
 }

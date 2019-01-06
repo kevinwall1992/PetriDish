@@ -187,6 +187,31 @@ public static class MathUtility
 
         return union;
     }
+
+    //Rotation measured from vector (1, 0) counterclockwise
+    public static float GetRotation(Vector2 vector)
+    {
+        int quadrant;
+        if (vector.x > 0)
+        {
+            if (vector.y > 0)
+                quadrant = 0;
+            else
+                quadrant = 3;
+        }
+        else
+        {
+            if (vector.y > 0)
+                quadrant = 1;
+            else
+                quadrant = 2;
+        }
+
+        float pi_over_2 = Mathf.PI / 2;
+        float asin_y = Mathf.Abs(Mathf.Asin(vector.normalized.y));
+
+        return quadrant * pi_over_2 + ((quadrant % 2 == 0) ? asin_y : pi_over_2 - asin_y);
+    }
 }
 
 public abstract class GenericFunction<T>

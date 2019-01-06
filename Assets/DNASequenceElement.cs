@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine.EventSystems;
 
-public class DNASequenceElement : DetailPaneElement
+public class DNASequenceElement : DNAPanelElement
 {
     public string dna_sequence;
 
@@ -41,21 +41,21 @@ public class DNASequenceElement : DetailPaneElement
         DNASequenceElement copy = GameObject.Instantiate(this.gameObject).GetComponent<DNASequenceElement>();
         copy.DNASequence = DNASequence;
 
-        DetailPane.SequenceLayout.ReplaceDNASequenceElement(this, copy);
+        DNAPanel.SequenceLayout.ReplaceDNASequenceElement(this, copy);
     }
 
     public override void OnDrag(PointerEventData eventData)
     {
         base.OnDrag(eventData);
     
-        if(DetailPane.CodonLayout.IsHovered())
+        if(DNAPanel.CodonLayout.IsHovered())
         {
-            int current_hover_index= DetailPane.CodonLayout.GetHoveredInsertionIndex();
+            int current_hover_index= DNAPanel.CodonLayout.GetHoveredInsertionIndex();
 
             if (last_hover_index < 0)
             {
-                DetailPane.SpawnPosition = transform.position;
-                DetailPane.AddDNASequence(DNASequence, current_hover_index);
+                DNAPanel.SpawnPosition = transform.position;
+                DNAPanel.AddDNASequence(DNASequence, current_hover_index);
 
                 //If we implement easing from spawning position
                 //(as opposed to easing to target position only)
@@ -80,7 +80,7 @@ public class DNASequenceElement : DetailPaneElement
                         new_index = current_hover_index+ i;
                     }
 
-                    DetailPane.CodonLayout.AddCodonElement(DetailPane.CodonLayout.GetCodonElement(old_index), new_index);
+                    DNAPanel.CodonLayout.AddCodonElement(DNAPanel.CodonLayout.GetCodonElement(old_index), new_index);
                 }
             }
 
@@ -89,7 +89,7 @@ public class DNASequenceElement : DetailPaneElement
         else if(last_hover_index>= 0)
         {
             for (int i = 0; i < CodonCount; i++)
-                GameObject.Destroy(DetailPane.CodonLayout.RemoveCodonElement(last_hover_index).gameObject);
+                GameObject.Destroy(DNAPanel.CodonLayout.RemoveCodonElement(last_hover_index).gameObject);
 
             GetComponent<CanvasGroup>().alpha = 1.0f;
 

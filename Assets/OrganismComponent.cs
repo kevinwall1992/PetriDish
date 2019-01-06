@@ -19,6 +19,18 @@ public class OrganismComponent : MonoBehaviour
 
     public bool IsVisualizingStep { get { return actions.Count > 0; } }
 
+    DetailPanel detail_panel;
+    public DetailPanel DetailPanel
+    {
+        get
+        {
+            if (detail_panel == null)
+                detail_panel = CompoundGrid.Create(Organism.Cytozol);
+
+            return detail_panel;
+        }
+    }
+
     void Awake()
     {
         organism = new Organism();

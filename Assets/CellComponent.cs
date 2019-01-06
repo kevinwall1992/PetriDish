@@ -23,6 +23,8 @@ public class CellComponent : MonoBehaviour
     private void Awake()
     {
         gameObject.AddComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("cell");
+
+        gameObject.AddComponent<CircleCollider2D>().radius = 1.9f;
     }
 
     void Start()
@@ -33,6 +35,24 @@ public class CellComponent : MonoBehaviour
     void Update()
     {
         ValidateSlots();
+    }
+
+    private void OnMouseUp()
+    {
+        Vector2 displacement = transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition)) - transform.position;
+
+        if (displacement.magnitude < 0.5)
+            OrganismComponent.DetailPanel.Open();
+        else
+        {
+            float clock_radians = (Mathf.PI * 2 - MathUtility.GetRotation(displacement)) + Mathf.PI / 2;
+
+            int index = (int)(6 * (clock_radians + Mathf.PI / 6) / (2 * Mathf.PI));
+            SlotComponent slot_component = GetSlotComponent(index);
+
+            if(slot_component.DetailPanel!= null)
+                slot_component.DetailPanel.Open();
+        }
     }
 
     void SetSlotTransformations()
@@ -72,7 +92,7 @@ public class CellComponent : MonoBehaviour
 
     public SlotComponent GetSlotComponent(int index)
     {
-        return slot_components[index];
+        return GetSlotComponent(Cell.Slots[index]);
     }
 
     public SlotComponent GetSlotComponent(Cell.Slot slot)

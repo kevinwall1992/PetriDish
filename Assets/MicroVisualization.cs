@@ -4,13 +4,32 @@ using System.Collections.Generic;
 
 public class MicroVisualization : MonoBehaviour
 {
-    public DetailPane detail_pane;
-
     Camera camera;
 
     OrganismComponent organism_component;
 
     WaterLocale water_locale;
+
+    bool is_paused = true;
+    public bool IsPaused
+    {
+        get { return is_paused; }
+
+        set
+        {
+            if (is_paused == value)
+                return;
+
+            if(is_paused)
+            {
+                is_paused = false;
+            }
+            else
+            {
+                is_paused = true;
+            }
+        }
+    }
 
     public List<OrganismComponent> OrganismComponents
     {
@@ -28,6 +47,8 @@ public class MicroVisualization : MonoBehaviour
     {
         organism_component = GetComponentInChildren<OrganismComponent>();
         water_locale.AddOrganism(organism_component.Organism);
+
+        organism_component.ResetExperiment("CACACAAATTCT" + Ribozyme.GetRibozymeFamily("Rotase")[0].Sequence + "TTTCATTCTAAGTGACAAACAAACCAGTGAGACGAAACAAAATTT");
     }
 
     void Update()
@@ -42,8 +63,10 @@ public class MicroVisualization : MonoBehaviour
         if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
             camera.transform.Translate(new Vector3(scroll_speed * Time.deltaTime, 0));
 
+        if (Input.GetKey(KeyCode.Space))
+            IsPaused = !IsPaused;
 
-        if (detail_pane.gameObject.activeSelf)
+        if (IsPaused)
             return;
 
         if (organism_component.IsVisualizingStep)

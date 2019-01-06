@@ -63,11 +63,6 @@ public class Polymer : Molecule
         return monomer;
     }
 
-    public int GetLength()
-    {
-        return monomers.Count;
-    }
-
     public override bool Equals(object other)
     {
         if (!(other is Polymer))

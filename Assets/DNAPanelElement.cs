@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 
-public class DetailPaneElement : GoodBehavior, IDragHandler
+public class DNAPanelElement : GoodBehavior, IDragHandler
 {
     Text description;
 
@@ -20,9 +20,9 @@ public class DetailPaneElement : GoodBehavior, IDragHandler
         set { GetComponent<Image>().color = value; }
     }
 
-    public DetailPane DetailPane
+    public DNAPanel DNAPanel
     {
-        get { return GetComponentInParent<DetailPane>(); }
+        get { return GetComponentInParent<DNAPanel>(); }
     }
 
     protected virtual void Awake()

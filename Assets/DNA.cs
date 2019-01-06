@@ -33,15 +33,7 @@ public class DNA : Polymer
 
     public DNA(string sequence)
     {
-        foreach (char character in sequence)
-            switch (character)
-            {
-                case 'A': AddAdenine(); break;
-                case 'C': AddCytosine(); break;
-                case 'G': AddGuanine(); break;
-                case 'T': AddThymine(); break;
-                default: break;
-            }
+        AddSequence(sequence);
     }
 
     public DNA()
@@ -129,6 +121,19 @@ public class DNA : Polymer
         }
 
         return removed_dna;
+    }
+
+    public void AddSequence(string sequence)
+    {
+        foreach (char character in sequence)
+            switch (character)
+            {
+                case 'A': AddAdenine(); break;
+                case 'C': AddCytosine(); break;
+                case 'G': AddGuanine(); break;
+                case 'T': AddThymine(); break;
+                default: break;
+            }
     }
 }
 

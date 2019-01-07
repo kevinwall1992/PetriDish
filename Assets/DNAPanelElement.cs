@@ -6,7 +6,8 @@ using UnityEngine.UI;
 
 public class DNAPanelElement : GoodBehavior, IDragHandler
 {
-    Text description;
+    [SerializeField]
+    public Text description;
 
     public string Description
     {
@@ -23,11 +24,6 @@ public class DNAPanelElement : GoodBehavior, IDragHandler
     public DNAPanel DNAPanel
     {
         get { return GetComponentInParent<DNAPanel>(); }
-    }
-
-    protected virtual void Awake()
-    {
-        description = FindDescendent("description_panel").GetComponentInChildren<Text>();
     }
 
     void Start()

@@ -19,11 +19,6 @@ public class DNASequenceElement : DNAPanelElement
         get { return dna_sequence.Length / 3; }
     }
 
-    protected override void Awake()
-    {
-        base.Awake();
-    }
-
     void Start()
     {
 
@@ -38,7 +33,7 @@ public class DNASequenceElement : DNAPanelElement
     {
         base.OnBeginDrag(eventData);
 
-        DNASequenceElement copy = GameObject.Instantiate(this.gameObject).GetComponent<DNASequenceElement>();
+        DNASequenceElement copy = Instantiate(this);
         copy.DNASequence = DNASequence;
 
         DNAPanel.SequenceLayout.ReplaceDNASequenceElement(this, copy);

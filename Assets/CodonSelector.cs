@@ -6,10 +6,15 @@ using System.Collections.Generic;
 
 public class CodonSelector : GoodBehavior
 {
-    ScrollRect scroll_rect;
-    VerticalLayoutGroup layout_group;
+    [SerializeField]
+    GameObject option_prefab;
 
-    static GameObject option_prefab;
+
+    [SerializeField]
+    ScrollRect scroll_rect;
+
+    [SerializeField]
+    VerticalLayoutGroup layout_group;
 
     int selected_index = 0;
     bool selection_changed = true;
@@ -45,27 +50,13 @@ public class CodonSelector : GoodBehavior
 
             foreach (string codon in value)
             {
-                GameObject option = GameObject.Instantiate(option_prefab);
+                GameObject option = Instantiate(option_prefab);
                 option.GetComponent<Text>().text = codon;
-                option.SetActive(true);
                 option.transform.parent = layout_group.transform;
             }
 
             SelectedCodon = value[0];
         }
-    }
-
-    private void Awake()
-    {
-        if (option_prefab == null)
-        {
-            option_prefab = FindDescendent("codon_option");
-            option_prefab.transform.parent = null;
-            option_prefab.SetActive(false);
-        }
-
-        scroll_rect = FindDescendent<ScrollRect>("codon_selector_scroll");
-        layout_group = FindDescendent<VerticalLayoutGroup>("codon_selector_list");
     }
 
     private void Start()

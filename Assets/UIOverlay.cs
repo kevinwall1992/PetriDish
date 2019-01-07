@@ -8,13 +8,8 @@ public class UIOverlay : GoodBehavior
 {
     Dictionary<CompoundComponent, Text> compound_quantity_texts= new Dictionary<CompoundComponent, Text>();
 
+    [SerializeField]
     Text quantity_text_prefab;
-
-    private void Awake()
-    {
-        quantity_text_prefab = FindDescendent<Text>("quantity_text");
-        quantity_text_prefab.transform.parent = null;
-    }
 
     void Start()
     {
@@ -41,9 +36,8 @@ public class UIOverlay : GoodBehavior
         {
             if (!compound_quantity_texts.ContainsKey(compound_component) && compound_component.Compound!= null)
             {
-                compound_quantity_texts[compound_component] = GameObject.Instantiate(quantity_text_prefab);
+                compound_quantity_texts[compound_component] = Instantiate(quantity_text_prefab);
                 compound_quantity_texts[compound_component].transform.parent = transform;
-                compound_quantity_texts[compound_component].gameObject.SetActive(true);
             }
         }
 

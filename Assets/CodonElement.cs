@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 
 public class CodonElement : DNAPanelElement
 {
+    [SerializeField]
     CodonSelector codon_selector;
 
     public string Codon
@@ -17,13 +18,6 @@ public class CodonElement : DNAPanelElement
             codon_selector.SelectedCodon = value;
             UpdateTint();
         }
-    }
-
-    protected override void Awake()
-    {
-        base.Awake();
-
-        codon_selector = GetComponentInChildren<CodonSelector>();
     }
 
     void Start()

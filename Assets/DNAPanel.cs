@@ -5,22 +5,30 @@ using UnityEngine.UI;
 
 public class DNAPanel : DetailPanel
 {
-    static GameObject codon_element_prefab;
-    static GameObject sequence_element_prefab;
+    [SerializeField]
+    CodonElement codon_element_prefab;
 
-    static GameObject grouping_panel_prefab;
-    static Vector3 grouping_panel_prefab_local_position;
+    [SerializeField]
+    DNASequenceElement sequence_element_prefab;
+
+    [SerializeField]
+    GameObject grouping_panel_prefab;
+
 
     DNA DNA { get { return Data as DNA; } }
 
+    [SerializeField]
+    CodonElementLayout codon_layout;
     public CodonElementLayout CodonLayout
     {
-        get { return FindDescendent<CodonElementLayout>("codon_list"); }
+        get { return codon_layout; }
     }
 
+    [SerializeField]
+    DNASequenceElementLayout sequence_layout;
     public DNASequenceElementLayout SequenceLayout
     {
-        get { return FindDescendent<DNASequenceElementLayout>("sequence_list"); }
+        get { return sequence_layout; }
     }
 
     public Vector3 SpawnPosition
@@ -119,10 +127,8 @@ public class DNAPanel : DetailPanel
 
         foreach (int command_index in command_groups.Keys)
         {
-            GameObject grouping_panel = GameObject.Instantiate(grouping_panel_prefab);
-            grouping_panel.SetActive(true);
-            grouping_panel.transform.parent = grouping_panels_container.transform;
-            grouping_panel.transform.localPosition = grouping_panel_prefab_local_position;
+            GameObject grouping_panel = Instantiate(grouping_panel_prefab);
+            grouping_panel.transform.SetParent(grouping_panels_container.transform, false);
 
             Vector2 size_change = new Vector2(0 * indentation_levels[command_index], (element_height + 5) * (command_groups[command_index] - 1));
             (grouping_panel.transform as RectTransform).sizeDelta += size_change;
@@ -217,7 +223,7 @@ public class DNAPanel : DetailPanel
             if (!IsValidCodon(codon))
                 continue;
 
-            CodonElement codon_element = GameObject.Instantiate(codon_element_prefab).GetComponent<CodonElement>();
+            CodonElement codon_element = Instantiate(codon_element_prefab);
             CodonLayout.AddCodonElement(codon_element, index < 0 ? -1 : index++);
 
             codon_element.transform.position = SpawnPosition;
@@ -233,7 +239,7 @@ public class DNAPanel : DetailPanel
 
     public void AddDNASequenceElement(string sequence, string description)
     {
-        DNASequenceElement dna_seqence_element = GameObject.Instantiate(sequence_element_prefab).GetComponent<DNASequenceElement>();
+        DNASequenceElement dna_seqence_element = Instantiate(sequence_element_prefab);
         SequenceLayout.AddDNASequenceElement(dna_seqence_element);
 
         dna_seqence_element.transform.position = SpawnPosition;
@@ -242,38 +248,13 @@ public class DNAPanel : DetailPanel
         dna_seqence_element.Description = description;
     }
 
-    static DNAPanel dna_panel_prefab;
     public static DNAPanel Create(DNA dna)
     {
-        InitializePrefabs();
-
-        DNAPanel dna_panel = GameObject.Instantiate(dna_panel_prefab.gameObject).GetComponent<DNAPanel>();
-        dna_panel.transform.SetParent(dna_panel_prefab.transform.parent, false);
+        DNAPanel dna_panel = GameObject.Instantiate(Scene.Micro.Prefabs.DNAPanel);
+        dna_panel.transform.SetParent(Scene.Micro.Canvas.transform, false);
 
         dna_panel.Data = dna;
 
         return dna_panel;
-    }
-
-    static void InitializePrefabs()
-    {
-        if (dna_panel_prefab != null)
-            return;
-
-        //Find better way to do this. And maybe generally streamline prefab stuff
-        dna_panel_prefab = FindObjectsOfTypeAll(typeof(DNAPanel))[0] as DNAPanel;
-
-        codon_element_prefab = dna_panel_prefab.CodonLayout.FindDescendent("element");
-        codon_element_prefab.transform.parent = null;
-        codon_element_prefab.SetActive(false);
-
-        sequence_element_prefab = dna_panel_prefab.SequenceLayout.FindDescendent("element");
-        sequence_element_prefab.transform.parent = null;
-        sequence_element_prefab.SetActive(false);
-
-        grouping_panel_prefab = dna_panel_prefab.FindDescendent("command_group");
-        grouping_panel_prefab_local_position = grouping_panel_prefab.transform.localPosition;
-        grouping_panel_prefab.transform.parent = null;
-        grouping_panel_prefab.SetActive(false);
     }
 }

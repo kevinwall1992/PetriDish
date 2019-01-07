@@ -25,7 +25,7 @@ public class OrganismComponent : MonoBehaviour
         get
         {
             if (detail_panel == null)
-                detail_panel = CompoundGrid.Create(Organism.Cytozol);
+                detail_panel = CompoundGridPanel.Create(Organism.Cytozol);
 
             return detail_panel;
         }

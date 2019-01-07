@@ -4,8 +4,8 @@ using System.Collections;
 public class MicroPrefabs : MonoBehaviour
 {
     [SerializeField]
-    CompoundGrid compound_grid;
-    public CompoundGrid CompoundGrid { get { return compound_grid; } }
+    CompoundGridPanel compound_grid_panel;
+    public CompoundGridPanel CompoundGridPanel { get { return compound_grid_panel; } }
 
     [SerializeField]
     CompoundTile compound_tile;

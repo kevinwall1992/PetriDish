@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
-public class CompoundGrid : DetailPanel
+public class CompoundGridPanel : DetailPanel
 {
     [SerializeField]
     GridLayoutGroup grid_layout;
@@ -69,9 +69,9 @@ public class CompoundGrid : DetailPanel
         CompoundContainer.AddElement(compound);
     }
 
-    public static CompoundGrid Create(IMutableContainer<Compound> compound_container)
+    public static CompoundGridPanel Create(IMutableContainer<Compound> compound_container)
     {
-        CompoundGrid compound_grid = Instantiate(Scene.Micro.Prefabs.CompoundGrid);
+        CompoundGridPanel compound_grid = Instantiate(Scene.Micro.Prefabs.CompoundGridPanel);
         compound_grid.transform.SetParent(Scene.Micro.Canvas.transform, false);
 
         compound_grid.Data = compound_container;

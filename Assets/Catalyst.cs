@@ -4,6 +4,10 @@ using UnityEngine;
 public interface Catalyst
 {
     string Name { get; }
+    string Description { get; }
+    int Price { get; }
+
+    Example Example { get; }
 
     Action Catalyze(Cell.Slot slot);
 }
@@ -16,10 +20,16 @@ public abstract class ProgressiveCatalyst : Catalyst
     static Dictionary<Cell.Slot, Action> actions_in_progress = new Dictionary<Cell.Slot, Action>();
 
     public string Name { get; private set; }
+    public string Description { get; private set; }
+    public int Price { get; private set; }
 
-    public ProgressiveCatalyst(string name)
+    public virtual Example Example { get { return null; } }
+
+    public ProgressiveCatalyst(string name, int price, string description = "")
     {
         Name = name;
+        Description = description;
+        Price = price;
     }
 
     protected abstract Action GetAction(Cell.Slot slot);
@@ -69,7 +79,7 @@ public abstract class ProgressiveCatalyst : Catalyst
 //productivity of the Catalyst. 
 public abstract class InstantCatalyst : ProgressiveCatalyst
 {
-    public InstantCatalyst(string name) : base(name)
+    public InstantCatalyst(string name, int price, string description = "") : base(name, price, description)
     {
         
     }
@@ -93,7 +103,21 @@ public abstract class InstantCatalyst : ProgressiveCatalyst
 
 public class Rotase : ProgressiveCatalyst
 {
-    public Rotase() : base("Rotase")
+    public override Example Example
+    {
+        get
+        {
+            Organism organism = new Organism();
+            Cell cell = organism.GetCell(new Vector2Int(0, 0));
+
+            cell.Slots[0].AddCompound(new Compound(Ribozyme.GetRibozymeFamily(Name)[0], 1));
+            cell.Slots[5].AddCompound(new Compound(Molecule.ATP, 1));
+
+            return new Example(organism, 1);
+        }
+    }
+
+    public Rotase() : base("Rotase", 1, "Rotates cells")
     {
 
     }
@@ -126,7 +150,7 @@ public class Rotase : ProgressiveCatalyst
 
 public class Constructase : ProgressiveCatalyst
 {
-    public Constructase() : base("Constructase")
+    public Constructase() : base("Constructase", 1, "Makes new cells")
     {
 
     }
@@ -165,7 +189,7 @@ public class Constructase : ProgressiveCatalyst
 
 public class Pipase : InstantCatalyst
 {
-    public Pipase() : base("Pipase")
+    public Pipase() : base("Pipase", 1, "Moves compounds from a specific slot to another")
     {
 
     }
@@ -181,8 +205,10 @@ public class Pumpase : InstantCatalyst
     bool pump_out;
     Molecule molecule;
 
-    protected Pumpase(bool pump_out_, Molecule molecule_, string name) 
-        : base(name)
+    public Pumpase(bool pump_out_, Molecule molecule_) 
+        : base(pump_out_ ? "Exopumpase" : "Endopumpase", 
+               1, 
+               pump_out_ ? "Removes compounds from cell" : "Draws in compounds from outside")
     {
         pump_out = pump_out_;
         molecule = molecule_;
@@ -209,21 +235,15 @@ public class Pumpase : InstantCatalyst
                                  0.1f, 
                                  new PumpAction(slot, pump_out, GetMolecule(slot), 1));
     }
-}
 
-public class Endopumpase : Pumpase
-{
-    public Endopumpase(Molecule molecule = null) : base(false, molecule, "Endopumpase")
+    public static Pumpase Endo(Molecule molecule)
     {
-
+        return new Pumpase(false, molecule);
     }
-}
 
-public class Exopumpase : Pumpase
-{
-    public Exopumpase(Molecule molecule = null) : base(true, molecule, "Exopumpase")
+    public static Pumpase Exo(Molecule molecule)
     {
-
+        return new Pumpase(true, molecule);
     }
 }
 
@@ -300,7 +320,7 @@ public class PumpAction : Action
 
 public class Transcriptase : InstantCatalyst
 {
-    public Transcriptase() : base("Transcriptase")
+    public Transcriptase() : base("Transcriptase", 3, "Copies DNA")
     {
 
     }
@@ -367,7 +387,7 @@ public class Transcriptase : InstantCatalyst
 
 public class Actuase : InstantCatalyst
 {
-    public Actuase() : base("Actuase")
+    public Actuase() : base("Actuase", 2, "Moves compounds using a DNA program.")
     {
 
     }
@@ -401,7 +421,7 @@ public class Actuase : InstantCatalyst
 
 public class Sporulase : ProgressiveCatalyst
 {
-    public Sporulase() : base("Sporulase")
+    public Sporulase() : base("Sporulase", 2, "Detatches a cell, creating a new organism")
     {
 
     }

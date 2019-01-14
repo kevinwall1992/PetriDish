@@ -3,7 +3,7 @@
 
 public class Interpretase : ProgressiveCatalyst
 {
-    public Interpretase() : base("Interpretase")
+    public Interpretase() : base("Interpretase", 3, "Interprets DNA programs")
     {
 
     }

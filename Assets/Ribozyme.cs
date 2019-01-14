@@ -12,9 +12,9 @@ public class Ribozyme : DNA, Catalyst
         new Ribozyme(new Rotase(), 6);
         new Ribozyme(new Constructase(), 6);
         new Ribozyme(new Pipase(), 4);
-        new Ribozyme(new Endopumpase(Hydrogen), 6);
-        new Ribozyme(new Endopumpase(CarbonDioxide), 6);
-        new Ribozyme(new Exopumpase(Methane), 6);
+        new Ribozyme(Pumpase.Endo(Hydrogen), 6);
+        new Ribozyme(Pumpase.Endo(CarbonDioxide), 6);
+        new Ribozyme(Pumpase.Exo(Methane), 6);
         new Ribozyme(new Transcriptase(), 8);
         new Ribozyme(new Actuase(), 6);
         new Ribozyme(new Sporulase(), 10);
@@ -76,6 +76,10 @@ public class Ribozyme : DNA, Catalyst
             return "Unnamed";
         }
     }
+
+    public string Description { get { return catalyst.Description; } }
+    public int Price { get { return catalyst.Price; } }
+    public Example Example { get { return catalyst.Example; } }
 
     public Ribozyme(Catalyst catalyst_, int codon_count) : base(GenerateUniqueDNASequence(codon_count))
     {

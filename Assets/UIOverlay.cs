@@ -31,7 +31,7 @@ public class UIOverlay : GoodBehavior
         }
 
         //Add new compounds
-        CompoundComponent[] compound_components = GameObject.FindObjectsOfType<CompoundComponent>();
+        CompoundComponent[] compound_components = Scene.Micro.Visualization.GetComponentsInChildren<CompoundComponent>();
         foreach (CompoundComponent compound_component in compound_components)
         {
             if (!compound_quantity_texts.ContainsKey(compound_component) && compound_component.Compound!= null)
@@ -45,7 +45,8 @@ public class UIOverlay : GoodBehavior
         foreach (CompoundComponent compound_component in compound_quantity_texts.Keys)
         {
             compound_quantity_texts[compound_component].text = compound_component.Compound.Quantity.ToString("n1");
-            compound_quantity_texts[compound_component].transform.position = GameObject.FindObjectOfType<Camera>().WorldToScreenPoint(compound_component.transform.position)+ new Vector3(20, -10);
+            compound_quantity_texts[compound_component].transform.position = 
+                Scene.Micro.Camera.WorldToScreenPoint(compound_component.transform.position) + new Vector3(20, -10);
 
             Color text_color = compound_quantity_texts[compound_component].color;
             text_color.a = compound_component.GetComponent<SpriteRenderer>().color.a;

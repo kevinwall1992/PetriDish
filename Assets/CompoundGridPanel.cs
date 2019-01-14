@@ -16,14 +16,6 @@ public class CompoundGridPanel : DetailPanel
         }
     }
 
-    public override object Data
-    {
-        set
-        {
-            base.Data = value;
-        }
-    }
-
     public int RowLength { get; set; }
 
     protected void Start()

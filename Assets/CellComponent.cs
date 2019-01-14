@@ -39,7 +39,7 @@ public class CellComponent : MonoBehaviour
 
     private void OnMouseUp()
     {
-        Vector2 displacement = transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition)) - transform.position;
+        Vector2 displacement = transform.InverseTransformPoint(Scene.Micro.Camera.ScreenToWorldPoint(Input.mousePosition)) - transform.position;
 
         if (displacement.magnitude < 0.5)
             OrganismComponent.DetailPanel.Open();

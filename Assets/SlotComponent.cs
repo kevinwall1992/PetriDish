@@ -29,12 +29,13 @@ public class SlotComponent : MonoBehaviour, HasDetailPanel
     {
         get
         {
-            if (detail_panel == null &&
-                CompoundComponent.Compound != null && 
-                CompoundComponent.Compound.Molecule is DNA && 
-                !(CompoundComponent.Compound.Molecule is Catalyst))
-
-                detail_panel = DNAPanel.Create(CompoundComponent.Compound.Molecule as DNA);
+            if (detail_panel == null && CompoundComponent.Compound != null)
+            {
+                if (CompoundComponent.Compound.Molecule is Catalyst)
+                    detail_panel = CatalystPanel.Create(CompoundComponent.Compound.Molecule as Catalyst);
+                else if (CompoundComponent.Compound.Molecule is DNA)
+                    detail_panel = DNAPanel.Create(CompoundComponent.Compound.Molecule as DNA);
+            }
 
             return detail_panel;
         }

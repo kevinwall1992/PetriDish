@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6155293349769728433}
   - component: {fileID: 6155293349769728447}
   m_Layer: 5
-  m_Name: compound_tile
+  m_Name: CompoundTile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -36,11 +36,11 @@ RectTransform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0.46100003}
+  m_AnchorMax: {x: 0.3314841, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0.3999939}
+  m_SizeDelta: {x: 0.3999939, y: -0.3999939}
+  m_Pivot: {x: 0, y: 0}
 --- !u!222 &6155293349769728446
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -124,7 +124,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: -0.116000004, y: -0.3342744}
   m_AnchorMax: {x: 1.12, y: 1.3364954}
-  m_AnchoredPosition: {x: -0.2000122, y: -0.08402252}
+  m_AnchoredPosition: {x: -0.2000122, y: -0.08401489}
   m_SizeDelta: {x: -0.3409996, y: -0.37000084}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6155293350275586789
@@ -330,7 +330,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.3866667, y: 0}
   m_AnchorMax: {x: 0.98, y: 0.32666668}
-  m_AnchoredPosition: {x: -4.8999996, y: 2.9000092}
+  m_AnchoredPosition: {x: -4.899994, y: 2.900013}
   m_SizeDelta: {x: -11, y: -6.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6155293351885409892

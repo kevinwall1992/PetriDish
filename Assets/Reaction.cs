@@ -241,7 +241,7 @@ public class Reaction
     }
 
 
-    string catalyst_name;
+    string catalyst_name, description = "";
 
     Dictionary<Compound, Attribute> reactants= new Dictionary<Compound, Attribute>();
     Dictionary<Compound, Attribute> products = new Dictionary<Compound, Attribute>();
@@ -517,7 +517,7 @@ public class Reaction
 
         float ATP_balance;
 
-        public CatalystImplementation(string name, Reaction reaction) : base(name)
+        public CatalystImplementation(string name, Reaction reaction) : base(name, 2, reaction.description)
         {
             //Until we actually have a way to mutate reactions in game, 
             //need to have least disruptive slot order

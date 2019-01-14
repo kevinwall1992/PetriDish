@@ -15,7 +15,7 @@ public class ActionComponent : MonoBehaviour
 
     OrganismComponent OrganismComponent
     {
-        get { return Scene.Micro.Visualization.GetOrganismComponent(action.Organism); }
+        get { return GetComponent<OrganismComponent>(); }
     }
 
     CellComponent CellComponent
@@ -224,6 +224,9 @@ public class ActionComponent : MonoBehaviour
                                                             .SetLength(1.0f * length));
             }
         }
+
+        foreach (ActionAnimation animation in animations)
+            animation.transform.parent = transform;
     }
 
     float GetMoment()

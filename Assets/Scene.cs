@@ -21,5 +21,15 @@ public static class Scene
         {
             get { return Object.FindObjectOfType<MicroPrefabs>(); }
         }
+
+        public static Camera Camera
+        {
+            get { return Camera.main; }
+        }
+    }
+
+    public static ExampleComponent ExampleComponent
+    {
+        get { return Object.FindObjectOfType<ExampleComponent>(); }
     }
 }

@@ -58,6 +58,10 @@ public class Enzyme : Polymer, Catalyst
         }
     }
 
+    public string Description { get { return catalyst.Description; } }
+    public int Price { get { return catalyst.Price; } }
+    public Example Example { get { return catalyst.Example; } }
+
     public List<AminoAcid> AminoAcidSequence
     {
         get
@@ -110,9 +114,9 @@ public class AminoAcid : Polymer.Monomer
     static AminoAcid()
     {
         //These aren't _exactly_ chemically accurate
-        Histidine = new AminoAcid(Imidazole);
-        Alanine = new AminoAcid(Methane);
-        Serine = new AminoAcid(Water);
+        Histidine = new AminoAcid(Imidazole, "His");
+        Alanine = new AminoAcid(Methane, "Ala");
+        Serine = new AminoAcid(Water, "Ser");
     }
 
 
@@ -143,8 +147,12 @@ public class AminoAcid : Polymer.Monomer
         }
     }
 
-    public AminoAcid(Molecule side_chain_) : base(Water)
+    public string Abbreviation { get; private set; }
+
+    public AminoAcid(Molecule side_chain_, string abbreviation) : base(Water)
     {
         side_chain = side_chain_;
+
+        Abbreviation = abbreviation;
     }
 }

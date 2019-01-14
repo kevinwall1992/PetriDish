@@ -263,6 +263,38 @@ public class Organism : Chronal
         ExecuteActions(move_actions);
         ExecuteActions(powered_actions);
     }
+
+    public Organism Copy()
+    {
+        Organism organism = new Organism();
+
+        organism.cells.Clear();
+        for (int row = 0; row < cells.Count; row++)
+        {
+            organism.cells.Add(new List<Cell>());
+
+            for (int column = 0; column < cells[row].Count; column++)
+            {
+                Cell cell = cells[row][column];
+                Cell cell_copy = new Cell(organism);
+
+                for (int slot_index = 0; slot_index < 6; slot_index++)
+                {
+                    Cell.Slot slot = cell.Slots[slot_index];
+
+                    if (slot.Compound != null)
+                        cell_copy.Slots[slot_index].AddCompound(new Compound(slot.Compound.Molecule, slot.Compound.Quantity));
+                }
+
+                organism.cells[row].Add(cell_copy);
+            }
+        }
+
+        foreach (Molecule molecule in cytozol.Molecules)
+            organism.cytozol.AddCompound(new Compound(molecule, cytozol.GetQuantity(molecule)));
+
+        return organism;
+    }
 }
 
 

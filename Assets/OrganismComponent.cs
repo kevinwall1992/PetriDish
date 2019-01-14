@@ -6,18 +6,20 @@ using System.Reflection;
 
 public class OrganismComponent : MonoBehaviour
 {
-    Organism organism;
-
     List<CellComponent> cell_components= new List<CellComponent>();
 
     Queue<List<Action>> actions= new Queue<List<Action>>();
 
-    public Organism Organism
-    {
-        get { return organism; }
-    }
+    public Organism Organism { get; private set; }
 
-    public bool IsVisualizingStep { get { return actions.Count > 0; } }
+    public bool IsVisualizingStep
+    {
+        get
+        {
+            return actions.Count > 0 || 
+                   GetComponents<ActionComponent>().Length > 0;
+        }
+    }
 
     DetailPanel detail_panel;
     public DetailPanel DetailPanel
@@ -33,7 +35,7 @@ public class OrganismComponent : MonoBehaviour
 
     void Awake()
     {
-        organism = new Organism();
+        Organism = new Organism();
     }
 
     void Start()
@@ -48,11 +50,9 @@ public class OrganismComponent : MonoBehaviour
         if (GetComponents<ActionComponent>().Length > 0)
             return;
 
-        if (!IsVisualizingStep)
-            return;
-
-        foreach (Action action in actions.Dequeue())
-            gameObject.AddComponent<ActionComponent>().SetAction(action, action is PoweredAction ? 3 : 1.5f);
+        if(actions.Count > 0)
+            foreach (Action action in actions.Dequeue())
+                gameObject.AddComponent<ActionComponent>().SetAction(action, action is PoweredAction ? 3 : 1.5f);
     }
 
     void SetCellTransformations()
@@ -92,6 +92,13 @@ public class OrganismComponent : MonoBehaviour
             }
 
         SetCellTransformations();
+    }
+
+    public void SetOrganism(Organism organism)
+    {
+        Organism = organism;
+
+        ValidateCells();
     }
 
     public CellComponent GetCellComponent(Cell cell)

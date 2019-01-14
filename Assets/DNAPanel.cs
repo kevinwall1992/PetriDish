@@ -250,7 +250,7 @@ public class DNAPanel : DetailPanel
 
     public static DNAPanel Create(DNA dna)
     {
-        DNAPanel dna_panel = GameObject.Instantiate(Scene.Micro.Prefabs.DNAPanel);
+        DNAPanel dna_panel = Instantiate(Scene.Micro.Prefabs.DNAPanel);
         dna_panel.transform.SetParent(Scene.Micro.Canvas.transform, false);
 
         dna_panel.Data = dna;

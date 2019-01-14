@@ -14,4 +14,8 @@ public class MicroPrefabs : MonoBehaviour
     [SerializeField]
     DNAPanel dna_panel;
     public DNAPanel DNAPanel { get { return dna_panel; } }
+
+    [SerializeField]
+    CatalystPanel catalyst_panel;
+    public CatalystPanel CatalystPanel { get { return catalyst_panel; } }
 }

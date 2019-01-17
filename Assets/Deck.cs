@@ -3,19 +3,10 @@ using System.Collections.Generic;
 
 public class Deck : List<Catalyst>
 {
-    public static bool operator ==(Deck a, Deck b)
-    {
-        if (ReferenceEquals(a, null))
-            return false;
-
-        return a.Equals(b);
-    }
-    public static bool operator !=(Deck a, Deck b) { return !(a == b); }
-
     public override bool Equals(object other)
     {
         Deck other_deck = other as Deck;
-        if (ReferenceEquals(other_deck, null))
+        if (other_deck == null)
             return false;
 
         foreach (Catalyst catalyst in this)

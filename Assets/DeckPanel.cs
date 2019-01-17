@@ -22,7 +22,7 @@ public class DeckPanel : GridPanel
     {
         base.Update();
 
-        if (deck != Organism.Deck)
+        if (!Organism.Deck.Equals(deck))
             UpdateCards();
     }
 

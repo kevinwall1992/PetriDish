@@ -31,7 +31,10 @@ public class Ribozyme : DNA, Catalyst
 
     public static Ribozyme GetRibozyme(string dna_sequence)
     {
-        return ribozymes[dna_sequence];
+        if(ribozymes.ContainsKey(dna_sequence))
+            return ribozymes[dna_sequence];
+
+        return null;
     }
 
     public static List<Ribozyme> GetRibozymeFamily(string name)

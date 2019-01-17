@@ -18,4 +18,12 @@ public class MicroPrefabs : MonoBehaviour
     [SerializeField]
     CatalystPanel catalyst_panel;
     public CatalystPanel CatalystPanel { get { return catalyst_panel; } }
+
+    [SerializeField]
+    DeckPanel deck_panel;
+    public DeckPanel DeckPanel { get { return deck_panel; } }
+
+    [SerializeField]
+    Card card;
+    public Card Card { get { return card; } }
 }

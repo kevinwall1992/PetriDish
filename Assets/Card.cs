@@ -2,63 +2,48 @@
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 public class Card : GoodBehavior, IPointerClickHandler
 {
-    [SerializeField]
-    CardDataPanel data_panel;
+    static List<Card> cards = new List<Card>();
 
-    [SerializeField]
-    RectTransform image_panel;
+    public float CollapsedSize { get; set; }
+    public float RestScale { get { return CollapsedSize / (transform as RectTransform).rect.width; } }
+    public Vector2 RestPosition { get; set; }
 
-    [SerializeField]
-    RawImage card_scene_image;
-
-    [SerializeField]
-    Image compound_image;
-
-    [SerializeField]
-    Image blur;
-
-    [SerializeField]
-    Text name_text, price_text, description, code_text;
-
-    Vector2 original_scale;
-
-    Vector2 target_scale;
+    float target_scale;
     Vector2 target_position;
 
     int original_font_size = -1;
 
     bool is_hovered = false;
 
-    enum ZoomTarget { None, Image, Data }
-    ZoomTarget zoom_target = ZoomTarget.None;
-
-    float zoom_length = 2.5f;
-    float zoom_progress = 0;
-
-    RectTransform RectTransform { get { return transform as RectTransform; } }
-
-    float collapsed_size;
-    public float CollapsedSize
+    enum ZoomTarget { None, Card, Image, Data }
+    ZoomTarget current_zoom_target = ZoomTarget.None;
+    ZoomTarget CurrentZoomTarget
     {
-        get { return collapsed_size; }
+        get { return current_zoom_target; }
 
         set
         {
-            if (collapsed_size == value)
+            if (current_zoom_target == value)
                 return;
 
-            collapsed_size = value;
+            current_zoom_target = value;
 
-            float scale = collapsed_size / RectTransform.rect.height;
+            if(current_zoom_target != ZoomTarget.Image)
+                Scene.ExampleComponent.Example = null;//really necessary?
 
-            original_scale = transform.localScale = new Vector2(scale, scale);
+            if (current_zoom_target == ZoomTarget.None)
+                GUI.depth = 0;
 
-            ResetTargets();
+            zoom_progress = 0;
         }
     }
+
+    float zoom_length = 2.5f;
+    float zoom_progress = 0;
 
     Catalyst catalyst;
     public Catalyst Catalyst
@@ -70,7 +55,7 @@ public class Card : GoodBehavior, IPointerClickHandler
             catalyst = value;
 
             name_text.text = catalyst.Name;
-            description.text = catalyst.Description;
+            description_small.text = description.text = catalyst.Description;
             price_text.text = catalyst.Price.ToString();
 
             Color dark_gray = Color.Lerp(Color.black, Color.gray, 0.2f);
@@ -108,15 +93,32 @@ public class Card : GoodBehavior, IPointerClickHandler
 
     void Update()
     {
+        if(CurrentZoomTarget == ZoomTarget.None)
+        {
+            target_scale = RestScale;
+            target_position = RestPosition;
+        }
+
         zoom_progress = Mathf.Min(zoom_progress + Time.deltaTime / zoom_length, 1);
 
-        transform.localScale = new Vector3(Mathf.Lerp(transform.localScale.x, target_scale.x, zoom_progress),
-                                           Mathf.Lerp(transform.localScale.y, target_scale.y, zoom_progress));
+        transform.localScale = new Vector3(Mathf.Lerp(transform.localScale.x, target_scale, zoom_progress),
+                                           Mathf.Lerp(transform.localScale.y, target_scale, zoom_progress));
+
+        if(transform.localScale.x < 0.25f)
+        {
+            description_small.gameObject.SetActive(true);
+            description.gameObject.SetActive(false);
+        }
+        else
+        {
+            description_small.gameObject.SetActive(false);
+            description.gameObject.SetActive(true);
+        }
 
         transform.position = new Vector3(Mathf.Lerp(transform.position.x, target_position.x, zoom_progress), 
                                          Mathf.Lerp(transform.position.y, target_position.y, zoom_progress));
 
-        if(zoom_target == ZoomTarget.Image)
+        if(CurrentZoomTarget == ZoomTarget.Image)
         {
             compound_image.color = Color.Lerp(compound_image.color, Color.clear, zoom_progress);
             card_scene_image.color = Color.Lerp(card_scene_image.color, Color.white, zoom_progress);
@@ -135,6 +137,37 @@ public class Card : GoodBehavior, IPointerClickHandler
                 0.0f);
     }
 
+    private void OnGUI()
+    {
+        Event e = Event.current;
+        if (e.isKey)
+        {
+            Debug.Log("Detected key code: " + e.keyCode);
+            Debug.Log(Event.current.keyCode == KeyCode.Escape);
+            Debug.Log(Event.current.keyCode.Equals(KeyCode.Escape));
+        }
+
+        if (CurrentZoomTarget != ZoomTarget.None)
+        {
+            GUI.depth = -1;
+
+            if (Utility.ConsumeIsKeyUp(KeyCode.Escape))
+                CurrentZoomTarget = ZoomTarget.None;
+        }
+        else
+            GUI.depth = 0;
+    }
+
+    private void OnEnable()
+    {
+        cards.Add(this);
+    }
+
+    private void OnDisable()
+    {
+        cards.Remove(this);
+    }
+
     void CalculateTargets()
     {
         RectTransform zoomed_rect_transform;
@@ -144,50 +177,69 @@ public class Card : GoodBehavior, IPointerClickHandler
         if (RectTransformUtility.RectangleContainsScreenPoint(data_panel.transform as RectTransform, Input.mousePosition))
         {
             zoomed_rect_transform = data_panel.transform as RectTransform;
-            zoom_target = ZoomTarget.Data;
+            CurrentZoomTarget = ZoomTarget.Data;
         }
         else if (RectTransformUtility.RectangleContainsScreenPoint(image_panel, Input.mousePosition))
         {
             zoomed_rect_transform = image_panel.transform as RectTransform;
-            zoom_target = ZoomTarget.Image;
+            CurrentZoomTarget = ZoomTarget.Image;
 
             if (Catalyst.Example != null)
                 Scene.ExampleComponent.Example = Catalyst.Example;
         }
         else
         {
-            ResetTargets();
-            return;
+            if(CurrentZoomTarget == ZoomTarget.Card)
+            {
+                CurrentZoomTarget = ZoomTarget.None;
+                return;
+            }
+
+            zoomed_rect_transform = card_zoom_transform as RectTransform;
+            CurrentZoomTarget = ZoomTarget.Card;
         }
 
-        target_scale = transform.localScale * 0.9f * canvas_transform.rect.height / (zoomed_rect_transform.rect.height * transform.localScale.y);
+        target_scale = transform.localScale.x * 0.9f * canvas_transform.rect.height / (zoomed_rect_transform.rect.width * transform.localScale.x);
 
         Vector2 prior_scale = transform.localScale;
-        transform.localScale = target_scale;
+        transform.localScale = new Vector3(target_scale, target_scale);
         target_position = canvas_transform.position + transform.position - zoomed_rect_transform.position;
         transform.localScale = prior_scale;
-
-        zoom_progress = 0;
-    }
-
-    void ResetTargets()
-    {
-        target_scale = original_scale;
-
-        RectTransform parent_rect_transform = transform.parent as RectTransform;
-        target_position = (Vector2)parent_rect_transform.position +
-                          new Vector2(parent_rect_transform.rect.min.x, parent_rect_transform.rect.max.y);
-
-        zoom_target = ZoomTarget.None;
-
-        zoom_progress = 0;
-
-        Scene.ExampleComponent.Example = null;
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        transform.SetAsLastSibling();
+
         if (Catalyst != null)
+        {
             CalculateTargets();
+
+            foreach (Card card in cards)
+                if (card != this)
+                    card.CurrentZoomTarget = ZoomTarget.None;
+        }
     }
+
+
+    [SerializeField]
+    CardDataPanel data_panel;
+
+    [SerializeField]
+    RectTransform image_panel;
+
+    [SerializeField]
+    RectTransform card_zoom_transform;
+
+    [SerializeField]
+    RawImage card_scene_image;
+
+    [SerializeField]
+    Image compound_image;
+
+    [SerializeField]
+    Image blur;
+
+    [SerializeField]
+    Text name_text, price_text, description, description_small, code_text;
 }

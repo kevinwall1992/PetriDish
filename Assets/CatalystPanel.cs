@@ -26,14 +26,10 @@ public class CatalystPanel : DetailPanel
         }
     }
 
-    void Start()
-    {
-        
-    }
-
     protected override void Update()
     {
         card.CollapsedSize = (transform as RectTransform).rect.width;
+        card.RestPosition = transform.position;
 
         base.Update();
     }

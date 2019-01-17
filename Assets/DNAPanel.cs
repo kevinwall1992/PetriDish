@@ -42,13 +42,13 @@ public class DNAPanel : DetailPanel
         SpawnPosition = transform.position;
     }
 
-    private void Start()
+    protected override void Start()
     {
-        Scene.Micro.Visualization.IsPaused = true;
-
         AddDNASequence(DNA.Sequence);
 
         InitializeSequenceElements();
+
+        base.Start();
     }
 
     protected override void Update()

@@ -3,26 +3,11 @@ using UnityEditor;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
-public class CompoundGridPanel : DetailPanel
+public class CompoundGridPanel : GridPanel
 {
-    [SerializeField]
-    GridLayoutGroup grid_layout;
-
     IMutableContainer<Compound> CompoundContainer
     {
-        get
-        {
-            return Data as IMutableContainer<Compound>;
-        }
-    }
-
-    public int RowLength { get; set; }
-
-    protected void Start()
-    {
-        Scene.Micro.Visualization.IsPaused = true;
-
-        RowLength = 5;
+        get { return Data as IMutableContainer<Compound>; }
     }
 
     protected override void Update()
@@ -30,19 +15,12 @@ public class CompoundGridPanel : DetailPanel
         if (CompoundContainer.WasModified(this))
             UpdateTiles();
 
-        float width = (grid_layout.transform as RectTransform).rect.width;
-        float space = width * 0.02f;
-        float size = (width - space * (RowLength - 1)) / RowLength;
-
-        grid_layout.cellSize = new Vector2(size, size);
-        grid_layout.spacing = new Vector2(space, space);
-
         base.Update();
     }
 
     void UpdateTiles()
     {
-        foreach (CompoundTile compound_tile in grid_layout.GetComponentsInChildren<CompoundTile>())
+        foreach (CompoundTile compound_tile in GridLayoutGroup.GetComponentsInChildren<CompoundTile>())
             GameObject.Destroy(compound_tile.gameObject);
 
         foreach(Compound compound in CompoundContainer.Elements)
@@ -51,7 +29,7 @@ public class CompoundGridPanel : DetailPanel
                 continue;
 
             CompoundTile compound_tile = Instantiate(Scene.Micro.Prefabs.CompoundTile);
-            compound_tile.transform.parent = grid_layout.transform;
+            compound_tile.transform.parent = GridLayoutGroup.transform;
             compound_tile.Compound = compound;
         }
     }

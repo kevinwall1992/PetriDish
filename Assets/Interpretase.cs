@@ -204,7 +204,7 @@ public class Interpretase : ProgressiveCatalyst
         dna.ActiveCodonIndex = FindCommandCodon(dna, search_backwards);
     }
 
-    public static int FindMarkerCodon(DNA dna, string marker, int starting_codon_index, bool search_backwards = false)
+    public static int FindMarkerCodon(DNA dna, string marker, int starting_codon_index, bool search_backwards = false, bool circular = true)
     {
         int codon_index = starting_codon_index;
 
@@ -221,9 +221,19 @@ public class Interpretase : ProgressiveCatalyst
                         codon_index++;
 
                     if (codon_index < 0)
+                    {
+                        if (!circular)
+                            return -1;
+
                         codon_index = dna.CodonCount - 1;
+                    }
                     else if (codon_index >= dna.CodonCount)
+                    {
+                        if (!circular)
+                            return -1;
+
                         codon_index = 0;
+                    }
 
                     if (codon_index == starting_codon_index)
                         return -1;
@@ -238,14 +248,14 @@ public class Interpretase : ProgressiveCatalyst
         }
     }
 
-    public static int FindMarkerCodon(DNA dna, string marker, bool search_backwards = false)
+    public static int FindMarkerCodon(DNA dna, string marker, bool search_backwards = false, bool circular = true)
     {
-        return FindMarkerCodon(dna, marker, dna.ActiveCodonIndex, search_backwards);
+        return FindMarkerCodon(dna, marker, dna.ActiveCodonIndex, search_backwards, circular);
     }
 
-    public static void SeekToMarker(DNA dna, string marker, bool search_backwards = false)
+    public static void SeekToMarker(DNA dna, string marker, bool search_backwards = false, bool circular = true)
     {
-        dna.ActiveCodonIndex = FindMarkerCodon(dna, marker, search_backwards);
+        dna.ActiveCodonIndex = FindMarkerCodon(dna, marker, search_backwards, circular);
     }
 
     public static int GetSegmentLength(DNA dna, string marker, int local_codon_index)
@@ -283,17 +293,32 @@ public class Interpretase : ProgressiveCatalyst
                 case 'T': value = 3; break;
             }
 
-            int base_ = 4;
-            int power = 1;
-            for (int i = 0; i < exponent; i++)
-                power *= base_;
-
-            total += power * value;
+            total += MathUtility.Pow(4, exponent) * value;
 
             exponent--;
         }
 
         return total;
+    }
+
+    public static string ValueToCodon(int value)
+    {
+        string codon = "";
+
+        for (int significance = 2; significance >= 0; significance--)
+        {
+            int digit = (value % MathUtility.Pow(4, significance + 1)) / MathUtility.Pow(4, significance);
+
+            switch (digit)
+            {
+                case 0: codon += "A"; break;
+                case 1: codon += "C"; break;
+                case 2: codon += "G"; break;
+                case 3: codon += "T"; break;
+            }
+        }
+
+        return codon;
     }
 
     public static object CodonToLocation(Cell.Slot catalyst_slot, int codon_index, out int next_codon_index)

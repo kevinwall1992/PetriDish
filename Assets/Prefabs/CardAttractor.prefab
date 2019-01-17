@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3924562986786226998
+--- !u!1 &4889941249032220458
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,54 +8,54 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3924562986786226997}
-  - component: {fileID: 3924562986786226996}
+  - component: {fileID: 4829830968909508493}
+  - component: {fileID: 2057659645494631183}
   m_Layer: 5
-  m_Name: CatalystPanel
+  m_Name: CardAttractor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!224 &3924562986786226997
+--- !u!224 &4829830968909508493
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3924562986786226998}
+  m_GameObject: {fileID: 4889941249032220458}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 2409740791144054262}
+  - {fileID: 3954371219846010926}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.000015258789}
-  m_SizeDelta: {x: -616.4, y: -277.4}
+  m_AnchoredPosition: {x: 0.5, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
---- !u!114 &3924562986786226996
+--- !u!114 &2057659645494631183
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3924562986786226998}
+  m_GameObject: {fileID: 4889941249032220458}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab34bc5e1fe254843bf74d09d817960c, type: 3}
+  m_Script: {fileID: 11500000, guid: 8a993eca6de97824391fc92faa0ebb67, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  card: {fileID: 2712701138926622762}
---- !u!1001 &1231493421749775449
+  card: {fileID: 3617747878411189746}
+--- !u!1001 &470209897774696833
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
-    m_TransformParent: {fileID: 3924562986786226997}
+    m_TransformParent: {fileID: 4829830968909508493}
     m_Modifications:
     - target: {fileID: 701720520538712552, guid: 2e2de2f8cfbdcdb4da4492e74f30d572,
         type: 3}
@@ -172,29 +172,19 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 434007269806030880, guid: 2e2de2f8cfbdcdb4da4492e74f30d572,
-        type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 1.2467041
-      objectReference: {fileID: 0}
-    - target: {fileID: 434007269806030880, guid: 2e2de2f8cfbdcdb4da4492e74f30d572,
-        type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -0.17749023
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2e2de2f8cfbdcdb4da4492e74f30d572, type: 3}
---- !u!224 &2409740791144054262 stripped
+--- !u!224 &3954371219846010926 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3487539581279588783, guid: 2e2de2f8cfbdcdb4da4492e74f30d572,
     type: 3}
-  m_PrefabInstance: {fileID: 1231493421749775449}
+  m_PrefabInstance: {fileID: 470209897774696833}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2712701138926622762 stripped
+--- !u!114 &3617747878411189746 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3797194116566414451, guid: 2e2de2f8cfbdcdb4da4492e74f30d572,
     type: 3}
-  m_PrefabInstance: {fileID: 1231493421749775449}
+  m_PrefabInstance: {fileID: 470209897774696833}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1

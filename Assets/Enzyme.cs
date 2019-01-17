@@ -20,7 +20,7 @@ public class Enzyme : Polymer, Catalyst
         string amino_acid_string = "";
 
         foreach (AminoAcid amino_acid in amino_acid_sequence)
-            amino_acid_string += amino_acid.Name;
+            amino_acid_string += amino_acid.Abbreviation;
 
         return amino_acid_string;
     }
@@ -39,6 +39,53 @@ public class Enzyme : Polymer, Catalyst
                 amino_acid_sequence.Add(MathUtility.RandomElement(amino_acids));
         }
         while (enzymes.ContainsKey(AminoAcidSequenceToString(amino_acid_sequence)));
+
+        return amino_acid_sequence;
+    }
+
+    public static Enzyme GetEnzyme(List<AminoAcid> amino_acid_sequence)
+    {
+        if (amino_acid_sequence == null)
+            return null;
+
+        string amino_acid_sequence_string = AminoAcidSequenceToString(amino_acid_sequence);
+
+        if (enzymes.ContainsKey(amino_acid_sequence_string))
+            return enzymes[amino_acid_sequence_string];
+
+        return null;
+    }
+
+    public static List<Enzyme> GetEnzymeFamily(string name)
+    {
+        return enzyme_families[name];
+    }
+
+    public static AminoAcid CodonToAminoAcid(string codon)
+    {
+        switch(codon)
+        {
+            case "AGC": return AminoAcid.Alanine;
+            case "ATC": return AminoAcid.Histidine;
+            case "GCT": return AminoAcid.Serine;
+        }
+
+        return null;
+    }
+
+    public static List<AminoAcid> DNASequenceToAminoAcidSequence(string dna_sequence)
+    {
+        List<AminoAcid> amino_acid_sequence = new List<AminoAcid>();
+
+        for (int i = 0; i < dna_sequence.Length / 3; i++)
+        {
+            AminoAcid amino_acid = CodonToAminoAcid(dna_sequence.Substring(i * 3, 3));
+
+            if (amino_acid == null)
+                return null;
+
+            amino_acid_sequence.Add(amino_acid);
+        }
 
         return amino_acid_sequence;
     }

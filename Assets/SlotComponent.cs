@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SlotComponent : MonoBehaviour, HasDetailPanel
+public class SlotComponent : MonoBehaviour
 {
     public Cell.Slot Slot { get; private set; }
 

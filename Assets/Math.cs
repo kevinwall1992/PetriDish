@@ -212,6 +212,21 @@ public static class MathUtility
 
         return quadrant * pi_over_2 + ((quadrant % 2 == 0) ? asin_y : pi_over_2 - asin_y);
     }
+
+    public static int Pow(int base_, int exponent)
+    {
+        int result = 1;
+
+        for (int i = 0; i < exponent; i++)
+            result *= base_;
+
+        return result;
+    }
+
+    public static Vector2 MakeUniformScale(float scale)
+    {
+        return new Vector2(scale, scale);
+    }
 }
 
 public abstract class GenericFunction<T>

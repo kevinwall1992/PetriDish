@@ -186,4 +186,31 @@ public class Utility
     {
         WriteTextFile("Output/" + name + ".txt", text, append);
     }
+
+    static void SetLayer(GameObject game_object, int layer_index)
+    {
+        game_object.layer = layer_index;
+
+        foreach (Transform child_transform in game_object.transform)
+            SetLayer(child_transform.gameObject, layer_index);
+    }
+
+    public static void SetLayer(GameObject game_object, string layer_name)
+    {
+        SetLayer(game_object, LayerMask.NameToLayer(layer_name));
+    }
+
+
+    //This should only be called from OnGUI()
+    public static bool ConsumeIsKeyUp(KeyCode key_code)
+    {
+        if(Event.current.isKey && Event.current.keyCode == key_code && Input.GetKeyUp(key_code))
+        {
+            Event.current.Use();
+
+            return true;
+        }
+
+        return false;
+    }
 }

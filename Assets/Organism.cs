@@ -14,27 +14,13 @@ public class Organism : Chronal
     Membrane membrane;
 
     public Cytozol Cytozol{ get { return cytozol; } }
-
     public Membrane Membrane { get { return membrane; } }
-
-    public float SurfaceArea
-    {
-        get
-        {
-            int total_exposed_edges= 0;
-
-            foreach (List<Cell> column in cells)
-                foreach (Cell cell in column)
-                    if (cell != null)
-                        foreach (Cell.Slot slot in cell.Slots)
-                            if (slot.IsExposed)
-                                total_exposed_edges++;
-                        
-            return total_exposed_edges/ 6.0f;
-        }
-    }
-
     public Locale Locale { get; set; }
+
+    public Deck Deck { get { return GetDeck(); } }
+
+    public float SurfaceArea { get { return GetSurfaceArea(); } }
+
 
     public Organism(Cell cell = null)
     {
@@ -160,6 +146,66 @@ public class Organism : Chronal
         else if (position.y == -1)
             foreach (List<Cell> column in cells)
                 column.Insert(0, null);
+    }
+
+    float GetSurfaceArea()
+    {
+        int total_exposed_edges = 0;
+
+        foreach (List<Cell> column in cells)
+            foreach (Cell cell in column)
+                if (cell != null)
+                    foreach (Cell.Slot slot in cell.Slots)
+                        if (slot.IsExposed)
+                            total_exposed_edges++;
+
+        return total_exposed_edges / 6.0f;
+    }
+
+    Deck GetDeck()
+    {
+        Deck deck = new Deck();
+
+        foreach (Cell cell in GetCells())
+        {
+            foreach (Cell.Slot slot in cell.Slots)
+            {
+                if (slot.Compound == null)
+                    continue;
+
+                if (slot.Compound.Molecule is Catalyst && slot.Compound.Molecule is Ribozyme)
+                    deck.Add(slot.Compound.Molecule as Catalyst);
+                else if (slot.Compound.Molecule is DNA)
+                {
+                    DNA dna = slot.Compound.Molecule as DNA;
+                    
+                    for (int marker_value = 48; marker_value < 63; marker_value++)
+                    {
+                        string marker = Interpretase.ValueToCodon(marker_value);
+
+                        int codon_index = 0;
+
+                        while (codon_index < dna.CodonCount && 
+                               (codon_index = Interpretase.FindMarkerCodon(dna, marker, codon_index, false, false)) >= 0)
+                        {
+                            string dna_sequence = dna.GetSubsequence(codon_index + 1, Interpretase.GetSegmentLength(dna, marker, codon_index));
+
+                            Ribozyme ribozyme = Ribozyme.GetRibozyme(dna_sequence);
+                            if (ribozyme != null)
+                                deck.Add(ribozyme);
+
+                            Enzyme enzyme = Enzyme.GetEnzyme(Enzyme.DNASequenceToAminoAcidSequence(dna_sequence));
+                            if (enzyme != null)
+                                deck.Add(enzyme);
+
+                            codon_index++;
+                        }
+                    }
+                }
+            }
+        }
+
+        return deck;
     }
 
     public Cell GetNeighbor(Cell cell, HexagonalDirection direction)

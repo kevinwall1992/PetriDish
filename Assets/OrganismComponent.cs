@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using System.Reflection;
+using UnityEngine.EventSystems;
 
 public class OrganismComponent : MonoBehaviour
 {
@@ -21,15 +22,27 @@ public class OrganismComponent : MonoBehaviour
         }
     }
 
-    DetailPanel detail_panel;
-    public DetailPanel DetailPanel
+    DetailPanel cytozol_detail_panel;
+    public DetailPanel CytozolDetailPanel
     {
         get
         {
-            if (detail_panel == null)
-                detail_panel = CompoundGridPanel.Create(Organism.Cytozol);
+            if (cytozol_detail_panel == null)
+                cytozol_detail_panel = CompoundGridPanel.Create(Organism.Cytozol);
 
-            return detail_panel;
+            return cytozol_detail_panel;
+        }
+    }
+
+    DetailPanel deck_detail_panel;
+    public DetailPanel DeckDetailPanel
+    {
+        get
+        {
+            if (deck_detail_panel == null)
+                deck_detail_panel = DeckPanel.Create(Organism);
+
+            return deck_detail_panel;
         }
     }
 
@@ -46,6 +59,8 @@ public class OrganismComponent : MonoBehaviour
     void Update()
     {
         ValidateCells();
+
+        Utility.SetLayer(gameObject, GetComponentInParent<ExampleComponent>() != null ? "Example" : "Visualization");
 
         if (GetComponents<ActionComponent>().Length > 0)
             return;

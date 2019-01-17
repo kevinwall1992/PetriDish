@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class CellComponent : MonoBehaviour
+public class CellComponent : MonoBehaviour, IPointerClickHandler
 {
     Cell cell;
 
@@ -37,12 +38,15 @@ public class CellComponent : MonoBehaviour
         ValidateSlots();
     }
 
-    private void OnMouseUp()
+    public void OnPointerClick(PointerEventData eventData)
     {
+        if (gameObject.layer == LayerMask.NameToLayer("Example"))
+            return;
+
         Vector2 displacement = transform.InverseTransformPoint(Scene.Micro.Camera.ScreenToWorldPoint(Input.mousePosition)) - transform.position;
 
         if (displacement.magnitude < 0.5)
-            OrganismComponent.DetailPanel.Open();
+            OrganismComponent.CytozolDetailPanel.Open();
         else
         {
             float clock_radians = (Mathf.PI * 2 - MathUtility.GetRotation(displacement)) + Mathf.PI / 2;
@@ -50,7 +54,7 @@ public class CellComponent : MonoBehaviour
             int index = (int)(6 * (clock_radians + Mathf.PI / 6) / (2 * Mathf.PI));
             SlotComponent slot_component = GetSlotComponent(index);
 
-            if(slot_component.DetailPanel!= null)
+            if (slot_component.DetailPanel != null)
                 slot_component.DetailPanel.Open();
         }
     }

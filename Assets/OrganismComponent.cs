@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine.EventSystems;
 
-public class OrganismComponent : MonoBehaviour
+public class OrganismComponent : GoodBehavior
 {
     List<CellComponent> cell_components= new List<CellComponent>();
 

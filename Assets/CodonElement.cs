@@ -161,7 +161,7 @@ public class CodonElement : DNAPanelElement
     {
         base.OnDrag(eventData);
 
-        if (DNAPanel.CodonLayout.IsHovered())
+        if (DNAPanel.CodonLayout.IsPointedAt)
             DNAPanel.CodonLayout.AddCodonElement(this, DNAPanel.CodonLayout.GetHoveredInsertionIndex());
         else if (DNAPanel.CodonLayout.Contains(this))
             DNAPanel.CodonLayout.RemoveCodonElement(this);
@@ -171,7 +171,7 @@ public class CodonElement : DNAPanelElement
     {
         base.OnEndDrag(eventData);
 
-        if (!DNAPanel.CodonLayout.IsHovered())
+        if (!DNAPanel.CodonLayout.IsPointedAt)
             GameObject.Destroy(this.gameObject);
     }
 }

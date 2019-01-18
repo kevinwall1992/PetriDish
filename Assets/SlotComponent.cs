@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SlotComponent : MonoBehaviour
+public class SlotComponent : GoodBehavior
 {
     public Cell.Slot Slot { get; private set; }
 

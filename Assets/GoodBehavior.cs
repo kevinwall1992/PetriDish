@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.EventSystems;
 
 
-public class GoodBehavior : MonoBehaviour, IBeginDragHandler, IEndDragHandler
+public class GoodBehavior : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
 {
     bool is_being_dragged = false;
 
@@ -12,6 +12,22 @@ public class GoodBehavior : MonoBehaviour, IBeginDragHandler, IEndDragHandler
     {
         get { return is_being_dragged; }
     }
+
+    //This returns true if the mouse pointer is over the
+    //screen space bounds of the object.
+    public bool IsPointedAt
+    {
+        get
+        {
+            if (!(transform is RectTransform))
+                throw new System.NotImplementedException();
+
+            return RectTransformUtility.RectangleContainsScreenPoint(transform as RectTransform, Input.mousePosition);
+        }
+    }
+
+    //Touched essentially means IsPointedAt && nothing is in the way
+    public bool IsTouched { get; private set; }
 
     public virtual void OnBeginDrag(PointerEventData eventData)
     {
@@ -21,6 +37,16 @@ public class GoodBehavior : MonoBehaviour, IBeginDragHandler, IEndDragHandler
     public virtual void OnEndDrag(PointerEventData eventData)
     {
         is_being_dragged = false;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        IsTouched = true;
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        IsTouched = false;
     }
 
     public GameObject FindDescendent(string name)
@@ -66,14 +92,6 @@ public class GoodBehavior : MonoBehaviour, IBeginDragHandler, IEndDragHandler
     public T FindAncestor<T>(string name) where T : MonoBehaviour
     {
         return FindAncestor(name).GetComponent<T>();
-    }
-
-    public bool IsHovered()
-    {
-        if (!(transform is RectTransform))
-            return false;
-
-        return RectTransformUtility.RectangleContainsScreenPoint(transform as RectTransform, Input.mousePosition);
     }
 
     public bool HasComponent<T>() where T : MonoBehaviour

@@ -6,7 +6,7 @@ public class DeckButton : GoodBehavior, IPointerClickHandler
 {
     void Update()
     {
-        float scale = IsHovered() ? 1.1f : 1;
+        float scale = IsTouched ? 1.1f : 1;
         float speed = 15;
 
         transform.localScale = MathUtility.MakeUniformScale(Mathf.Lerp(transform.localScale.x, scale, speed * Time.deltaTime));

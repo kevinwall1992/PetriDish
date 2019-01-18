@@ -139,14 +139,6 @@ public class Card : GoodBehavior, IPointerClickHandler
 
     private void OnGUI()
     {
-        Event e = Event.current;
-        if (e.isKey)
-        {
-            Debug.Log("Detected key code: " + e.keyCode);
-            Debug.Log(Event.current.keyCode == KeyCode.Escape);
-            Debug.Log(Event.current.keyCode.Equals(KeyCode.Escape));
-        }
-
         if (CurrentZoomTarget != ZoomTarget.None)
         {
             GUI.depth = -1;

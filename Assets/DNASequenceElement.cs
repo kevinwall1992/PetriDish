@@ -43,7 +43,7 @@ public class DNASequenceElement : DNAPanelElement
     {
         base.OnDrag(eventData);
     
-        if(DNAPanel.CodonLayout.IsHovered())
+        if(DNAPanel.CodonLayout.IsPointedAt)
         {
             int current_hover_index= DNAPanel.CodonLayout.GetHoveredInsertionIndex();
 

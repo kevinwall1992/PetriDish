@@ -165,7 +165,7 @@ public class DNAPanel : DetailPanel
                 indentation_levels[codon_index] = indentation_level;
 
             int value = Interpretase.CodonToValue(codon);
-            if (codon[0] == 'T' && value >= 55)
+            if (codon[0] == 'T')
             {
                 if (value < 63)
                     indentation_level++;

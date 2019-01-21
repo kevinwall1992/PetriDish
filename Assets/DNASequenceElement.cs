@@ -45,7 +45,7 @@ public class DNASequenceElement : DNAPanelElement
     
         if(DNAPanel.CodonLayout.IsPointedAt)
         {
-            int current_hover_index= DNAPanel.CodonLayout.GetHoveredInsertionIndex();
+            int current_hover_index= DNAPanel.CodonLayout.GetInsertionIndex();
 
             if (last_hover_index < 0)
             {

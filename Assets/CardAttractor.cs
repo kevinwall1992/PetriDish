@@ -10,7 +10,7 @@ public class CardAttractor : GoodBehavior
 
     void Start()
     {
-        card.transform.parent = GetComponentInParent<Canvas>().transform;
+        card.transform.parent = Scene.Micro.Canvas.transform;
     }
 
     void Update()

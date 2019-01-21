@@ -7,7 +7,12 @@ using UnityEngine.EventSystems;
 
 public class DetailPanel : GoodBehavior
 {
-    static DetailPanel opened_detail_panel = null;
+    public static DetailPanel Left { get; private set; }
+    public static DetailPanel Right { get; private set; }
+
+    enum Position { Left, Right }
+    [SerializeField]
+    Position position;
 
     object data;
     public virtual object Data
@@ -23,7 +28,8 @@ public class DetailPanel : GoodBehavior
         }
     }
 
-    public bool IsOpen { get { return opened_detail_panel == this; } }
+    public bool IsOpen { get { return position == Position.Left ? Left == this : 
+                                                                  Right == this; } }
 
     protected virtual void Start()
     {
@@ -43,11 +49,23 @@ public class DetailPanel : GoodBehavior
 
     public virtual void Open()
     {
-        if (opened_detail_panel != null)
-            opened_detail_panel.Close();
+        if (position == Position.Left)
+        {
+            if (Left != null)
+                Left.Close();
+
+            Left = this;
+        }
+        else
+        {
+            if (Right != null)
+                Right.Close();
+
+            Right = this;
+        }
 
         gameObject.SetActive(true);
-        opened_detail_panel = this;
+        
 
         Scene.Micro.Visualization.IsPaused = true;
     }
@@ -55,6 +73,10 @@ public class DetailPanel : GoodBehavior
     public virtual void Close()
     {
         gameObject.SetActive(false);
-        opened_detail_panel = null;
+
+        if (position == Position.Left)
+            Left = null;
+        else
+            Right = null;
     }
 }

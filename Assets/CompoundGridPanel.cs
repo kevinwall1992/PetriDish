@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
 public class CompoundGridPanel : GridPanel
 {
@@ -30,6 +31,7 @@ public class CompoundGridPanel : GridPanel
 
             CompoundTile compound_tile = Instantiate(Scene.Micro.Prefabs.CompoundTile);
             compound_tile.transform.parent = GridLayoutGroup.transform;
+
             compound_tile.Compound = compound;
         }
     }

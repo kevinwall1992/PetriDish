@@ -37,7 +37,7 @@ public class UIOverlay : GoodBehavior
             if (!compound_quantity_texts.ContainsKey(compound_component) && compound_component.Compound!= null)
             {
                 compound_quantity_texts[compound_component] = Instantiate(quantity_text_prefab);
-                compound_quantity_texts[compound_component].transform.parent = transform;
+                compound_quantity_texts[compound_component].transform.SetParent(transform);
             }
         }
 

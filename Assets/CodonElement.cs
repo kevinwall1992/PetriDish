@@ -34,8 +34,7 @@ public class CodonElement : DNAPanelElement
     List<string> GetCodonOptions(string codon)
     {
         List<string> command_codons = new List<string> { "CAA", "CCC", "CGG", "CTT", "CAC", "CAG", "CAT", "CCA", "CCG" };
-        List<string> marker_codons = new List<string> { "TCT", "TGA", "TGC", "TGT", "TTA", "TTC", "TTG" };
-        List<string> location_codons = new List<string> { "TAA", "TAC", "TAG", "TAT", "TCA", "TCC", "TCG" };
+        List<string> marker_codons = new List<string> { "TAA", "TAC", "TAG", "TAT", "TCA", "TCC", "TCG", "TCT", "TGA", "TGC", "TGT", "TTA", "TTC", "TTG" };
         List<string> value_codons = new List<string> { "AAA", "AAC", "AAG", "AAT", "ACA", "ACC", "ACG", "ACT", "AGA", "AGC", "AGG", "AGT", "ATA", "ATC", "ATG", "ATT" };
         List<string> function_codons = new List<string> { "GAA", "GAC", "GAG", "GAT" };
         List<string> end_codon = new List<string> { "TTT" };
@@ -60,15 +59,11 @@ public class CodonElement : DNAPanelElement
                 break;
 
             case 'T':
-                int value = Interpretase.CodonToValue(codon);
-
-                if (value <= 54)
-                    codon_options = location_codons;
-                else if (value < 63)
-                    codon_options = marker_codons;
-                else
+                if (codon == "TTT")
                     codon_options = end_codon;
-
+                else
+                    codon_options = marker_codons;
+                    
                 break;
         }
 
@@ -87,9 +82,6 @@ public class CodonElement : DNAPanelElement
 
             case 'T':
                 tint = Color.Lerp(Color.Lerp(Color.blue, Color.green, 0.2f), Color.white, 0.3f);
-
-                if (Interpretase.CodonToValue(Codon) <= 54)
-                    tint = Color.Lerp(Color.Lerp(tint, Color.green, 0.2f), Color.white, 0.6f);
 
                 break;
         }
@@ -151,7 +143,7 @@ public class CodonElement : DNAPanelElement
                 if(codon == "TTT")
                     Description = "End Marker";
                 else
-                    Description = "Marker " + (Interpretase.CodonToValue(codon) - Interpretase.CodonToValue("TCT")).ToString();
+                    Description = "Marker " + (Interpretase.CodonToValue(codon) - Interpretase.CodonToValue("TAA")).ToString();
 
                 break;
         }
@@ -162,7 +154,7 @@ public class CodonElement : DNAPanelElement
         base.OnDrag(eventData);
 
         if (DNAPanel.CodonLayout.IsPointedAt)
-            DNAPanel.CodonLayout.AddCodonElement(this, DNAPanel.CodonLayout.GetHoveredInsertionIndex());
+            DNAPanel.CodonLayout.AddCodonElement(this, DNAPanel.CodonLayout.GetInsertionIndex());
         else if (DNAPanel.CodonLayout.Contains(this))
             DNAPanel.CodonLayout.RemoveCodonElement(this);
     }

@@ -24,6 +24,39 @@ public class CellComponent : GoodBehavior, IPointerClickHandler
         get { return cell; }
     }
 
+    public enum Part { Slot0, Slot1, Slot2, Slot3, Slot4, Slot5, Cytozol, None }
+
+    public Part PartPointedAt
+    {
+        get
+        {
+            if (!IsPointedAt)
+                return Part.None;
+
+            Vector2 displacement = transform.InverseTransformPoint(Scene.Micro.Camera.ScreenToWorldPoint(Input.mousePosition)) - transform.position;
+
+            if (displacement.magnitude < 0.6f)
+                return Part.Cytozol;
+            else
+            {
+                float clock_radians = (Mathf.PI * 2 - MathUtility.GetRotation(displacement)) + Mathf.PI / 2;
+
+                return (Part)(((int)(6 * (clock_radians + Mathf.PI / 6) / (2 * Mathf.PI)) - slot_components[0].Slot.Index) % 6);
+            }
+        }
+    }
+
+    public Part TouchedPart
+    {
+        get
+        {
+            if (!IsTouched)
+                return Part.None;
+
+            return PartPointedAt;
+        }
+    }
+
     private void Awake()
     {
         gameObject.AddComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("cell");
@@ -44,16 +77,16 @@ public class CellComponent : GoodBehavior, IPointerClickHandler
         ValidateSlots();
 
 
-        Part hovered_part = GetHoveredPart();
-        if (current_highlighted_part != hovered_part)
+        Part part_pointed_at = PartPointedAt;
+        if (current_highlighted_part != part_pointed_at)
         {
-            if (hovered_part != Part.None)
+            if (part_pointed_at != Part.None)
             {
                 highlight.gameObject.SetActive(true);
                 highlight.transform.parent = null;
                 highlight.transform.rotation = Quaternion.identity;
 
-                if (hovered_part == Part.Cytozol)
+                if (part_pointed_at == Part.Cytozol)
                 {
                     highlight.sprite = Resources.Load<Sprite>("cytozol_highlight");
                     highlight.transform.parent = transform;
@@ -61,33 +94,15 @@ public class CellComponent : GoodBehavior, IPointerClickHandler
                 else
                 {
                     highlight.sprite = Resources.Load<Sprite>("slot_highlight");
-                    highlight.transform.SetParent(slot_components[(int)hovered_part].transform, false);
+                    highlight.transform.SetParent(slot_components[(int)part_pointed_at].transform, false);
                 }
             }
             else
                 highlight.gameObject.SetActive(false);
 
-            current_highlighted_part = hovered_part;
+            current_highlighted_part = part_pointed_at;
         }
 
-    }
-
-    enum Part { Slot0, Slot1, Slot2, Slot3, Slot4, Slot5, Cytozol, None }
-    Part GetHoveredPart()
-    {
-        if (!IsTouched)
-            return Part.None;
-
-        Vector2 displacement = transform.InverseTransformPoint(Scene.Micro.Camera.ScreenToWorldPoint(Input.mousePosition)) - transform.position;
-
-        if (displacement.magnitude < 0.6f)
-            return Part.Cytozol;
-        else
-        {
-            float clock_radians = (Mathf.PI * 2 - MathUtility.GetRotation(displacement)) + Mathf.PI / 2;
-
-            return (Part)(((int)(6 * (clock_radians + Mathf.PI / 6) / (2 * Mathf.PI)) - slot_components[0].Slot.Index) % 6);
-        }
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -95,12 +110,12 @@ public class CellComponent : GoodBehavior, IPointerClickHandler
         if (gameObject.layer == LayerMask.NameToLayer("Example"))
             return;
 
-        Part hovered_part = GetHoveredPart();
+        Part touched_part = TouchedPart;
 
-        if (hovered_part == Part.Cytozol)
+        if (touched_part == Part.Cytozol)
             OrganismComponent.CytozolDetailPanel.Open();
-        else if(slot_components[(int)hovered_part].DetailPanel != null)
-            slot_components[(int)hovered_part].DetailPanel.Open();
+        else if(slot_components[(int)touched_part].DetailPanel != null)
+            slot_components[(int)touched_part].DetailPanel.Open();
     }
 
     void SetSlotTransformations()

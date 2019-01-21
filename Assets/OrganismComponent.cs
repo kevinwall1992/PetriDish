@@ -13,6 +13,31 @@ public class OrganismComponent : GoodBehavior
 
     public Organism Organism { get; private set; }
 
+    public override bool IsPointedAt { get { return CellComponentPointedAt != null; } }
+
+    public CellComponent CellComponentPointedAt
+    {
+        get
+        {
+            foreach (CellComponent cell_component in cell_components)
+                if (cell_component.IsPointedAt)
+                    return cell_component;
+
+            return null;
+        }
+    }
+
+    public CellComponent CellComponentTouched
+    {
+        get
+        {
+            if (CellComponentPointedAt.IsTouched)
+                return CellComponentPointedAt;
+
+            return null;
+        }
+    }
+
     public bool IsVisualizingStep
     {
         get

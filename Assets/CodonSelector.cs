@@ -52,7 +52,7 @@ public class CodonSelector : GoodBehavior
             {
                 GameObject option = Instantiate(option_prefab);
                 option.GetComponent<Text>().text = codon;
-                option.transform.parent = layout_group.transform;
+                option.transform.SetParent(layout_group.transform);
             }
 
             SelectedCodon = value[0];

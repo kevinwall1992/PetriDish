@@ -36,8 +36,10 @@ public class DNAPanelElement : GoodBehavior, IDragHandler
 
     }
 
-    public virtual void OnDrag(PointerEventData eventData)
+    public override void OnDrag(PointerEventData eventData)
     {
+        base.OnDrag(eventData);
+
         transform.position = Input.mousePosition;
     }
 

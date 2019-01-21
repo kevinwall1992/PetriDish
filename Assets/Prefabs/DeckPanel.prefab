@@ -118,10 +118,10 @@ RectTransform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.048355706}
-  m_AnchorMax: {x: 0.2544338, y: 0.99000007}
-  m_AnchoredPosition: {x: 168.6, y: 0.2999878}
-  m_SizeDelta: {x: 325.09998, y: -0.099975586}
+  m_AnchorMin: {x: 0.79, y: 0.31632602}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -106.29999, y: -2.3999996}
+  m_SizeDelta: {x: 197.6, y: -5.0999985}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4845631564983754729
 CanvasRenderer:
@@ -172,6 +172,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 277fb1b117795b54ba4b32ffa092632c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  position: 1
   grid_layout_group: {fileID: 4845631564347053353}
   card_attractor_prefab: {fileID: 2057659645494631183, guid: b0b8aa5df6f2a484181121296dc0269b,
     type: 3}
@@ -210,7 +211,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.000030517578}
+  m_AnchoredPosition: {x: 0, y: 0.000030517498}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &4845631565447887108

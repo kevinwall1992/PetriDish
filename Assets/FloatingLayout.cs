@@ -23,7 +23,7 @@ public class Floater : GoodBehavior
         set
         {
             element = value;
-            element.transform.parent = FloatingLayout.FloatingElementsTransform;
+            element.transform.SetParent(FloatingLayout.FloatingElementsTransform);
 
             (transform as RectTransform).sizeDelta = (element.transform as RectTransform).sizeDelta;
         }
@@ -127,7 +127,7 @@ public class FloatingLayout : GoodBehavior
         element.gameObject.SetActive(true);
 
         Floater floater = new GameObject("floating element").AddComponent<Floater>();
-        floater.transform.parent = layout_group.transform;
+        floater.transform.SetParent(layout_group.transform);
         if (index >= 0)
             floater.transform.SetSiblingIndex(index);
 
@@ -192,7 +192,7 @@ public class FloatingLayout : GoodBehavior
         return GetElementIndex(element) >= 0;
     }
 
-    public int GetHoveredInsertionIndex()
+    public int GetInsertionIndex()
     {
         for (int index = 0; index < ElementCount; index++)
         {

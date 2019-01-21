@@ -28,7 +28,12 @@ public class Polymer : Molecule
 
             foreach (Molecule monomer in monomers)
                 foreach (Element element in monomer.Elements.Keys)
+                {
+                    if (!elements.ContainsKey(element))
+                        elements[element] = 0;
+
                     elements[element] += monomer.Elements[element];
+                }
 
             return elements;
         }

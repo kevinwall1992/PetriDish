@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
 
-public class Card : GoodBehavior, IPointerClickHandler
+public class Card : GoodBehavior, IPointerClickHandler, Spawner
 {
     static List<Card> cards = new List<Card>();
 
@@ -33,7 +33,7 @@ public class Card : GoodBehavior, IPointerClickHandler
             current_zoom_target = value;
 
             if(current_zoom_target != ZoomTarget.Image)
-                Scene.ExampleComponent.Example = null;//really necessary?
+                Scene.Micro.ExampleComponent.Example = null;
 
             if (current_zoom_target == ZoomTarget.None)
                 GUI.depth = 0;
@@ -164,7 +164,7 @@ public class Card : GoodBehavior, IPointerClickHandler
     {
         RectTransform zoomed_rect_transform;
 
-        RectTransform canvas_transform = FindObjectOfType<Canvas>().transform as RectTransform;
+        RectTransform canvas_transform = Scene.Micro.Canvas.transform as RectTransform;
 
         if (RectTransformUtility.RectangleContainsScreenPoint(data_panel.transform as RectTransform, Input.mousePosition))
         {
@@ -177,7 +177,7 @@ public class Card : GoodBehavior, IPointerClickHandler
             CurrentZoomTarget = ZoomTarget.Image;
 
             if (Catalyst.Example != null)
-                Scene.ExampleComponent.Example = Catalyst.Example;
+                Scene.Micro.ExampleComponent.Example = Catalyst.Example;
         }
         else
         {
@@ -213,6 +213,14 @@ public class Card : GoodBehavior, IPointerClickHandler
         }
     }
 
+    public GameObject Spawn()
+    {
+        CompoundTile compound_tile = Instantiate(Scene.Micro.Prefabs.CompoundTile);
+        compound_tile.transform.parent = Scene.Micro.Canvas.transform;
+        compound_tile.Compound = new Compound(Catalyst as Molecule, 1);
+
+        return compound_tile.gameObject;
+    }
 
     [SerializeField]
     CardDataPanel data_panel;
@@ -234,4 +242,7 @@ public class Card : GoodBehavior, IPointerClickHandler
 
     [SerializeField]
     Text name_text, price_text, description, description_small, code_text;
+
+    [SerializeField]
+    SpawnOnDragBehavior spawn_on_drag_behavior;
 }

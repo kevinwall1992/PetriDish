@@ -6,6 +6,15 @@ public class Enzyme : Polymer, Catalyst
     static Dictionary<string, Enzyme> enzymes = new Dictionary<string, Enzyme>();
     static Dictionary<string, List<Enzyme>> enzyme_families = new Dictionary<string, List<Enzyme>>();
 
+    static Dictionary<string, AminoAcid> amino_acid_codon_map = new Dictionary<string, AminoAcid>();
+
+    static Enzyme()
+    {
+        amino_acid_codon_map["AGC"] = AminoAcid.Alanine;
+        amino_acid_codon_map["ATC"] = AminoAcid.Histidine;
+        amino_acid_codon_map["GCT"] = AminoAcid.Serine;
+    }
+
     public static void RegisterNamedEnzyme(Enzyme enzyme, string name)
     {
         enzymes[AminoAcidSequenceToString(enzyme.AminoAcidSequence)] = enzyme;
@@ -63,14 +72,19 @@ public class Enzyme : Polymer, Catalyst
 
     public static AminoAcid CodonToAminoAcid(string codon)
     {
-        switch(codon)
-        {
-            case "AGC": return AminoAcid.Alanine;
-            case "ATC": return AminoAcid.Histidine;
-            case "GCT": return AminoAcid.Serine;
-        }
+        if(amino_acid_codon_map.ContainsKey(codon))
+            return amino_acid_codon_map[codon];
 
         return null;
+    }
+
+    public static string AminoAcidToCodon(AminoAcid amino_acid)
+    {
+        foreach (string codon in amino_acid_codon_map.Keys)
+            if (amino_acid_codon_map[codon] == amino_acid)
+                return codon;
+
+        throw new System.NotImplementedException();
     }
 
     public static List<AminoAcid> DNASequenceToAminoAcidSequence(string dna_sequence)
@@ -88,6 +102,16 @@ public class Enzyme : Polymer, Catalyst
         }
 
         return amino_acid_sequence;
+    }
+
+    public static string AminoAcidSequenceToDNASequence(List<AminoAcid> amino_acid_sequence)
+    {
+        string dna_sequence = "";
+
+        foreach (AminoAcid amino_acid in amino_acid_sequence)
+            dna_sequence += AminoAcidToCodon(amino_acid);
+
+        return dna_sequence;
     }
 
 
@@ -121,6 +145,8 @@ public class Enzyme : Polymer, Catalyst
             return amino_acid_sequence;
         }
     }
+
+    public string DNASequence { get { return AminoAcidSequenceToDNASequence(AminoAcidSequence); } }
 
     public Enzyme(Catalyst catalyst_, int length)
     {

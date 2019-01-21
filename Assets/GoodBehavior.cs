@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.EventSystems;
 
 
-public class GoodBehavior : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
+public class GoodBehavior : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
 {
     bool is_being_dragged = false;
 
@@ -15,14 +15,18 @@ public class GoodBehavior : MonoBehaviour, IBeginDragHandler, IEndDragHandler, I
 
     //This returns true if the mouse pointer is over the
     //screen space bounds of the object.
-    public bool IsPointedAt
+    public virtual bool IsPointedAt
     {
         get
         {
-            if (!(transform is RectTransform))
-                throw new System.NotImplementedException();
+            if (transform is RectTransform)
+                return RectTransformUtility.RectangleContainsScreenPoint(transform as RectTransform, Input.mousePosition);
 
-            return RectTransformUtility.RectangleContainsScreenPoint(transform as RectTransform, Input.mousePosition);
+            Collider2D collider = GetComponent<Collider2D>();
+            if (collider != null)
+                return collider.OverlapPoint(Scene.Micro.Camera.ScreenToWorldPoint(Input.mousePosition));
+
+            throw new System.NotImplementedException();
         }
     }
 
@@ -32,6 +36,11 @@ public class GoodBehavior : MonoBehaviour, IBeginDragHandler, IEndDragHandler, I
     public virtual void OnBeginDrag(PointerEventData eventData)
     {
         is_being_dragged = true;
+    }
+
+    public virtual void OnDrag(PointerEventData eventData)
+    {
+
     }
 
     public virtual void OnEndDrag(PointerEventData eventData)

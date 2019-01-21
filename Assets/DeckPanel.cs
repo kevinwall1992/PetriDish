@@ -15,7 +15,7 @@ public class DeckPanel : GridPanel
     {
         base.Start();
 
-        RowLength = 4;
+        RowLength = 3;
     }
 
     protected override void Update()
@@ -36,7 +36,7 @@ public class DeckPanel : GridPanel
         foreach(Catalyst catalyst in deck)
         {
             CardAttractor card_attractor = Instantiate(card_attractor_prefab);
-            card_attractor.transform.parent = GridLayoutGroup.transform;
+            card_attractor.transform.SetParent(GridLayoutGroup.transform);
 
             card_attractor.Card.Catalyst = catalyst;
         }

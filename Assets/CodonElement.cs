@@ -36,7 +36,7 @@ public class CodonElement : DNAPanelElement
         List<string> command_codons = new List<string> { "CAA", "CCC", "CGG", "CTT", "CAC", "CAG", "CAT", "CCA", "CCG" };
         List<string> marker_codons = new List<string> { "TAA", "TAC", "TAG", "TAT", "TCA", "TCC", "TCG", "TCT", "TGA", "TGC", "TGT", "TTA", "TTC", "TTG" };
         List<string> value_codons = new List<string> { "AAA", "AAC", "AAG", "AAT", "ACA", "ACC", "ACG", "ACT", "AGA", "AGC", "AGG", "AGT", "ATA", "ATC", "ATG", "ATT" };
-        List<string> function_codons = new List<string> { "GAA", "GAC", "GAG", "GAT" };
+        List<string> function_codons = new List<string> { "GAA", "GAC", "GAG", "GAT", "GCA", "GCC" };
         List<string> end_codon = new List<string> { "TTT" };
 
         List<string> codon_options = new List<string> { codon };
@@ -132,6 +132,8 @@ public class CodonElement : DNAPanelElement
                     case "GAC": Description = "Greater Than"; break;
                     case "GAG": Description = "Equal To"; break;
                     case "GAT": Description = "Less Than"; break;
+                    case "GCA": Description = "Add"; break;
+                    case "GCC": Description = "Subtract"; break;
 
                     default:
                         Description = "";

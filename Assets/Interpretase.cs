@@ -375,6 +375,8 @@ public class Interpretase : ProgressiveCatalyst
             case "GAC":
             case "GAT":
             case "GAG":
+            case "GCA":
+            case "GCC":
                 int operand0 = ComputeFunction(catalyst_slot, next_codon_index, out next_codon_index);
                 int operand1 = ComputeFunction(catalyst_slot, next_codon_index, out next_codon_index);
 
@@ -383,6 +385,8 @@ public class Interpretase : ProgressiveCatalyst
                     case "GAC": return operand0 > operand1 ? 1 : 0;
                     case "GAT": return operand0 < operand1 ? 1 : 0;
                     case "GAG": return operand0 == operand1 ? 1 : 0;
+                    case "GCA": return operand0 + operand1;
+                    case "GCC": return operand0 - operand1;
                 }
                 break;
         }

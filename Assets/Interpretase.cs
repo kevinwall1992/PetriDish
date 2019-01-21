@@ -71,7 +71,7 @@ public class Interpretase : ProgressiveCatalyst
                 if (!(activation_location is Cell.Slot))
                     return new NullCommand(slot, dna_slot, step_codon_index);
 
-                int activation_count = CodonToValue(dna.GetCodon(operand_index));
+                int activation_count = ComputeFunction(slot, operand_index);
 
                 return new ActivateCommand(slot, dna_slot, step_codon_index, activation_location as Cell.Slot, activation_count);
 

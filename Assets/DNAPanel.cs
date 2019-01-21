@@ -15,7 +15,7 @@ public class DNAPanel : DetailPanel
     GameObject grouping_panel_prefab;
 
 
-    DNA DNA { get { return Data as DNA; } }
+    public DNA DNA { get { return Data as DNA; } }
 
     [SerializeField]
     CodonElementLayout codon_layout;

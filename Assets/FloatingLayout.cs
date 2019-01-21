@@ -100,7 +100,7 @@ public class FloatingLayout : GoodBehavior
         return GetFloater(GetElementIndex(element));
     }
 
-    int GetElementIndex(GameObject element)
+    public int GetElementIndex(GameObject element)
     {
         foreach (Floater floater in GetComponentsInChildren<Floater>())
             if (floater.Element == element)

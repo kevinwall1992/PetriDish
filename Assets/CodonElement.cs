@@ -96,16 +96,54 @@ public class CodonElement : DNAPanelElement
         switch (codon[0])
         {
             case 'A':
+                int this_codon_index;
+                int command_codon_index = this_codon_index = DNAPanel.CodonLayout.GetElementIndex(gameObject);
+                while (--command_codon_index > 0 && DNAPanel.DNA.GetCodon(command_codon_index)[0] != 'C') ;
+                int operand_index = this_codon_index - command_codon_index - 1;
+
+                bool is_location = false;
+
+                if (DNAPanel.DNA.GetCodon(this_codon_index - 1) == "GAA")
+                    is_location = true;
+                else
+                    switch (DNAPanel.DNA.GetCodon(command_codon_index))
+                    {
+                        case "CAA":
+                        case "CCC":
+                        case "CGG":
+                        case "CTT":
+                        case "CCA":
+                            is_location = true;
+                            break;
+
+                        case "CAC":
+                            is_location = operand_index == 0;
+                            break;
+
+                        case "CAG":
+                        case "CCG":
+                            break;
+
+                        case "CAT":
+                            is_location = operand_index == 1;
+                            break;
+                    }
+
                 int value = Interpretase.CodonToValue(codon);
 
-                if (value < 6)
-                    Description = "Slot " + value.ToString();
-                else if (value == 6)
-                    Description = "Across Slot";
-                else if (value == 7)
-                    Description = "Cytozol";
-                else if (value == 7)
-                    Description = "";
+                if (is_location)
+                {
+                    if (value < 6)
+                        Description = "Slot " + value.ToString();
+                    else if (value == 6)
+                        Description = "Across Slot";
+                    else if (value == 7)
+                        Description = "Cytozol";
+                    else
+                        Description = "";
+                }
+                else
+                    Description = value.ToString();
 
                 break;
 

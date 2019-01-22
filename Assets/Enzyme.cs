@@ -182,7 +182,7 @@ public class Enzyme : Polymer, Catalyst
     {
         Catalyst mutant_catalyst = Catalyst.Mutate();
 
-        if (MathUtility.RandomIndex(10) > 0)
+        if (MathUtility.Roll(0.9f))
         {
             Enzyme enzyme = Enzyme.GetEnzyme(mutant_catalyst, AminoAcidSequence.Count);
 

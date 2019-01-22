@@ -107,7 +107,7 @@ public class Ribozyme : DNA, Catalyst
     {
         Catalyst mutant_catalyst = Catalyst.Mutate();
 
-        if (MathUtility.RandomIndex(10) > 0)
+        if (MathUtility.Roll(0.9f))
         {
             Ribozyme ribozyme = Ribozyme.GetRibozyme(mutant_catalyst, CodonCount);
 

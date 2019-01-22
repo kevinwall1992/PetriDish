@@ -68,18 +68,21 @@ public class Polymer : Molecule
         return monomer;
     }
 
-    public override bool Equals(object other)
+    public override bool Equals(object obj)
     {
-        if (!(other is Polymer))
+        if (obj == this)
+            return true;
+
+        if (!(obj is Polymer))
             return false;
 
-        Polymer other_polymer = other as Polymer;
+        Polymer other = obj as Polymer;
 
-        if (Monomers.Count != other_polymer.Monomers.Count)
+        if (Monomers.Count != other.Monomers.Count)
             return false;
 
         for (int i = 0; i < Monomers.Count; i++)
-            if (Monomers[i] != other_polymer.Monomers[i])
+            if (Monomers[i] != other.Monomers[i])
                 return false;
 
         return true;

@@ -245,15 +245,16 @@ public class Pipase : InstantCatalyst
             return new Pipase((Location)MathUtility.RandomIndex(6), (Location)MathUtility.RandomIndex(6));
     }
 
-    public override bool Equals(object other)
+    public override bool Equals(object obj)
     {
-        Pipase other_pipase = other as Pipase;
-        if (other_pipase == null)
-            return false;
-        if (other_pipase == this)
+        if (obj == this)
             return true;
 
-        return other_pipase.source == source && other_pipase.destination == destination;
+        Pipase other = obj as Pipase;
+        if (other == null)
+            return false;
+
+        return other.source == source && other.destination == destination;
     }
 }
 
@@ -316,16 +317,17 @@ public class Pumpase : InstantCatalyst
         }
     }
 
-    public override bool Equals(object other)
+    public override bool Equals(object obj)
     {
-        Pumpase other_pipase = other as Pumpase;
-        if (other_pipase == null)
-            return false;
-        if (other_pipase == this)
+        if (obj == this)
             return true;
 
-        return other_pipase.pump_out == pump_out && 
-               other_pipase.molecule.Equals(molecule);
+        Pumpase other = obj as Pumpase;
+        if (other == null)
+            return false;
+
+        return other.pump_out == pump_out && 
+               other.molecule.Equals(molecule);
     }
 
 

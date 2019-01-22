@@ -23,17 +23,17 @@ public static class Tools
                 IsAdjustable = is_adjustable;
             }
 
-            public override bool Equals(object other)
+            public override bool Equals(object obj)
             {
-                if (!(other is Component))
+                if (!(obj is Component))
                     return false;
 
-                Component other_component = (Component)other;
+                Component other = (Component)obj;
 
-                return other_component.Molecule == this.Molecule &&
-                       other_component.Quantity == this.Quantity &&
-                       other_component.IsInput == this.IsInput &&
-                       other_component.IsAdjustable == this.IsAdjustable;
+                return other.Molecule == this.Molecule &&
+                       other.Quantity == this.Quantity &&
+                       other.IsInput == this.IsInput &&
+                       other.IsAdjustable == this.IsAdjustable;
             }
 
             //https://stackoverflow.com/questions/263400/what-is-the-best-algorithm-for-an-overridden-system-object-gethashcode

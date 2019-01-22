@@ -144,22 +144,25 @@ public abstract class Molecule
 
     }
 
-    public override bool Equals(object other)
+    public override bool Equals(object obj)
     {
-        if (!(other is Molecule))
+        if (obj == this)
+            return true;
+
+        if (!(obj is Molecule))
             return false;
 
-        if (other is Polymer)
+        if (obj is Polymer)
             return false;
 
-        Molecule other_molecule = other as Molecule;
+        Molecule other = obj as Molecule;
 
-        if (Name != "Unnamed" || other_molecule.Name != "Unnamed")
-            return Name == other_molecule.Name;
+        if (Name != "Unnamed" || other.Name != "Unnamed")
+            return Name == other.Name;
 
         foreach (Element element in this.Elements.Keys)
-            if (!other_molecule.Elements.ContainsKey(element) ||
-                this.Elements[element] != other_molecule.Elements[element])
+            if (!other.Elements.ContainsKey(element) ||
+                this.Elements[element] != other.Elements[element])
                 return false;
 
         return true;

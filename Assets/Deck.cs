@@ -3,14 +3,17 @@ using System.Collections.Generic;
 
 public class Deck : List<Catalyst>
 {
-    public override bool Equals(object other)
+    public override bool Equals(object obj)
     {
-        Deck other_deck = other as Deck;
-        if (other_deck == null)
+        if (obj == this)
+            return true;
+
+        Deck other = obj as Deck;
+        if (other == null)
             return false;
 
         foreach (Catalyst catalyst in this)
-            if (!other_deck.Contains(catalyst))
+            if (!other.Contains(catalyst))
                 return false;
 
         foreach (Catalyst catalyst in this)

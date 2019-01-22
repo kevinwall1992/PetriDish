@@ -59,7 +59,7 @@ public class MicroVisualization : GoodBehavior
         if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
             Scene.Micro.Camera.transform.Translate(new Vector3(scroll_speed * Time.deltaTime, 0));
 
-        if (Input.GetKey(KeyCode.Space))
+        if (Input.GetKeyUp(KeyCode.Space))
             IsPaused = !IsPaused;
 
         if (IsPaused)

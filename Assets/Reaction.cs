@@ -173,6 +173,14 @@ public class Reaction
             percentile = Mathf.Lerp(percentile, Random.value, 1 - Mathf.Pow(0.5f, rate* 0.65f));
             baked = false;
         }
+
+        public Attribute Copy()
+        {
+            Attribute attribute = new Attribute(value_distribution, base_weight);
+            attribute.percentile = percentile;
+
+            return attribute;
+        }
     }
 
     class PotentialFunction : ProbabilityDistribution
@@ -509,6 +517,8 @@ public class Reaction
 
     class CatalystImplementation : InstantCatalyst
     {
+        Reaction reaction;
+
         Dictionary<Compound, int> slot_reactants= new Dictionary<Compound, int>(), 
                                   slot_products= new Dictionary<Compound, int>();
         List<Compound> cytozol_reactants= new List<Compound>(), 
@@ -517,8 +527,10 @@ public class Reaction
 
         float ATP_balance;
 
-        public CatalystImplementation(string name, Reaction reaction) : base(name, 2, reaction.description)
+        public CatalystImplementation(string name, Reaction reaction_) : base(name, 2, reaction_.description)
         {
+            reaction = reaction_;
+
             //Until we actually have a way to mutate reactions in game, 
             //need to have least disruptive slot order
             //This ordering may also be useful later as a possible mutation
@@ -606,26 +618,33 @@ public class Reaction
                                                                   cytozol_products), 
                                                ATP_balance * activity);
         }
+
+        public override Catalyst Mutate()
+        {
+            return reaction.Mutate().Catalyst;
+        }
     }
 
     Reaction Mutate()
     {
         Reaction mutant = new Reaction();
+        mutant.catalyst_name = catalyst_name;
 
         mutant.reactants = reactants;
         mutant.products = products;
 
-        mutant.is_ribozyme = is_ribozyme;
-        mutant.optimal_temperature = optimal_temperature;
-        mutant.temperature_tolerance = temperature_tolerance;
-        mutant.optimal_pH = optimal_pH;
-        mutant.pH_tolerance = pH_tolerance;
+        mutant.is_ribozyme = is_ribozyme.Copy();
+        mutant.optimal_temperature = optimal_temperature.Copy();
+        mutant.temperature_tolerance = temperature_tolerance.Copy();
+        mutant.optimal_pH = optimal_pH.Copy();
+        mutant.pH_tolerance = pH_tolerance.Copy();
+
         mutant.inhibitors = inhibitors;
         mutant.cofactors = cofactors;
 
-        mutant.productivity = productivity;
+        mutant.productivity = productivity.Copy();
 
-        mutant.potential = potential;
+        mutant.potential = potential.Copy();
 
 
         float rate = 1;
@@ -652,9 +671,9 @@ public class Reaction
                 attribute.Mutate(rate);
         
         //Apply secondary mutations
-        foreach (Attribute attribute in genes)
+        foreach (Attribute attribute in genes.OfType<Attribute>())
             attribute.Mutate(rate / 4);
-        foreach (List<Attribute> attributes in genes)
+        foreach (List<Attribute> attributes in genes.OfType<List<Attribute>>())
             foreach(Attribute attribute in attributes)
                 attribute.Mutate(rate/ 4);
 
@@ -667,16 +686,11 @@ public class Reaction
         return mutant;
     }
 
-    public interface MutantCatalyst : Catalyst
-    {
-        MutantCatalyst Mutate();
-    }
-
-    class MutantRibozyme : Ribozyme, MutantCatalyst
+    class ReactionRibozyme : Ribozyme
     {
         Reaction reaction;
 
-        public MutantRibozyme(string name, Reaction reaction_) 
+        public ReactionRibozyme(string name, Reaction reaction_) 
             : base(new CatalystImplementation(name, reaction_), (int)(8 * 
                                reaction_.potential.Value / 
                                reaction_.GetMaxWeight() / 
@@ -685,18 +699,17 @@ public class Reaction
             reaction = reaction_;
         }
 
-        public MutantCatalyst Mutate()
+        public override Catalyst Mutate()
         {
-            return reaction.Mutate().Catalyst;
+            return Catalyst.Mutate();
         }
     }
 
-    class MutantEnzyme : Enzyme, MutantCatalyst
+    class ReactionEnzyme : Enzyme
     {
         Reaction reaction;
-        Catalyst catalyst;
 
-        public MutantEnzyme(string name, Reaction reaction_)
+        public ReactionEnzyme(string name, Reaction reaction_)
             : base(new CatalystImplementation(name, reaction_), (int)(16 *
                                reaction_.potential.Value /
                                reaction_.GetMaxWeight() /
@@ -705,23 +718,23 @@ public class Reaction
             reaction = reaction_;
         }
 
-        public MutantCatalyst Mutate()
+        public override Catalyst Mutate()
         {
-            return reaction.Mutate().Catalyst;
+            return Catalyst.Mutate();
         }
     }
 
-    MutantCatalyst catalyst = null;
-    public MutantCatalyst Catalyst
+    Catalyst catalyst = null;
+    public Catalyst Catalyst
     {
         get
         {
             if(catalyst== null)
             {
                 if (is_ribozyme.IsTrue)
-                    catalyst = new MutantRibozyme(catalyst_name, this);
+                    catalyst = new ReactionRibozyme(catalyst_name, this);
                 else
-                    catalyst = new MutantEnzyme(catalyst_name, this);
+                    catalyst = new ReactionEnzyme(catalyst_name, this);
             }
 
             return catalyst;

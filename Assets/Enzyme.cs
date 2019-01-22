@@ -115,7 +115,7 @@ public class Enzyme : Polymer, Catalyst
     }
 
 
-    Catalyst catalyst;
+    protected Catalyst Catalyst { get; private set; }
 
     public override string Name
     {
@@ -129,9 +129,9 @@ public class Enzyme : Polymer, Catalyst
         }
     }
 
-    public string Description { get { return catalyst.Description; } }
-    public int Price { get { return catalyst.Price; } }
-    public Example Example { get { return catalyst.Example; } }
+    public string Description { get { return Catalyst.Description; } }
+    public int Price { get { return Catalyst.Price; } }
+    public Example Example { get { return Catalyst.Example; } }
 
     public List<AminoAcid> AminoAcidSequence
     {
@@ -150,12 +150,12 @@ public class Enzyme : Polymer, Catalyst
 
     public Enzyme(Catalyst catalyst_, int length)
     {
-        catalyst = catalyst_;
+        Catalyst = catalyst_;
 
         foreach (AminoAcid amino_acid in GenerateAminoAcidSequence(length))
             AddMonomer(amino_acid);
 
-        RegisterNamedEnzyme(this, catalyst.Name);
+        RegisterNamedEnzyme(this, Catalyst.Name);
     }
 
     public Enzyme()
@@ -171,7 +171,15 @@ public class Enzyme : Polymer, Catalyst
 
     public Action Catalyze(Cell.Slot slot)
     {
-        return catalyst.Catalyze(slot);
+        return Catalyst.Catalyze(slot);
+    }
+
+    public virtual Catalyst Mutate()
+    {
+        return MathUtility.RandomIndex(10) > 0 ?
+            (Catalyst)new Enzyme(Catalyst.Mutate(), AminoAcidSequence.Count) :
+            (Catalyst)new Ribozyme(Catalyst.Mutate(), AminoAcidSequence.Count * 2);
+            
     }
 }
 

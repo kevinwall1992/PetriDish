@@ -13,8 +13,6 @@ public class Ribozyme : DNA, Catalyst
         new Ribozyme(new Constructase(), 6);
         new Ribozyme(new Pipase(), 4);
         new Ribozyme(Pumpase.Endo(Hydrogen), 6);
-        new Ribozyme(Pumpase.Endo(CarbonDioxide), 6);
-        new Ribozyme(Pumpase.Exo(Methane), 6);
         new Ribozyme(new Transcriptase(), 8);
         new Ribozyme(new Actuase(), 6);
         new Ribozyme(new Sporulase(), 10);
@@ -66,7 +64,7 @@ public class Ribozyme : DNA, Catalyst
     }
 
 
-    Catalyst catalyst;
+    protected Catalyst Catalyst { get; private set; }
 
     public override string Name
     {
@@ -80,15 +78,15 @@ public class Ribozyme : DNA, Catalyst
         }
     }
 
-    public string Description { get { return catalyst.Description; } }
-    public int Price { get { return catalyst.Price; } }
-    public Example Example { get { return catalyst.Example; } }
+    public string Description { get { return Catalyst.Description; } }
+    public int Price { get { return Catalyst.Price; } }
+    public Example Example { get { return Catalyst.Example; } }
 
     public Ribozyme(Catalyst catalyst_, int codon_count) : base(GenerateUniqueDNASequence(codon_count))
     {
-        catalyst = catalyst_;
+        Catalyst = catalyst_;
 
-        RegisterNamedRibozyme(this, catalyst.Name);
+        RegisterNamedRibozyme(this, Catalyst.Name);
     }
 
     public Ribozyme(int codon_count)
@@ -98,6 +96,13 @@ public class Ribozyme : DNA, Catalyst
 
     public Action Catalyze(Cell.Slot slot)
     {
-        return catalyst.Catalyze(slot);
+        return Catalyst.Catalyze(slot);
+    }
+
+    public virtual Catalyst Mutate()
+    {
+        return MathUtility.RandomIndex(10) > 0 ? 
+            (Catalyst)new Ribozyme(Catalyst.Mutate(), CodonCount) : 
+            (Catalyst)new Enzyme(Catalyst.Mutate(), CodonCount / 2);
     }
 }

@@ -10,6 +10,8 @@ public interface Catalyst
     Example Example { get; }
 
     Action Catalyze(Cell.Slot slot);
+
+    Catalyst Mutate();
 }
 
 //This Catalyst executes the action in its entirety 
@@ -71,6 +73,18 @@ public abstract class ProgressiveCatalyst : Catalyst
             return null;
 
         return slot.Compound.Molecule as T;
+    }
+
+    public virtual Catalyst Mutate()
+    {
+        return MathUtility.RandomElement(Utility.CreateList(Ribozyme.GetRibozymeFamily("Interpretase")[0], 
+                                                            Ribozyme.GetRibozymeFamily("Rotase")[0], 
+                                                            Ribozyme.GetRibozymeFamily("Constructase")[0], 
+                                                            Ribozyme.GetRibozymeFamily("Pipase")[0], 
+                                                            Ribozyme.GetRibozymeFamily("Endopumpase")[0], 
+                                                            Ribozyme.GetRibozymeFamily("Transcriptase")[0], 
+                                                            Ribozyme.GetRibozymeFamily("Actuase")[0], 
+                                                            Ribozyme.GetRibozymeFamily("Sporulase")[0]));
     }
 }
 

@@ -203,14 +203,57 @@ public class Constructase : ProgressiveCatalyst
 
 public class Pipase : InstantCatalyst
 {
-    public Pipase() : base("Pipase", 1, "Moves compounds from a specific slot to another")
-    {
+    public enum Location { One, Two, Three, Four, Five, Across }
 
+    Location source, destination;
+
+    public Pipase(Location source_, Location destination_) : base("Pipase", 1, "Moves compounds from a specific slot to another")
+    {
+        source = source_;
+        destination = destination_;
+        
+        if(destination == source)
+        {
+            if (source != Location.Across)
+                destination = Location.Across;
+            else
+                destination = Location.One;
+        }
+    }
+
+    Cell.Slot LocationToSlot(Cell.Slot slot, Location location)
+    {
+        if (location == Location.Across)
+            return slot.AcrossSlot;
+        else
+            return slot.Cell.Slots[slot.Index + (int)location];
     }
 
     protected override Action GetAction(Cell.Slot slot)
     {
-        return new MoveToSlotAction(slot, slot.PreviousSlot, slot.AcrossSlot, 1);
+        return new MoveToSlotAction(slot, 
+                                    LocationToSlot(slot, source), 
+                                    LocationToSlot(slot, destination), 
+                                    1);
+    }
+
+    public override Catalyst Mutate()
+    {
+        if (MathUtility.Roll(0.1f))
+            return base.Mutate();
+        else
+            return new Pipase((Location)MathUtility.RandomIndex(6), (Location)MathUtility.RandomIndex(6));
+    }
+
+    public override bool Equals(object other)
+    {
+        Pipase other_pipase = other as Pipase;
+        if (other_pipase == null)
+            return false;
+        if (other_pipase == this)
+            return true;
+
+        return other_pipase.source == source && other_pipase.destination == destination;
     }
 }
 

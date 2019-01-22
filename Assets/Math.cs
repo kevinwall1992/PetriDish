@@ -23,9 +23,14 @@ public static class MathUtility
         return Utility.RemoveElementAt(list, RandomIndex(list.Count));
     }
 
-    public static bool Flip(float heads = 0.5f)
+    public static bool Roll(float p)
     {
-        return Random.value > (1- heads);
+        return Random.value > (1- p);
+    }
+
+    public static bool Flip()
+    {
+        return Roll(0.5f);
     }
 
     static float SimpleRecursiveLimit(float scale, int recursions_left)

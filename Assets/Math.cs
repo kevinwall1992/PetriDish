@@ -16,6 +16,27 @@ public static class MathUtility
         return list[RandomIndex(list.Count)];
     }
 
+    public static T RandomElement<T>(Dictionary<T, float> weighted_elements)
+    {
+        float total_weight = 0;
+        foreach (T element in weighted_elements.Keys)
+            total_weight += weighted_elements[element];
+
+        float value = Random.value * total_weight;
+
+        foreach (T element in weighted_elements.Keys)
+        {
+            float weight = weighted_elements[element];
+
+            if (value <= weight)
+                return element;
+            else
+                value -= weight;
+        }
+
+        return default(T);
+    }
+
     public static T RemoveRandomElement<T>(IEnumerable<T> enumerable)
     {
         List<T> list = new List<T>(enumerable);

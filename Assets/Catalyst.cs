@@ -302,6 +302,52 @@ public class Pumpase : InstantCatalyst
     {
         return new Pumpase(true, molecule);
     }
+
+    public override Catalyst Mutate()
+    {
+        if(MathUtility.Roll(0.1f))
+            return base.Mutate();
+        else
+        {
+            if (MathUtility.Roll(0.9f))
+                return new Pumpase(pump_out, GetRandomMolecule());
+            else
+                return new Pumpase(!pump_out, molecule);
+        }
+    }
+
+    public override bool Equals(object other)
+    {
+        Pumpase other_pipase = other as Pumpase;
+        if (other_pipase == null)
+            return false;
+        if (other_pipase == this)
+            return true;
+
+        return other_pipase.pump_out == pump_out && 
+               other_pipase.molecule.Equals(molecule);
+    }
+
+
+    static Molecule GetRandomMolecule()
+    {
+        Dictionary<Molecule, float> weighted_molecules =
+            Utility.CreateDictionary<Molecule, float>(Molecule.GetMolecule("Hydrogen"), 10.0f,
+                                                      Molecule.GetMolecule("Methane"), 10.0f,
+                                                      Molecule.GetMolecule("Carbon Dioxide"), 10.0f,
+                                                      Molecule.GetMolecule("Hydrogen Sulfide"), 10.0f,
+                                                      Molecule.GetMolecule("Oxygen"), 5.0f,
+                                                      Molecule.GetMolecule("Water"), 10.0f,
+                                                      Molecule.GetMolecule("Salt"), 10.0f,
+                                                      Molecule.GetMolecule("Nitrogen"), 5.0f,
+                                                      Molecule.GetMolecule("Glucose"), 10.0f);
+
+        foreach (Molecule molecule in Molecule.Molecules)
+            if (!weighted_molecules.ContainsKey(molecule))
+                weighted_molecules[molecule] = 1;
+
+        return MathUtility.RandomElement(weighted_molecules);
+    }
 }
 
 public class PumpAction : Action

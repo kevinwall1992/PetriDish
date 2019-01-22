@@ -8,6 +8,8 @@ public abstract class Molecule
 {
     static Dictionary<string, Molecule> molecules = new Dictionary<string, Molecule>();
 
+    public static IEnumerable<Molecule> Molecules { get { return molecules.Values; } }
+
     public static Molecule Oxygen { get; private set; }
     public static Molecule CarbonDioxide { get; private set; }
     public static Molecule Nitrogen { get; private set; }

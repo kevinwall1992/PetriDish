@@ -35,6 +35,15 @@ public class Ribozyme : DNA, Catalyst
         return null;
     }
 
+    public static Ribozyme GetRibozyme(Catalyst catalyst, int codon_count)
+    {
+        foreach (Ribozyme ribozyme in ribozymes.Values)
+            if (ribozyme.CodonCount == codon_count && ribozyme.Catalyst.Equals(catalyst))
+                return ribozyme;
+
+        return null;
+    }
+
     public static List<Ribozyme> GetRibozymeFamily(string name)
     {
         return ribozyme_families[name];
@@ -89,11 +98,6 @@ public class Ribozyme : DNA, Catalyst
         RegisterNamedRibozyme(this, Catalyst.Name);
     }
 
-    public Ribozyme(int codon_count)
-    {
-
-    }
-
     public Action Catalyze(Cell.Slot slot)
     {
         return Catalyst.Catalyze(slot);
@@ -101,8 +105,26 @@ public class Ribozyme : DNA, Catalyst
 
     public virtual Catalyst Mutate()
     {
-        return MathUtility.RandomIndex(10) > 0 ? 
-            (Catalyst)new Ribozyme(Catalyst.Mutate(), CodonCount) : 
-            (Catalyst)new Enzyme(Catalyst.Mutate(), CodonCount / 2);
+        Catalyst mutant_catalyst = Catalyst.Mutate();
+
+        if (MathUtility.RandomIndex(10) > 0)
+        {
+            Ribozyme ribozyme = Ribozyme.GetRibozyme(mutant_catalyst, CodonCount);
+
+            if (ribozyme == null)
+                ribozyme = new Ribozyme(mutant_catalyst, CodonCount);
+
+            return ribozyme;
+        }
+        else
+        {
+            int length = CodonCount / 2;
+            Enzyme enzyme = Enzyme.GetEnzyme(mutant_catalyst, length);
+
+            if(enzyme == null)
+                new Enzyme(mutant_catalyst, length);
+
+            return enzyme;
+        }
     }
 }

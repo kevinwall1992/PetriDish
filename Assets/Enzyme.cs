@@ -65,6 +65,15 @@ public class Enzyme : Polymer, Catalyst
         return null;
     }
 
+    public static Enzyme GetEnzyme(Catalyst catalyst, int length)
+    {
+        foreach (Enzyme enzyme in enzymes.Values)
+            if (enzyme.AminoAcidSequence.Count == length && enzyme.Catalyst.Equals(catalyst))
+                return enzyme;
+
+        return null;
+    }
+
     public static List<Enzyme> GetEnzymeFamily(string name)
     {
         return enzyme_families[name];
@@ -158,11 +167,6 @@ public class Enzyme : Polymer, Catalyst
         RegisterNamedEnzyme(this, Catalyst.Name);
     }
 
-    public Enzyme()
-    {
-
-    }
-
     public override void AddMonomer(Monomer monomer)
     {
         if (monomer is AminoAcid)
@@ -176,10 +180,27 @@ public class Enzyme : Polymer, Catalyst
 
     public virtual Catalyst Mutate()
     {
-        return MathUtility.RandomIndex(10) > 0 ?
-            (Catalyst)new Enzyme(Catalyst.Mutate(), AminoAcidSequence.Count) :
-            (Catalyst)new Ribozyme(Catalyst.Mutate(), AminoAcidSequence.Count * 2);
-            
+        Catalyst mutant_catalyst = Catalyst.Mutate();
+
+        if (MathUtility.RandomIndex(10) > 0)
+        {
+            Enzyme enzyme = Enzyme.GetEnzyme(mutant_catalyst, AminoAcidSequence.Count);
+
+            if (enzyme == null)
+                new Enzyme(mutant_catalyst, AminoAcidSequence.Count);
+
+            return enzyme;
+        }
+        else
+        {
+            int codon_count = AminoAcidSequence.Count * 2;
+            Ribozyme ribozyme = Ribozyme.GetRibozyme(mutant_catalyst, codon_count);
+
+            if (ribozyme == null)
+                ribozyme = new Ribozyme(mutant_catalyst, codon_count);
+
+            return ribozyme;
+        }
     }
 }
 

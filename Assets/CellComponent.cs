@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class CellComponent : GoodBehavior, IPointerClickHandler
+public class CellComponent : GoodBehavior, IPointerClickHandler, Spawner
 {
     Cell cell;
 
@@ -65,6 +65,8 @@ public class CellComponent : GoodBehavior, IPointerClickHandler
 
         highlight = new GameObject("highlight").AddComponent<SpriteRenderer>();
         highlight.gameObject.SetActive(false);
+
+        gameObject.AddComponent<SpawnOnDragBehavior>();
     }
 
     void Start()
@@ -118,6 +120,11 @@ public class CellComponent : GoodBehavior, IPointerClickHandler
             slot_components[(int)touched_part].DetailPanel.Open();
     }
 
+    public override void OnBeginDrag(PointerEventData eventData)
+    {
+        base.OnBeginDrag(eventData);
+    }
+
     void SetSlotTransformations()
     {
         for (int i = 0; i < 6; i++)
@@ -165,5 +172,25 @@ public class CellComponent : GoodBehavior, IPointerClickHandler
                 return slot_component;
 
         return null;
+    }
+
+    public GameObject Spawn()
+    {
+        if (PartPointedAt == Part.Cytozol)
+            return null;
+
+        Cell.Slot slot = Cell.Slots[(int)PartPointedAt];
+        if (slot.Compound == null)
+            return null;
+
+        CompoundTile compound_tile = Instantiate(Scene.Micro.Prefabs.CompoundTile);
+        compound_tile.transform.parent = Scene.Micro.Canvas.transform;
+
+        if (Input.GetKey(KeyCode.LeftControl))
+            compound_tile.Compound = slot.Compound.Split(slot.Compound.Quantity / 2);
+        else
+            compound_tile.Compound = slot.RemoveCompound();
+
+        return compound_tile.gameObject;
     }
 }

@@ -12,7 +12,10 @@ public class SpawnOnDragBehavior : GoodBehavior
     {
         base.OnBeginDrag(eventData);
 
-        Scene.Micro.InputModule.SwapDrag(gameObject, Spawner.Spawn());
+        GameObject drag_target = Spawner.Spawn();
+
+        if(drag_target != null)
+            Scene.Micro.InputModule.SwapDrag(gameObject, drag_target);
     }
 }
 

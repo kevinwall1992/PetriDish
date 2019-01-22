@@ -31,7 +31,11 @@ public class CompoundTile : GoodBehavior
             }
             else
             {
-                name_text.text = compound.Molecule.Name;
+                if (compound.Molecule.Name == "Unnamed")
+                    name_text.text = compound.Molecule.GetType().Name;
+                else
+                    name_text.text = compound.Molecule.Name;
+
                 quantity_text.text = compound.Quantity.ToString("n1");
                 image.sprite = CompoundComponent.GetSprite(compound.Molecule);
             }

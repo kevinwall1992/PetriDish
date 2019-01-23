@@ -11,6 +11,13 @@ public class CompoundGridPanel : GridPanel
         get { return Data as IMutableContainer<Compound>; }
     }
 
+    protected override void Start()
+    {
+        base.Start();
+
+        RowLength = 4;
+    }
+
     protected override void Update()
     {
         if (CompoundContainer.WasModified(this))

@@ -48,6 +48,9 @@ public class CompoundTile : GoodBehavior
         set { (transform as RectTransform).sizeDelta = new Vector2(value, 0); }
     }
 
+    public CompoundGridPanel CompoundGridPanel { get; set; }
+
+
     private void Awake()
     {
         Compound = null;
@@ -61,6 +64,22 @@ public class CompoundTile : GoodBehavior
     void Update()
     {
         name_text.resizeTextMaxSize = (int)(22 * Size / 107.0f);
+    }
+
+    public override void OnBeginDrag(PointerEventData eventData)
+    {
+        base.OnBeginDrag(eventData);
+
+        if (CompoundGridPanel != null)
+        {
+            float quantity = Input.GetKey(KeyCode.LeftControl) ? compound.Quantity / 2 : 
+                                                                 compound.Quantity;
+
+            Compound = CompoundGridPanel.RemoveCompound(Compound.Molecule, quantity);
+
+            transform.SetParent(Scene.Micro.Canvas.transform);
+            CompoundGridPanel = null;
+        }
     }
 
     public override void OnDrag(PointerEventData eventData)

@@ -41,7 +41,7 @@ public class CellComponent : GoodBehavior, IPointerClickHandler, Spawner
             {
                 float clock_radians = (Mathf.PI * 2 - MathUtility.GetRotation(displacement)) + Mathf.PI / 2;
 
-                return (Part)(((int)(6 * (clock_radians + Mathf.PI / 6) / (2 * Mathf.PI)) - slot_components[0].Slot.Index) % 6);
+                return (Part)(((int)(6 * (clock_radians + Mathf.PI / 6) / (2 * Mathf.PI))) % 6);
             }
         }
     }
@@ -78,7 +78,6 @@ public class CellComponent : GoodBehavior, IPointerClickHandler, Spawner
     {
         ValidateSlots();
 
-
         Part part_pointed_at = PartPointedAt;
         if (current_highlighted_part != part_pointed_at)
         {
@@ -96,7 +95,7 @@ public class CellComponent : GoodBehavior, IPointerClickHandler, Spawner
                 else
                 {
                     highlight.sprite = Resources.Load<Sprite>("slot_highlight");
-                    highlight.transform.SetParent(slot_components[(int)part_pointed_at].transform, false);
+                    highlight.transform.SetParent(GetSlotComponent((int)part_pointed_at).transform, false);
                 }
             }
             else

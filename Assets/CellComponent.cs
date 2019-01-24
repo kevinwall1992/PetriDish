@@ -115,8 +115,8 @@ public class CellComponent : GoodBehavior, IPointerClickHandler, Spawner
 
         if (touched_part == Part.Cytozol)
             OrganismComponent.CytozolDetailPanel.Open();
-        else if(slot_components[(int)touched_part].DetailPanel != null)
-            slot_components[(int)touched_part].DetailPanel.Open();
+        else if(GetSlotComponent(Cell.Slots[(int)touched_part]).DetailPanel != null)
+            GetSlotComponent(Cell.Slots[(int)touched_part]).DetailPanel.Open();
     }
 
     public override void OnBeginDrag(PointerEventData eventData)

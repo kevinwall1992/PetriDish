@@ -37,13 +37,8 @@ public class Card : GoodBehavior, IPointerClickHandler, Spawner
 
             if (current_zoom_target == ZoomTarget.None)
                 GUI.depth = 0;
-
-            zoom_progress = 0;
         }
     }
-
-    float zoom_length = 2.5f;
-    float zoom_progress = 0;
 
     Catalyst catalyst;
     public Catalyst Catalyst
@@ -86,6 +81,7 @@ public class Card : GoodBehavior, IPointerClickHandler, Spawner
         }
     }
 
+
     void Start()
     {
         
@@ -99,10 +95,10 @@ public class Card : GoodBehavior, IPointerClickHandler, Spawner
             target_position = RestPosition;
         }
 
-        zoom_progress = Mathf.Min(zoom_progress + Time.deltaTime / zoom_length, 1);
+        float lerp_speed = 6.0f;
 
-        transform.localScale = new Vector3(Mathf.Lerp(transform.localScale.x, target_scale, zoom_progress),
-                                           Mathf.Lerp(transform.localScale.y, target_scale, zoom_progress));
+        transform.localScale = new Vector3(Mathf.Lerp(transform.localScale.x, target_scale, Time.deltaTime * lerp_speed),
+                                           Mathf.Lerp(transform.localScale.y, target_scale, Time.deltaTime * lerp_speed));
 
         if(transform.localScale.x < 0.25f)
         {
@@ -115,13 +111,13 @@ public class Card : GoodBehavior, IPointerClickHandler, Spawner
             description.gameObject.SetActive(true);
         }
 
-        transform.position = new Vector3(Mathf.Lerp(transform.position.x, target_position.x, zoom_progress), 
-                                         Mathf.Lerp(transform.position.y, target_position.y, zoom_progress));
+        transform.position = new Vector3(Mathf.Lerp(transform.position.x, target_position.x, Time.deltaTime * lerp_speed), 
+                                         Mathf.Lerp(transform.position.y, target_position.y, Time.deltaTime * lerp_speed));
 
         if(CurrentZoomTarget == ZoomTarget.Image)
         {
-            compound_image.color = Color.Lerp(compound_image.color, Color.clear, zoom_progress);
-            card_scene_image.color = Color.Lerp(card_scene_image.color, Color.white, zoom_progress);
+            compound_image.color = Color.Lerp(compound_image.color, Color.clear, Time.deltaTime * lerp_speed);
+            card_scene_image.color = Color.Lerp(card_scene_image.color, Color.white, Time.deltaTime * lerp_speed);
         }
         else
         {

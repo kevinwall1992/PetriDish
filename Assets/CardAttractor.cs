@@ -11,6 +11,7 @@ public class CardAttractor : GoodBehavior
     void Start()
     {
         card.transform.parent = Scene.Micro.Canvas.transform;
+        card.transform.position = transform.parent.position;
     }
 
     void Update()

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 
-
 public class Ribozyme : DNA, Catalyst
 {
     static Dictionary<string, Ribozyme> ribozymes = new Dictionary<string, Ribozyme>();
@@ -122,7 +121,7 @@ public class Ribozyme : DNA, Catalyst
             Enzyme enzyme = Enzyme.GetEnzyme(mutant_catalyst, length);
 
             if(enzyme == null)
-                new Enzyme(mutant_catalyst, length);
+                enzyme = new Enzyme(mutant_catalyst, length);
 
             return enzyme;
         }

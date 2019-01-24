@@ -187,7 +187,7 @@ public class Enzyme : Polymer, Catalyst
             Enzyme enzyme = Enzyme.GetEnzyme(mutant_catalyst, AminoAcidSequence.Count);
 
             if (enzyme == null)
-                new Enzyme(mutant_catalyst, AminoAcidSequence.Count);
+                enzyme = new Enzyme(mutant_catalyst, AminoAcidSequence.Count);
 
             return enzyme;
         }

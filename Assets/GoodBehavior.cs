@@ -40,7 +40,7 @@ public class GoodBehavior : MonoBehaviour, IDragHandler, IBeginDragHandler, IEnd
 
     public virtual void OnDrag(PointerEventData eventData)
     {
-
+        is_being_dragged = true;
     }
 
     public virtual void OnEndDrag(PointerEventData eventData)

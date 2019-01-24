@@ -16,7 +16,7 @@ public class Deck : List<Catalyst>
             if (!other.Contains(catalyst))
                 return false;
 
-        foreach (Catalyst catalyst in this)
+        foreach (Catalyst catalyst in other)
             if (!this.Contains(catalyst))
                 return false;
 

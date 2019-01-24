@@ -77,14 +77,17 @@ public abstract class ProgressiveCatalyst : Catalyst
 
     public virtual Catalyst Mutate()
     {
-        return MathUtility.RandomElement(Utility.CreateList(Ribozyme.GetRibozymeFamily("Interpretase")[0], 
-                                                            Ribozyme.GetRibozymeFamily("Rotase")[0], 
-                                                            Ribozyme.GetRibozymeFamily("Constructase")[0], 
-                                                            Ribozyme.GetRibozymeFamily("Pipase")[0], 
-                                                            Ribozyme.GetRibozymeFamily("Endopumpase")[0], 
-                                                            Ribozyme.GetRibozymeFamily("Transcriptase")[0], 
-                                                            Ribozyme.GetRibozymeFamily("Actuase")[0], 
-                                                            Ribozyme.GetRibozymeFamily("Sporulase")[0]));
+        if (MathUtility.Roll(0.9f))
+            return this;
+        else
+            return MathUtility.RandomElement(Utility.CreateList<Catalyst>(
+                new Interpretase(),
+                new Rotase(),
+                new Constructase(),
+                new Pipase(Pipase.Location.Five, Pipase.Location.Across),
+                new Transcriptase(),
+                new Actuase(),
+                new Sporulase()));
     }
 }
 

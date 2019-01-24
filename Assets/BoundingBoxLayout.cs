@@ -62,6 +62,8 @@ public class BoundingBoxLayout : LayoutElement
     }
 }
 
+#if UNITY_EDITOR
+
 [CustomEditor(typeof(BoundingBoxLayout))]
 [CanEditMultipleObjects]
 public class BoundingBoxLayoutEditor : Editor
@@ -82,3 +84,5 @@ public class BoundingBoxLayoutEditor : Editor
         serializedObject.ApplyModifiedProperties();
     }
 }
+
+#endif

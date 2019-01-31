@@ -11,9 +11,12 @@ public class CompoundTile : GoodBehavior
     [SerializeField]
     Image image;
 
+    [SerializeField]
+    CanvasGroup canvas_group;
+
     Compound compound;
 
-    int placeholder_index= -1;
+    int placeholder_index = -1;
 
     public Compound Compound
     {
@@ -48,7 +51,20 @@ public class CompoundTile : GoodBehavior
         set { (transform as RectTransform).sizeDelta = new Vector2(value, 0); }
     }
 
-    public CompoundGridPanel CompoundGridPanel { get; set; }
+    public CompoundGridPanel CompoundGridPanel
+    {
+        get { return GetComponentInParent<CompoundGridPanel>(); }
+    }
+
+    public TrashcanPanel TrashcanPanel
+    {
+        get { return GetComponentInParent<TrashcanPanel>(); }
+    }
+
+    public Hole Hole
+    {
+        get { return GetComponentInParent<Hole>(); }
+    }
 
 
     private void Awake()
@@ -78,7 +94,6 @@ public class CompoundTile : GoodBehavior
             Compound = CompoundGridPanel.RemoveCompound(Compound.Molecule, quantity);
 
             transform.SetParent(Scene.Micro.Canvas.transform);
-            CompoundGridPanel = null;
         }
     }
 
@@ -86,7 +101,12 @@ public class CompoundTile : GoodBehavior
     {
         base.OnDrag(eventData);
 
-        transform.position = Input.mousePosition;
+        canvas_group.blocksRaycasts = false;
+
+        if (IsPointedAt)
+            transform.position = transform.position + (Vector3)eventData.delta;
+        else
+            transform.position = Input.mousePosition;
 
         if (DetailPanel.Left != null && DetailPanel.Left is DNAPanel && Compound.Molecule is Catalyst)
         {
@@ -120,7 +140,11 @@ public class CompoundTile : GoodBehavior
     {
         base.OnEndDrag(eventData);
 
-        if (DetailPanel.Left != null && DetailPanel.Left.IsPointedAt)
+        canvas_group.blocksRaycasts = true;
+
+        if (Hole != null)
+            return;
+        else if (DetailPanel.Left != null && DetailPanel.Left.IsPointedAt)
         {
             if (DetailPanel.Left is CompoundGridPanel)
                 (DetailPanel.Left as CompoundGridPanel).AddCompound(Compound);
@@ -144,24 +168,27 @@ public class CompoundTile : GoodBehavior
                 }
             }
         }
-        else if (DetailPanel.Right != null && DetailPanel.Right.IsPointedAt) ;
-        else
+        else if (DetailPanel.Right != null && DetailPanel.Right.IsTouched)
+        {
+            if (DetailPanel.Right is TrashcanPanel)
+                Scene.Micro.TrashcanButton.Trashcan.ThrowAway(compound);
+        }
+        else if (Scene.Micro.TrashcanButton.IsPointedAt)
+            Scene.Micro.TrashcanButton.Trashcan.ThrowAway(compound);
+        else if (Scene.Micro.Visualization.OrganismComponents[0].IsPointedAt)
         {
             OrganismComponent organism_component = Scene.Micro.Visualization.OrganismComponents[0];
 
-            if (organism_component.IsPointedAt)
+            CellComponent cell_component = organism_component.CellComponentPointedAt;
+
+            if (cell_component.PartPointedAt == CellComponent.Part.Cytozol)
+                organism_component.Organism.Cytozol.AddCompound(Compound);
+            else
             {
-                CellComponent cell_component = organism_component.CellComponentPointedAt;
+                Cell.Slot slot = cell_component.Cell.Slots[(int)cell_component.PartPointedAt];
 
-                if (cell_component.PartPointedAt == CellComponent.Part.Cytozol)
-                    organism_component.Organism.Cytozol.AddCompound(Compound);
-                else
-                {
-                    Cell.Slot slot = cell_component.Cell.Slots[(int)cell_component.PartPointedAt];
-
-                    if (slot.Compound == null)
-                        slot.AddCompound(Compound);
-                }
+                if (slot.Compound == null)
+                    slot.AddCompound(Compound);
             }
         }
 

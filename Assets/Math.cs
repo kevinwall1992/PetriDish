@@ -253,6 +253,21 @@ public static class MathUtility
     {
         return new Vector2(scale, scale);
     }
+
+    //http://en.wikipedia.org/wiki/Halton_sequence
+    public static float HaltonSequence(int base_, int i)
+    {
+        float result = 0;
+        float f = 1.0f;
+        while (i > 0)
+        {
+            f = f / base_;
+            result += f * (i % base_);
+            i = i / base_;
+        }
+
+        return result;
+    }
 }
 
 public abstract class GenericFunction<T>

@@ -15,6 +15,8 @@ public class MicroScene : Scene
 
     public MicroInputModule InputModule { get { return input_module; } }
 
+    public TrashcanButton TrashcanButton { get { return trashcan_button; } }
+
 
     public bool IsBackgroundPointedAt { get { return background.GetComponentInChildren<GoodBehavior>().IsPointedAt; } }
 
@@ -39,4 +41,7 @@ public class MicroScene : Scene
 
     [SerializeField]
     MicroInputModule input_module;
+
+    [SerializeField]
+    TrashcanButton trashcan_button;
 }

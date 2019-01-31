@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6155293349769728433}
   - component: {fileID: 6155293349769728447}
   - component: {fileID: 7536550398930863544}
+  - component: {fileID: 927577930093693723}
   m_Layer: 5
   m_Name: CompoundTile
   m_TagString: Untagged
@@ -94,6 +95,7 @@ MonoBehaviour:
   name_text: {fileID: 6155293350558550665}
   quantity_text: {fileID: 6155293351885409895}
   image: {fileID: 6155293350275586788}
+  canvas_group: {fileID: 927577930093693723}
 --- !u!114 &7536550398930863544
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -108,6 +110,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_AspectMode: 1
   m_AspectRatio: 1
+--- !u!225 &927577930093693723
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6155293349769728435}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &6155293350275586790
 GameObject:
   m_ObjectHideFlags: 0

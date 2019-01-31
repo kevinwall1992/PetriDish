@@ -26,4 +26,8 @@ public class MicroPrefabs : MonoBehaviour
     [SerializeField]
     Card card;
     public Card Card { get { return card; } }
+
+    [SerializeField]
+    TrashcanPanel trashcan_panel;
+    public TrashcanPanel TrashcanPanel { get { return trashcan_panel; } }
 }

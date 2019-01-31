@@ -4,6 +4,8 @@ public interface IMutableContainer<T>
 {
     List<T> Elements { get; }
 
+    bool Contains(T element);
+
     void AddElement(T element);
     T RemoveElement(T element);
 
@@ -15,6 +17,11 @@ public abstract class MutableContainer<T> : IMutableContainer<T>
     Dictionary<object, bool> stakeholders = new Dictionary<object, bool>();
 
     public abstract List<T> Elements { get; }
+
+    public bool Contains(T element)
+    {
+        return Elements.Contains(element);
+    }
 
     public abstract void AddElement(T element);
     public abstract T RemoveElement(T element);

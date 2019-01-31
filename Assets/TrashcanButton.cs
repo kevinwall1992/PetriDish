@@ -18,8 +18,10 @@ public class TrashcanButton : ScalingButton
 
     public Trashcan Trashcan { get; private set; }
 
-    private void Start()
+    protected override void Start()
     {
+        base.Start();
+
         Trashcan = new Trashcan();
     }
 

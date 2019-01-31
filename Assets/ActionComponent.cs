@@ -236,9 +236,9 @@ public class ActionComponent : MonoBehaviour
 
     private void Update()
     {
-        time_elapsed += Time.deltaTime;
+        time_elapsed += Time.deltaTime * Scene.Micro.Visualization.Speed;
 
-        if (time_elapsed > length)
+        if (GetMoment() > 1)
         {
             foreach (ActionAnimation animation in animations)
                 GameObject.Destroy(animation);
@@ -260,7 +260,7 @@ public class ActionAnimation : MonoBehaviour
 
     protected virtual void Update()
     {
-        elapsed_time += Time.deltaTime;
+        elapsed_time += Time.deltaTime * Scene.Micro.Visualization.Speed;
     }
 
     protected float GetMoment()

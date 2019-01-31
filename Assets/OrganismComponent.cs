@@ -90,9 +90,13 @@ public class OrganismComponent : GoodBehavior
         if (GetComponents<ActionComponent>().Length > 0)
             return;
 
-        if(actions.Count > 0)
+        if (actions.Count > 0)
             foreach (Action action in actions.Dequeue())
-                gameObject.AddComponent<ActionComponent>().SetAction(action, action is PoweredAction ? 3 : 1.5f);
+            {
+                float length = action is PoweredAction ? 3 : 1.5f;
+
+                gameObject.AddComponent<ActionComponent>().SetAction(action, length);
+            }
     }
 
     void SetCellTransformations()

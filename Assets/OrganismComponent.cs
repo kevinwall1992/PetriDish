@@ -211,6 +211,7 @@ public class OrganismComponent : GoodBehavior
         {
             cell.Slots[0].AddCompound(new Compound(Ribozyme.GetRibozymeFamily("Interpretase")[0], 1));
             cell.Slots[5].AddCompound(new Compound(new DNA(dna_sequence), 1));
+            cell.Slots[2].AddCompound(new Compound(new Enzyme(new Rotase(), 8), 1));
             Organism.Cytozol.AddCompound(new Compound(Molecule.ATP, 10));
         }
     }

@@ -95,8 +95,10 @@ public class CompoundComponent : GoodBehavior
         }
         if (resource_name == null)
         {
-            if (molecule is Catalyst)
-                resource_name = "catalyst";
+            if (molecule is Ribozyme)
+                resource_name = "ribozyme";
+            else if (molecule is Enzyme)
+                resource_name = "enzyme";
             else if (molecule is AminoAcid)
                 resource_name = "amino_acid";
             else if (molecule is DNA)

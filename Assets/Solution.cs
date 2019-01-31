@@ -258,7 +258,7 @@ public class Solution : MutableContainer<Compound>, Volume
         {
             return (float)((Measures.MolesToSmoles(8.3e-17m) *
                    molecule.AtomCount * GetQuantity(molecule) /
-                   MathUtility.Sum(Molecules, delegate (Molecule molecule_) { return molecule_.AtomCount * GetQuantity(molecule_); })));
+                   MathUtility.Sum(Molecules, (molecule_) => (molecule_.AtomCount * GetQuantity(molecule_)))));
         }
     }
 

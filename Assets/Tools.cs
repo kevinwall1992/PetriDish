@@ -163,7 +163,7 @@ public static class Tools
             {
                 string reaction_string = "";
 
-                Utility.Sorted(reaction, delegate (Component component) { return component.Molecule.Name; });
+                Utility.Sorted(reaction, (component) => (component.Molecule.Name));
 
                 foreach (Component component in reaction)
                     if (component.IsInput)
@@ -181,10 +181,10 @@ public static class Tools
                 //score based on heat?
 
                 scored_reaction_strings[reaction_string] = reaction.Count * 1000000 +
-                                                    MathUtility.Sum(reaction, delegate (Component component) { return component.Molecule.AtomCount * component.Quantity / multiple; });
+                                                    MathUtility.Sum(reaction, (component) => (component.Molecule.AtomCount * component.Quantity / multiple));
             }
 
-            return Utility.Sorted(scored_reaction_strings.Keys, delegate (string reaction_string) { return scored_reaction_strings[reaction_string]; });
+            return Utility.Sorted(scored_reaction_strings.Keys, (reaction_string) => (scored_reaction_strings[reaction_string]));
         }
 
         static List<string> Brainstorm(Reaction incomplete_reaction, List<Molecule> byproducts)
@@ -240,7 +240,8 @@ public static class Tools
             }
 
             List<Reaction> reactions = new List<Reaction>();
-            Utility.ForEach(MathUtility.Choose(options), delegate (List<Component> fixed_incomplete_reaction) { reactions.AddRange(GetReactions(new Reaction(fixed_incomplete_reaction), byproducts)); });
+            Utility.ForEach(MathUtility.Choose(options), delegate (List<Component> fixed_incomplete_reaction) 
+                { reactions.AddRange(GetReactions(new Reaction(fixed_incomplete_reaction), byproducts)); });
 
             return GetReactionStrings(reactions, lowest_common_multiple);
         }

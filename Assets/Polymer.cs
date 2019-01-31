@@ -11,13 +11,13 @@ public class Polymer : Molecule
     {
         get
         {
-            return MathUtility.Sum(monomers, delegate (Monomer monomer) { return monomer.Charge; });
+            return MathUtility.Sum(monomers, (monomer) => (monomer.Charge));
         }
     }
 
     public override float Enthalpy
     {
-        get { return MathUtility.Sum(monomers, delegate (Monomer monomer) { return monomer.Enthalpy; }); }
+        get { return MathUtility.Sum(monomers, (monomer) => (monomer.Enthalpy)); }
     }
 
     public override Dictionary<Element, int> Elements

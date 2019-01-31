@@ -95,8 +95,8 @@ public class CompositeAction : Action
 
     public List<Action> Actions { get { return actions; } }
 
-    public CompositeAction(Cell.Slot slot, params Action[] actions_) 
-        : base(slot, MathUtility.Sum(actions_, delegate(Action action) { return action.Cost; }))
+    public CompositeAction(Cell.Slot slot, params Action[] actions_)
+        : base(slot, MathUtility.Sum(actions_, (action) => (action.Cost)))
     {
         actions.AddRange(actions_);
     }

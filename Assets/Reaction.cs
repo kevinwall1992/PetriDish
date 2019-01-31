@@ -537,7 +537,7 @@ public class Reaction
             bool simple_slot_order = true;
             List<int> available_slots = new List<int> { 1, 2, 3, 4, 5 };
             if(!simple_slot_order)
-                available_slots.Sort(delegate (int a, int b) { return reaction.slot_order[a].Value.CompareTo(reaction.slot_order[b].Value); });
+                available_slots.Sort((a, b) => (reaction.slot_order[a].Value.CompareTo(reaction.slot_order[b].Value)));
 
             float enthalpy = 0;
             foreach (Compound compound in reaction.reactants.Keys)
@@ -576,11 +576,11 @@ public class Reaction
             activity_functions.Add(new NormalActivityFunction(reaction.optimal_temperature.Value,
                                                                 4 * (0.5f + Mathf.Abs(reaction.temperature_tolerance.Value)) * (reaction.is_ribozyme.IsTrue ? 0.7f : 1),
                                                                 0.15f,
-                                                                delegate (Solution solution) { return solution.Temperature; }));
+                                                                (solution) => (solution.Temperature)));
             activity_functions.Add(new NormalActivityFunction(reaction.optimal_pH.Value,
                                                                 1.0f * (0.25f + Mathf.Abs(reaction.pH_tolerance.Value)) * (reaction.is_ribozyme.IsTrue ? 0.7f : 1),
                                                                 1,
-                                                                delegate (Solution solution) { return solution.pH; }));
+                                                                (solution) => (solution.pH)));
 
             foreach (Molecule molecule in reaction.inhibitors.Keys)
                 activity_functions.Add(new InhibitionFunction(molecule, reaction.inhibitors[molecule].Value));

@@ -77,7 +77,7 @@ public class Utility
 
     public static List<T> Sorted<T, U>(List<T> list, Func<T, U> comparable_fetcher) where U : IComparable
     {
-        list.Sort(delegate(T a, T b) { return comparable_fetcher(a).CompareTo(comparable_fetcher(b)); });
+        list.Sort((a, b) => (comparable_fetcher(a).CompareTo(comparable_fetcher(b))));
 
         return list;
     }
@@ -98,12 +98,12 @@ public class Utility
 
     public static int Count<T>(IEnumerable<T> enumerable)
     {
-        return MathUtility.Sum(enumerable, delegate (T element) { return 1; });
+        return MathUtility.Sum(enumerable, (element) => (1));
     }
 
     public static int CountDuplicates<T>(IEnumerable<T> enumerable, T element)
     {
-        return MathUtility.Sum(enumerable, delegate (T other_element) { return EqualityComparer<T>.Default.Equals(other_element, element) ? 1 : 0; });
+        return MathUtility.Sum(enumerable, (other_element) => (EqualityComparer<T>.Default.Equals(other_element, element) ? 1 : 0));
     }
 
     public static List<T> RemoveDuplicates<T>(IEnumerable<T> enumerable)

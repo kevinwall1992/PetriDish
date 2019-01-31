@@ -136,7 +136,7 @@ public abstract class Molecule
 
     public int AtomCount
     {
-        get { return MathUtility.Sum(new List<int>(Elements.Values), delegate (int count) { return count; }); }
+        get { return MathUtility.Sum(new List<int>(Elements.Values), (count) => (count)); }
     }
 
     public Molecule()

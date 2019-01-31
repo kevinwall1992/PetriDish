@@ -100,9 +100,9 @@ public static class MathUtility
         return sum;
     }
 
-    public static float Sum(IEnumerable<float> enumerable) { return Sum(enumerable, delegate (float a) { return a; }); }
-    public static int Sum(IEnumerable<int> enumerable) { return Sum(enumerable, delegate (int a) { return a; }); }
-    public static decimal Sum(IEnumerable<decimal> enumerable) { return Sum(enumerable, delegate (decimal a) { return a; }); }
+    public static float Sum(IEnumerable<float> enumerable) { return Sum(enumerable, (a) => (a)); }
+    public static int Sum(IEnumerable<int> enumerable) { return Sum(enumerable, (a) => (a)); }
+    public static decimal Sum(IEnumerable<decimal> enumerable) { return Sum(enumerable, (a) => (a)); }
 
     public static bool NearlyEqual(float a, float b, float tolerance = 0.001f)
     {

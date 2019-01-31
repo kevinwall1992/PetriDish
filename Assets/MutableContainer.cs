@@ -2,12 +2,12 @@
 
 public interface IMutableContainer<T>
 {
-    List<T> Elements { get; }
+    IEnumerable<T> Items { get; }
 
     bool Contains(T element);
 
-    void AddElement(T element);
-    T RemoveElement(T element);
+    void AddItem(T item);
+    T RemoveItem(T item);
 
     bool WasModified(object stakeholder);
 }
@@ -16,17 +16,17 @@ public abstract class MutableContainer<T> : IMutableContainer<T>
 {
     Dictionary<object, bool> stakeholders = new Dictionary<object, bool>();
 
-    public abstract List<T> Elements { get; }
+    public abstract IEnumerable<T> Items { get; }
 
-    public bool Contains(T element)
+    public bool Contains(T item)
     {
-        return Elements.Contains(element);
+        return Utility.Contains(Items, item);
     }
 
-    public abstract void AddElement(T element);
-    public abstract T RemoveElement(T element);
+    public abstract void AddItem(T item);
+    public abstract T RemoveItem(T item);
 
-    protected void Touch()
+    protected void Modify()
     {
         List<object> keys = new List<object>(stakeholders.Keys);
 

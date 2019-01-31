@@ -12,7 +12,7 @@ public class Trashcan : MutableContainer<Compound>
     public IEnumerable<Compound> Contents { get { return contents; } }
     public IEnumerable<Compound> BuriedContents { get { return buried_contents; } }
 
-    public override List<Compound> Elements
+    public override IEnumerable<Compound> Items
     {
         get
         {
@@ -31,7 +31,7 @@ public class Trashcan : MutableContainer<Compound>
         if(contents.Count > Capacity)
             Bury(contents[0]);
 
-        Touch();
+        Modify();
     }
 
     public Compound FishOut(Compound compound)
@@ -43,7 +43,7 @@ public class Trashcan : MutableContainer<Compound>
             anomalies.Remove(compound);
 
         contents.Remove(compound);
-        Touch();
+        Modify();
 
         return compound;
     }
@@ -54,7 +54,7 @@ public class Trashcan : MutableContainer<Compound>
             return;
 
         contents.Remove(compound);
-        Touch();
+        Modify();
 
         buried_contents.Add(compound);
 
@@ -67,14 +67,14 @@ public class Trashcan : MutableContainer<Compound>
         }
     }
 
-    public override void AddElement(Compound element)
+    public override void AddItem(Compound compound)
     {
-        ThrowAway(element);
+        ThrowAway(compound);
     }
 
-    public override Compound RemoveElement(Compound element)
+    public override Compound RemoveItem(Compound compound)
     {
-        return FishOut(element);
+        return FishOut(compound);
     }
 
     public bool IsAnomaly(Compound compound)

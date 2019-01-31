@@ -32,7 +32,7 @@ public class Solution : MutableContainer<Compound>, Volume
     public void AddCompound(Molecule molecule, float quantity)
     {
         precision_solution.AddCompound(molecule, (decimal)quantity);
-        Touch();
+        Modify();
     }
 
     public Compound RemoveCompound(Compound compound)
@@ -43,7 +43,7 @@ public class Solution : MutableContainer<Compound>, Volume
     public Compound RemoveCompound(Molecule molecule, float quantity = -1)
     {
         Compound compound = new Compound(molecule, (float)precision_solution.RemoveCompound(molecule, (decimal)quantity).quantity);
-        Touch();
+        Modify();
 
         return compound;
     }
@@ -262,7 +262,7 @@ public class Solution : MutableContainer<Compound>, Volume
         }
     }
 
-    public override List<Compound> Elements
+    public override IEnumerable<Compound> Items
     {
         get
         {
@@ -275,12 +275,12 @@ public class Solution : MutableContainer<Compound>, Volume
         }
     }
 
-    public override void AddElement(Compound compound)
+    public override void AddItem(Compound compound)
     {
         AddCompound(compound);
     }
 
-    public override Compound RemoveElement(Compound compound)
+    public override Compound RemoveItem(Compound compound)
     {
         return RemoveCompound(compound);
     }

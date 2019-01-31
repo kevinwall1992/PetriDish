@@ -31,7 +31,7 @@ public class CompoundGridPanel : GridPanel
         foreach (CompoundTile compound_tile in GridLayoutGroup.GetComponentsInChildren<CompoundTile>())
             GameObject.Destroy(compound_tile.gameObject);
 
-        foreach(Compound compound in CompoundContainer.Elements)
+        foreach(Compound compound in CompoundContainer.Items)
         {
             if (compound.Quantity == 0)
                 continue;
@@ -45,22 +45,21 @@ public class CompoundGridPanel : GridPanel
 
     public void AddCompound(Compound compound)
     {
-        CompoundContainer.AddElement(compound);
+        CompoundContainer.AddItem(compound);
     }
 
     public Compound RemoveCompound(Molecule molecule, float quantity)
     {
         Compound compound = new Compound(molecule, 0);
 
-        List<Compound> compounds = CompoundContainer.Elements;
-        foreach (Compound other_compound in compounds)
+        foreach (Compound other_compound in CompoundContainer.Items)
             if (other_compound.Molecule.Equals(compound.Molecule))
             {
-                Compound removed_compound = CompoundContainer.RemoveElement(other_compound);
+                Compound removed_compound = CompoundContainer.RemoveItem(other_compound);
 
                 compound.Quantity += removed_compound.Split(quantity - compound.Quantity).Quantity;
 
-                CompoundContainer.AddElement(removed_compound);
+                CompoundContainer.AddItem(removed_compound);
             }
 
         return compound;

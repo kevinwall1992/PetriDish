@@ -1156,7 +1156,7 @@ MonoBehaviour:
   card: {fileID: 3797194116566414451, guid: 2e2de2f8cfbdcdb4da4492e74f30d572, type: 3}
   trashcan_panel: {fileID: 8202753411173638164, guid: f0e3ade1969aeb540b96d564bcc279f1,
     type: 3}
-  spore: {fileID: 1261130967008124664, guid: 49527848a35433f438fe1b24eae876bb, type: 3}
+  spore: {fileID: 244476020393466845, guid: 49527848a35433f438fe1b24eae876bb, type: 3}
 --- !u!4 &1816827943
 Transform:
   m_ObjectHideFlags: 0
@@ -1317,6 +1317,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37280d065d4a7054fb783cf11decd5f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  north: {fileID: 0}
+  east: {fileID: 0}
+  south: {fileID: 0}
+  west: {fileID: 0}
 --- !u!1 &2022054791
 GameObject:
   m_ObjectHideFlags: 0

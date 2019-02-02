@@ -224,8 +224,6 @@ public class OrganismComponent : GoodBehavior
             Organism.Cytozol.AddCompound(new Compound(Molecule.ATP, 10));
             Organism.Cytozol.AddCompound(new Compound(Molecule.Glucose, 10));
             Organism.Cytozol.AddCompound(new Compound(Molecule.Phosphate, 10));
-
-            Organism.AddCell(cell, Organism.HexagonalDirection.Up);
         }
     }
 }

@@ -44,7 +44,10 @@ public class ActionComponent : MonoBehaviour
                 actions.Enqueue((action as Interpretase.ActionCommand).Action);
 
             if (action is Rotase.RotateAction)
-                gameObject.AddComponent<RotationAnimation>().SetParameters(CellComponent, 1).SetLength(length);
+                gameObject.AddComponent<RotationAnimation>()
+                    .SetParameters(CellComponent, 1)
+                    .SetLength(length)
+                    .Smooth();
 
             if (action is ReactionAction)
             {
@@ -310,10 +313,20 @@ public class ActionAnimation : MonoBehaviour
 
     protected float GetMoment()
     {
+        float linear_moment = Mathf.Max((elapsed_time - delay), 0) / length;
+
         if (!is_smooth)
-            return Mathf.Max((elapsed_time - delay), 0) / length;
+            return linear_moment;
         else
-            return smooth_moment = Mathf.SmoothDamp(smooth_moment, 1, ref velocity, length);
+        {
+            if (elapsed_time >= delay)
+                smooth_moment = Mathf.SmoothDamp(smooth_moment, 1, ref velocity, length);
+
+            if (linear_moment >= 1)
+                return linear_moment;
+            else
+                return Mathf.Min(smooth_moment / 0.975f, 1);
+        }
     }
 
     public ActionAnimation SetLength(float length_, float delay_ = 0)
@@ -357,9 +370,11 @@ public class RotationAnimation : ActionAnimation
         if (cell_component == null)
             return;
 
-        cell_component.transform.rotation = Quaternion.identity;
         if (GetMoment() < 1)
+        {
+            cell_component.transform.rotation = Quaternion.identity;
             cell_component.transform.Rotate(new Vector3(0, 0, rotation_count * -60 * GetMoment()));
+        }
     }
 
     public RotationAnimation SetParameters(CellComponent cell_component_, int rotation_count_)

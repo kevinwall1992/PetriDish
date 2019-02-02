@@ -147,7 +147,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.4004557, y: 0.049000002}
   m_AnchorMax: {x: 0.59900004, y: 0.15052338}
-  m_AnchoredPosition: {x: -0.000015258789, y: 0.6575012}
+  m_AnchoredPosition: {x: -0.000015258789, y: 0.6574707}
   m_SizeDelta: {x: 0.8200073, y: 1.3150024}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &94140680
@@ -870,7 +870,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.683, y: 0}
   m_AnchorMax: {x: 0.9554774, y: 1}
-  m_AnchoredPosition: {x: 0.099999905, y: 0.39527}
+  m_AnchoredPosition: {x: 0.099998474, y: 0.3952713}
   m_SizeDelta: {x: -0.15973663, y: -0.33274078}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1299750965
@@ -1156,6 +1156,7 @@ MonoBehaviour:
   card: {fileID: 3797194116566414451, guid: 2e2de2f8cfbdcdb4da4492e74f30d572, type: 3}
   trashcan_panel: {fileID: 8202753411173638164, guid: f0e3ade1969aeb540b96d564bcc279f1,
     type: 3}
+  spore: {fileID: 1261130967008124664, guid: 49527848a35433f438fe1b24eae876bb, type: 3}
 --- !u!4 &1816827943
 Transform:
   m_ObjectHideFlags: 0
@@ -1283,7 +1284,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2008155637}
   - component: {fileID: 2008155638}
-  - component: {fileID: 2008155636}
   m_Layer: 8
   m_Name: organism
   m_TagString: Untagged
@@ -1291,22 +1291,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!58 &2008155636
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2008155635}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  serializedVersion: 2
-  m_Radius: 2
 --- !u!4 &2008155637
 Transform:
   m_ObjectHideFlags: 0

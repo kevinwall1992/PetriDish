@@ -7,7 +7,7 @@ public class CompoundComponent : GoodBehavior
 {
     Compound compound;
 
-    string current_molecule_name= "";
+    string current_molecule_name = "";
 
     public Compound Compound
     {

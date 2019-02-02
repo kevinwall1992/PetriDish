@@ -47,6 +47,14 @@ public class OrganismComponent : GoodBehavior
         }
     }
 
+    [SerializeField]
+    GameObject north, east, south, west;
+
+    public GameObject North { get { return north; } }
+    public GameObject East { get { return east; } }
+    public GameObject South { get { return south; } }
+    public GameObject West { get { return west; } }
+
     DetailPanel cytozol_detail_panel;
     public DetailPanel CytozolDetailPanel
     {
@@ -93,7 +101,9 @@ public class OrganismComponent : GoodBehavior
         if (actions.Count > 0)
             foreach (Action action in actions.Dequeue())
             {
-                float length = action is PoweredAction ? 3 : 1.5f;
+                float length = 1.5f;
+                if (action is PoweredAction)
+                    length = 3;
 
                 gameObject.AddComponent<ActionComponent>().SetAction(action, length);
             }
@@ -211,8 +221,11 @@ public class OrganismComponent : GoodBehavior
         {
             cell.Slots[0].AddCompound(new Compound(Ribozyme.GetRibozymeFamily("Interpretase")[0], 1));
             cell.Slots[5].AddCompound(new Compound(new DNA(dna_sequence), 1));
-            cell.Slots[2].AddCompound(new Compound(new Enzyme(new Rotase(), 8), 1));
             Organism.Cytozol.AddCompound(new Compound(Molecule.ATP, 10));
+            Organism.Cytozol.AddCompound(new Compound(Molecule.Glucose, 10));
+            Organism.Cytozol.AddCompound(new Compound(Molecule.Phosphate, 10));
+
+            Organism.AddCell(cell, Organism.HexagonalDirection.Up);
         }
     }
 }

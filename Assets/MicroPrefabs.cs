@@ -3,6 +3,7 @@ using System.Collections;
 
 public class MicroPrefabs : MonoBehaviour
 {
+    //UI
     [SerializeField]
     CompoundGridPanel compound_grid_panel;
     public CompoundGridPanel CompoundGridPanel { get { return compound_grid_panel; } }
@@ -30,4 +31,10 @@ public class MicroPrefabs : MonoBehaviour
     [SerializeField]
     TrashcanPanel trashcan_panel;
     public TrashcanPanel TrashcanPanel { get { return trashcan_panel; } }
+
+
+    //Game
+    [SerializeField]
+    Animator spore;
+    public Animator Spore { get { return spore; } }
 }

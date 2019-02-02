@@ -8,8 +8,6 @@ public class ActionComponent : MonoBehaviour
 {
     Action action;
 
-    List<ActionAnimation> animations = new List<ActionAnimation>();
-
     float time_elapsed = 0;
     float length = 1;
 
@@ -46,7 +44,7 @@ public class ActionComponent : MonoBehaviour
                 actions.Enqueue((action as Interpretase.ActionCommand).Action);
 
             if (action is Rotase.RotateAction)
-                animations.Add(gameObject.AddComponent<RotationAnimation>().SetParameters(CellComponent, 1).SetLength(length));
+                gameObject.AddComponent<RotationAnimation>().SetParameters(CellComponent, 1).SetLength(length);
 
             if (action is ReactionAction)
             {
@@ -57,14 +55,17 @@ public class ActionComponent : MonoBehaviour
                 {
                     CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
                     compound_component.SetCompound(reaction.GetReactant(reactant_slot));
+                    compound_component.transform.SetParent(CellComponent.transform);
+                    compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
-                    animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
-                                                                .SetParameters(CellComponent.GetSlotComponent(reactant_slot).CompoundComponent.gameObject, CellComponent.GetSlotComponent(action.Slot).CompoundComponent.gameObject)
-                                                                .SetLength(0.5f * length));
+                    compound_component.gameObject.AddComponent<MoveAnimation>()
+                        .SetParameters(CellComponent.GetSlotComponent(reactant_slot).CompoundComponent.gameObject, 
+                                       CellComponent.GetSlotComponent(action.Slot).CompoundComponent.gameObject)
+                        .SetLength(0.5f * length);
 
-                    animations.Add(compound_component.gameObject.AddComponent<FadeAnimation>()
-                                                                .SetParameters(false, true)
-                                                                .SetLength(0.2f * length, 0.4f * length));
+                    compound_component.gameObject.AddComponent<FadeAnimation>()
+                        .SetParameters(false, true)
+                        .SetLength(0.2f * length, 0.4f * length);
                 }
 
                 List<Cell.Slot> product_slots = reaction.GetProductSlots();
@@ -72,28 +73,32 @@ public class ActionComponent : MonoBehaviour
                 {
                     CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
                     compound_component.SetCompound(reaction.GetProduct(product_slot));
+                    compound_component.transform.SetParent(CellComponent.transform);
+                    compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
-                    animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
-                                                                .SetParameters(CellComponent.GetSlotComponent(action.Slot).CompoundComponent.gameObject, CellComponent.GetSlotComponent(product_slot).CompoundComponent.gameObject)
-                                                                .SetLength(0.5f * length, 0.5f * length));
+                    compound_component.gameObject.AddComponent<MoveAnimation>()
+                        .SetParameters(CellComponent.GetSlotComponent(action.Slot).CompoundComponent.gameObject, CellComponent.GetSlotComponent(product_slot).CompoundComponent.gameObject)
+                                                                .SetLength(0.5f * length, 0.5f * length);
 
-                    animations.Add(compound_component.gameObject.AddComponent<FadeAnimation>()
-                                                                .SetParameters(true, false)
-                                                                .SetLength(0.25f * length, 0.75f * length));
+                    compound_component.gameObject.AddComponent<FadeAnimation>()
+                        .SetParameters(true, false)
+                        .SetLength(0.25f * length, 0.75f * length);
                 }
 
                 foreach (Compound compound in reaction.GetCytozolReactants())
                 {
                     CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
                     compound_component.SetCompound(compound);
+                    compound_component.transform.SetParent(CellComponent.transform);
+                    compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
-                    animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
-                                                                .SetParameters(CellComponent.gameObject, CellComponent.GetSlotComponent(action.Slot).CompoundComponent.gameObject)
-                                                                .SetLength(0.5f * length));
+                    compound_component.gameObject.AddComponent<MoveAnimation>()
+                        .SetParameters(CellComponent.gameObject, CellComponent.GetSlotComponent(action.Slot).CompoundComponent.gameObject)
+                        .SetLength(0.5f * length);
 
-                    animations.Add(compound_component.gameObject.AddComponent<FadeAnimation>()
-                                                                .SetParameters(false, true)
-                                                                .SetLength(0.2f * length, 0.4f * length));
+                    compound_component.gameObject.AddComponent<FadeAnimation>()
+                        .SetParameters(false, true)
+                        .SetLength(0.2f * length, 0.4f * length);
                 }
 
                 foreach (Compound compound in reaction.GetCytozolProducts())
@@ -109,18 +114,20 @@ public class ActionComponent : MonoBehaviour
 
                     CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
                     compound_component.SetCompound(compound);
+                    compound_component.transform.SetParent(CellComponent.transform);
+                    compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
-                    animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
-                                                                .SetParameters(source, CellComponent.gameObject)
-                                                                .SetLength(0.5f * length, 0.5f * length));
+                    compound_component.gameObject.AddComponent<MoveAnimation>()
+                        .SetParameters(source, CellComponent.gameObject)
+                        .SetLength(0.5f * length, 0.5f * length);
 
-                    animations.Add(compound_component.gameObject.AddComponent<FadeAnimation>()
-                                                                .SetParameters(false, true)
-                                                                .SetLength(0.1f * length, 0.9f * length));
+                    compound_component.gameObject.AddComponent<FadeAnimation>()
+                        .SetParameters(false, true)
+                        .SetLength(0.1f * length, 0.9f * length);
 
-                    animations.Add(compound_component.gameObject.AddComponent<FadeAnimation>()
-                                                                .SetParameters(true, false)
-                                                                .SetLength(0.1f * length, 0.5f * length));
+                    compound_component.gameObject.AddComponent<FadeAnimation>()
+                        .SetParameters(true, false)
+                        .SetLength(0.1f * length, 0.5f * length);
                 }
             }
 
@@ -130,16 +137,18 @@ public class ActionComponent : MonoBehaviour
 
                 CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
                 compound_component.SetCompound(activate_command.OutputtedCompound);
+                compound_component.transform.SetParent(CellComponent.transform);
+                compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
                 SlotComponent output_slot_component = CellComponent.OrganismComponent.GetCellComponent(activate_command.OutputSlot.Cell).GetSlotComponent(activate_command.OutputSlot);
 
-                animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
-                                                            .SetParameters(CellComponent.gameObject, output_slot_component.CompoundComponent.gameObject)
-                                                            .SetLength(1.0f * length));
+                compound_component.gameObject.AddComponent<MoveAnimation>()
+                    .SetParameters(CellComponent.gameObject, output_slot_component.CompoundComponent.gameObject)
+                    .SetLength(1.0f * length);
 
-                animations.Add(compound_component.gameObject.AddComponent<FadeAnimation>()
-                                                            .SetParameters(true, false)
-                                                            .SetLength(0.5f));
+                compound_component.gameObject.AddComponent<FadeAnimation>()
+                    .SetParameters(true, false)
+                    .SetLength(0.5f);
             }
 
             if (action is Interpretase.CutCommand)
@@ -148,24 +157,30 @@ public class ActionComponent : MonoBehaviour
 
                 CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
                 compound_component.SetCompound(new Compound(new DNA(), 1));
+                compound_component.transform.SetParent(CellComponent.transform);
+                compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
                 SlotComponent output_slot_component = CellComponent.OrganismComponent.GetCellComponent(cut_command.OutputSlot.Cell).GetSlotComponent(cut_command.OutputSlot);
 
-                animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
-                                                            .SetParameters(CellComponent.GetSlotComponent(cut_command.Slot).CompoundComponent.gameObject, output_slot_component.CompoundComponent.gameObject)
-                                                            .SetLength(1.0f * length));
+                compound_component.gameObject.AddComponent<MoveAnimation>()
+                    .SetParameters(CellComponent.GetSlotComponent(cut_command.Slot).CompoundComponent.gameObject, 
+                                   output_slot_component.CompoundComponent.gameObject)
+                    .SetLength(1.0f * length);
 
-                animations.Add(compound_component.gameObject.AddComponent<FadeAnimation>()
-                                                            .SetParameters(true, false)
-                                                            .SetLength(0.5f));
+                compound_component.gameObject.AddComponent<FadeAnimation>()
+                    .SetParameters(true, false)
+                    .SetLength(0.5f);
             }
 
-            if (action is MoveToSlotAction || 
+            if (action is MoveToSlotAction ||
                 action is MoveToCytozolAction ||
                 action is MoveToLocaleAction)
             {
                 CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
-                GameObject source_game_object = null, 
+                compound_component.transform.SetParent(CellComponent.transform);
+                compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
+
+                GameObject source_game_object = null,
                            destination_game_object = null;
 
                 Cell.Slot source_slot = null;
@@ -200,9 +215,9 @@ public class ActionComponent : MonoBehaviour
 
                 source_game_object = OrganismComponent.GetSlotComponent(source_slot).CompoundComponent.gameObject;
 
-                animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
-                                                            .SetParameters(source_game_object, destination_game_object)
-                                                            .SetLength(1.0f * length));
+                compound_component.gameObject.AddComponent<MoveAnimation>()
+                    .SetParameters(source_game_object, destination_game_object)
+                    .SetLength(1.0f * length);
             }
 
             if (action is Interpretase.SwapCommand)
@@ -211,22 +226,48 @@ public class ActionComponent : MonoBehaviour
 
                 CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
                 compound_component.SetCompound(swap_command.CompoundA);
+                compound_component.transform.SetParent(CellComponent.transform);
+                compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
-                animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
-                                                            .SetParameters(CellComponent.GetSlotComponent(swap_command.SlotA).CompoundComponent.gameObject, CellComponent.GetSlotComponent(swap_command.SlotB).CompoundComponent.gameObject)
-                                                            .SetLength(1.0f * length));
+                compound_component.gameObject.AddComponent<MoveAnimation>()
+                    .SetParameters(CellComponent.GetSlotComponent(swap_command.SlotA).CompoundComponent.gameObject, 
+                                   CellComponent.GetSlotComponent(swap_command.SlotB).CompoundComponent.gameObject)
+                    .SetLength(1.0f * length);
 
                 compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
                 compound_component.SetCompound(swap_command.CompoundB);
 
-                animations.Add(compound_component.gameObject.AddComponent<MoveAnimation>()
-                                                            .SetParameters(CellComponent.GetSlotComponent(swap_command.SlotB).CompoundComponent.gameObject, CellComponent.GetSlotComponent(swap_command.SlotA).CompoundComponent.gameObject)
-                                                            .SetLength(1.0f * length));
+                compound_component.gameObject.AddComponent<MoveAnimation>()
+                    .SetParameters(CellComponent.GetSlotComponent(swap_command.SlotB).CompoundComponent.gameObject, 
+                                   CellComponent.GetSlotComponent(swap_command.SlotA).CompoundComponent.gameObject)
+                    .SetLength(1.0f * length);
+            }
+
+            if (action is Sporulase.SporulateAction)
+            {
+                Animator spore = Instantiate(Scene.Micro.Prefabs.Spore);
+                spore.transform.SetParent(Scene.Micro.Visualization.transform);
+
+                spore.gameObject.AddComponent<AnimatorAnimation>()
+                    .SetLength(0.2f * length)
+                    .Smooth();
+
+                CellComponent.gameObject.AddComponent<FadeAnimation>()
+                    .SetParameters(false, true)
+                    .SetLength(0.2f * length);
+                CellComponent.gameObject.AddComponent<ScalingAnimation>()
+                    .SetParameters(true)
+                    .SetLength(0.2f * length);
+
+                spore.gameObject.AddComponent<MoveAnimation>()
+                    .SetParameters(CellComponent.gameObject, OrganismComponent.North)
+                    .SetLength(25, 0.3f * length);
+
+                spore.gameObject.AddComponent<FadeAnimation>()
+                    .SetParameters(false, true)
+                    .SetLength(0.7f * length, 0.3f * length);
             }
         }
-
-        foreach (ActionAnimation animation in animations)
-            animation.transform.parent = transform;
     }
 
     float GetMoment()
@@ -240,9 +281,6 @@ public class ActionComponent : MonoBehaviour
 
         if (GetMoment() > 1)
         {
-            foreach (ActionAnimation animation in animations)
-                GameObject.Destroy(animation);
-
             if (!action.HasFailed)
                 action.End();
 
@@ -258,14 +296,24 @@ public class ActionAnimation : MonoBehaviour
     float elapsed_time = 0;
     float delay = 0;
 
+    bool is_smooth = false;
+    float smooth_moment = 0;
+    float velocity;
+
     protected virtual void Update()
     {
         elapsed_time += Time.deltaTime * Scene.Micro.Visualization.Speed;
+
+        if (GetMoment() >= 1)
+            Destroy(this);
     }
 
     protected float GetMoment()
     {
-        return Mathf.Max((elapsed_time - delay), 0) / length;
+        if (!is_smooth)
+            return Mathf.Max((elapsed_time - delay), 0) / length;
+        else
+            return smooth_moment = Mathf.SmoothDamp(smooth_moment, 1, ref velocity, length);
     }
 
     public ActionAnimation SetLength(float length_, float delay_ = 0)
@@ -275,6 +323,25 @@ public class ActionAnimation : MonoBehaviour
         delay = delay_;
 
         return this;
+    }
+
+    public ActionAnimation Smooth()
+    {
+        if (elapsed_time > 0)
+            throw new System.NotSupportedException();
+
+        is_smooth = true;
+
+        return this;
+    }
+
+    public class GarbageCollector : MonoBehaviour
+    {
+        private void Update()
+        {
+            if (GetComponents<ActionAnimation>().Length == 0)
+                Destroy(gameObject);
+        }
     }
 }
 
@@ -302,11 +369,6 @@ public class RotationAnimation : ActionAnimation
 
         return this;
     }
-
-    private void OnDestroy()
-    {
-
-    }
 }
 
 public class TransformAnimation : ActionAnimation
@@ -322,6 +384,9 @@ public class MoveAnimation : ActionAnimation
     {
         base.Update();
 
+        if (source == null || target == null)
+            return;
+
         transform.position = Vector2.Lerp(source.transform.position, target.transform.position, GetMoment());
     }
 
@@ -334,26 +399,45 @@ public class MoveAnimation : ActionAnimation
 
         return this;
     }
-
-    private void OnDestroy()
-    {
-        if (gameObject != null)
-            GameObject.Destroy(gameObject);
-    }
 }
 
 public class FadeAnimation : ActionAnimation
 {
     bool fade_in, fade_out;
 
+    float max_alpha = 1;
+
+    float Alpha
+    {
+        set
+        {
+            foreach (SpriteRenderer sprite_renderer in GetComponentsInChildren<SpriteRenderer>())
+                sprite_renderer.color = new Color(sprite_renderer.color.r, 
+                                                  sprite_renderer.color.g, 
+                                                  sprite_renderer.color.b, 
+                                                  value * max_alpha);
+
+            foreach (FadeAnimation fade_animation in GetComponentsInChildren<FadeAnimation>())
+                if(fade_animation != this)
+                    fade_animation.max_alpha = value * max_alpha;
+
+        }
+    }
+
+    bool IsFadingIn { get { return fade_in && (fade_out ? GetMoment() < 0.5f : true) && FadeInMoment > 0; } }
+    float FadeInMoment { get { return GetMoment() / (fade_out ? 0.5f : 1); } }
+
+    bool IsFadingOut { get { return fade_out && (fade_in ? GetMoment() > 0.5f : true) && FadeOutMoment > 0; } }
+    float FadeOutMoment { get { return fade_in ? (GetMoment() - 0.5f) / 0.5f : GetMoment(); } }
+
     protected override void Update()
     {
         base.Update();
 
-        if (GetMoment() < 0.5f && fade_in)
-            GetComponent<SpriteRenderer>().color = Color.Lerp(Color.clear, Color.white, GetMoment() / 0.5f);
-        else if (fade_out)
-            GetComponent<SpriteRenderer>().color = Color.Lerp(Color.white, Color.clear, (GetMoment() - 0.5f) / 0.5f);
+        if (IsFadingIn)
+            Alpha = Mathf.Lerp(0, 1, FadeInMoment);
+        else if (IsFadingOut)
+            Alpha = Mathf.Lerp(1, 0, FadeOutMoment);
 
     }
 
@@ -363,17 +447,55 @@ public class FadeAnimation : ActionAnimation
         fade_out = fade_out_;
 
         if (fade_in)
-            GetComponent<SpriteRenderer>().color = Color.clear;
+            Alpha = 0;
         else if (fade_out)
-            GetComponent<SpriteRenderer>().color = Color.white;
+            Alpha = 1;
 
         return this;
     }
+}
 
-    private void OnDestroy()
+public class ScalingAnimation : ActionAnimation
+{
+    GameObject game_object;
+    bool shrink;
+
+    protected override void Update()
     {
-        if (gameObject != null)
-            GameObject.Destroy(gameObject);
+        base.Update();
+
+        float scale;
+
+        if (shrink)
+            scale = Mathf.Lerp(1, 0, GetMoment());
+        else
+            scale = Mathf.Lerp(0, 1, GetMoment());
+
+        transform.localScale = new Vector3(scale, scale, scale);
+    }
+
+    public ScalingAnimation SetParameters(bool shrink_)
+    {
+        shrink = shrink_;
+
+        return this;
+    }
+}
+
+public class AnimatorAnimation : ActionAnimation
+{
+    Animator animator;
+
+    private void Start()
+    {
+        animator = GetComponent<Animator>();
+    }
+
+    protected override void Update()
+    {
+        base.Update();
+
+        animator.SetFloat("moment", GetMoment());
     }
 }
 

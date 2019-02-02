@@ -536,6 +536,9 @@ public class Sporulase : ProgressiveCatalyst
 
     protected override Action GetAction(Cell.Slot slot)
     {
+        if (slot.Cell.Organism.GetCells().Count == 1)
+            return null;
+
         return new PoweredAction(slot, slot.PreviousSlot, 4, new SporulateAction(slot));
     }
 

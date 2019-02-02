@@ -8,9 +8,6 @@ public class PlayPauseButton : ScalingButton
     [SerializeField]
     StepButton step_button;
 
-    [SerializeField]
-    Color play_color;
-
     bool is_playing = true;
 
     public bool IsPlaying
@@ -27,8 +24,7 @@ public class PlayPauseButton : ScalingButton
             if (is_playing == true)
                 step_button.IsStepping = false;
 
-            Image.sprite = Resources.Load<Sprite>(is_playing ? "play_icon" : "pause_icon");
-            Color = is_playing ? play_color : Color.white;
+            Image.sprite = Resources.Load<Sprite>(is_playing ? "pause_icon" : "play_icon");
 
             Scene.Micro.Visualization.IsPaused = IsPaused;
         }

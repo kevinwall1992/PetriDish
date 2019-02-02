@@ -9,10 +9,9 @@ public class CellComponent : GoodBehavior, IPointerClickHandler, Spawner
 
     List<SlotComponent> slot_components= new List<SlotComponent>();
 
-    SpriteRenderer highlight;
-    Part current_highlighted_part = Part.None;
-
     int last_slot0_index = 0;
+
+    SpriteRenderer cytozol_highlight;
 
     public OrganismComponent OrganismComponent
     {
@@ -33,7 +32,7 @@ public class CellComponent : GoodBehavior, IPointerClickHandler, Spawner
             if (!IsPointedAt)
                 return Part.None;
 
-            Vector2 displacement = transform.InverseTransformPoint(Scene.Micro.Camera.ScreenToWorldPoint(Input.mousePosition)) - transform.position;
+            Vector2 displacement = transform.InverseTransformPoint(Scene.Micro.Camera.ScreenToWorldPoint(Input.mousePosition));
 
             if (displacement.magnitude < 0.6f)
                 return Part.Cytozol;
@@ -63,10 +62,11 @@ public class CellComponent : GoodBehavior, IPointerClickHandler, Spawner
 
         gameObject.AddComponent<CircleCollider2D>().radius = 1.9f;
 
-        highlight = new GameObject("highlight").AddComponent<SpriteRenderer>();
-        highlight.gameObject.SetActive(false);
-
         gameObject.AddComponent<SpawnOnDragBehavior>();
+
+        cytozol_highlight = new GameObject("highlight").AddComponent<SpriteRenderer>();
+        cytozol_highlight.sprite = Resources.Load<Sprite>("cytozol_highlight");
+        cytozol_highlight.transform.SetParent(transform, false);
     }
 
     void Start()
@@ -78,31 +78,16 @@ public class CellComponent : GoodBehavior, IPointerClickHandler, Spawner
     {
         ValidateSlots();
 
+        cytozol_highlight.gameObject.SetActive(false);
+        foreach (SlotComponent slot_component in slot_components)
+            slot_component.IsHighlighted = false;
+
         Part part_pointed_at = PartPointedAt;
-        if (current_highlighted_part != part_pointed_at)
-        {
-            if (part_pointed_at != Part.None)
-            {
-                highlight.gameObject.SetActive(true);
-                highlight.transform.parent = null;
-                highlight.transform.rotation = Quaternion.identity;
-
-                if (part_pointed_at == Part.Cytozol)
-                {
-                    highlight.sprite = Resources.Load<Sprite>("cytozol_highlight");
-                    highlight.transform.parent = transform;
-                }
-                else
-                {
-                    highlight.sprite = Resources.Load<Sprite>("slot_highlight");
-                    highlight.transform.SetParent(GetSlotComponent((int)part_pointed_at).transform, false);
-                }
-            }
-            else
-                highlight.gameObject.SetActive(false);
-
-            current_highlighted_part = part_pointed_at;
-        }
+        if (part_pointed_at == Part.None) ;
+        else if (part_pointed_at == Part.Cytozol)
+            cytozol_highlight.gameObject.SetActive(true);
+        else
+            GetSlotComponent((int)part_pointed_at).IsHighlighted = true;
 
     }
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SlotComponent : GoodBehavior
 {
@@ -22,6 +23,30 @@ public class SlotComponent : GoodBehavior
     public Vector2 Center
     {
         get { return CompoundComponent.transform.position; }
+    }
+
+    SpriteRenderer highlight;
+    bool is_highlighted = false;
+    public bool IsHighlighted
+    {
+        get { return is_highlighted; }
+
+        set
+        {
+            if (is_highlighted == value)
+                return;
+
+            is_highlighted = value;
+
+            if (highlight == null)
+            {
+                highlight = new GameObject("highlight").AddComponent<SpriteRenderer>();
+                highlight.sprite = Resources.Load<Sprite>("slot_highlight");
+                highlight.transform.SetParent(transform, false);
+            }
+
+            highlight.gameObject.SetActive(is_highlighted);
+        }
     }
 
     DetailPanel detail_panel;

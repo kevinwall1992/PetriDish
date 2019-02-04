@@ -56,7 +56,7 @@ public class ActionComponent : MonoBehaviour
                 List<Cell.Slot> reactant_slots = reaction.GetReactantSlots();
                 foreach (Cell.Slot reactant_slot in reactant_slots)
                 {
-                    CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
+                    CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                     compound_component.SetCompound(reaction.GetReactant(reactant_slot));
                     compound_component.transform.SetParent(CellComponent.transform);
                     compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
@@ -74,7 +74,7 @@ public class ActionComponent : MonoBehaviour
                 List<Cell.Slot> product_slots = reaction.GetProductSlots();
                 foreach (Cell.Slot product_slot in product_slots)
                 {
-                    CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
+                    CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                     compound_component.SetCompound(reaction.GetProduct(product_slot));
                     compound_component.transform.SetParent(CellComponent.transform);
                     compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
@@ -90,7 +90,7 @@ public class ActionComponent : MonoBehaviour
 
                 foreach (Compound compound in reaction.GetCytozolReactants())
                 {
-                    CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
+                    CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                     compound_component.SetCompound(compound);
                     compound_component.transform.SetParent(CellComponent.transform);
                     compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
@@ -110,12 +110,12 @@ public class ActionComponent : MonoBehaviour
                     if (reaction.GetCytozolProducts().Count == 2)
                     {
                         if (reaction.GetCytozolProducts().IndexOf(compound) == 0)
-                            source = CellComponent.GetSlotComponent(action.Slot).LeftCorner;
+                            source = CellComponent.GetSlotComponent(action.Slot).LeftCorner.gameObject;
                         else
-                            source = CellComponent.GetSlotComponent(action.Slot).RightCorner;
+                            source = CellComponent.GetSlotComponent(action.Slot).RightCorner.gameObject;
                     }
 
-                    CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
+                    CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                     compound_component.SetCompound(compound);
                     compound_component.transform.SetParent(CellComponent.transform);
                     compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
@@ -138,7 +138,7 @@ public class ActionComponent : MonoBehaviour
             {
                 Interpretase.ActivateCommand activate_command = action as Interpretase.ActivateCommand;
 
-                CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
+                CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                 compound_component.SetCompound(activate_command.OutputtedCompound);
                 compound_component.transform.SetParent(CellComponent.transform);
                 compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
@@ -158,7 +158,7 @@ public class ActionComponent : MonoBehaviour
             {
                 Interpretase.CutCommand cut_command = action as Interpretase.CutCommand;
 
-                CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
+                CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                 compound_component.SetCompound(new Compound(new DNA(), 1));
                 compound_component.transform.SetParent(CellComponent.transform);
                 compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
@@ -179,7 +179,7 @@ public class ActionComponent : MonoBehaviour
                 action is MoveToCytozolAction ||
                 action is MoveToLocaleAction)
             {
-                CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
+                CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                 compound_component.transform.SetParent(CellComponent.transform);
                 compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
@@ -213,7 +213,7 @@ public class ActionComponent : MonoBehaviour
                     compound_component.SetCompound(move_to_locale_action.MovedCompound);
 
                     source_slot = move_to_locale_action.Source;
-                    destination_game_object = OrganismComponent.GetSlotComponent(source_slot).Outside;
+                    destination_game_object = OrganismComponent.GetSlotComponent(source_slot).Outside.gameObject;
                 }
 
                 source_game_object = OrganismComponent.GetSlotComponent(source_slot).CompoundComponent.gameObject;
@@ -221,13 +221,14 @@ public class ActionComponent : MonoBehaviour
                 compound_component.gameObject.AddComponent<MoveAnimation>()
                     .SetParameters(source_game_object, destination_game_object)
                     .SetLength(1.0f * length);
+
             }
 
             if (action is Interpretase.SwapCommand)
             {
                 Interpretase.SwapCommand swap_command = action as Interpretase.SwapCommand;
 
-                CompoundComponent compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
+                CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                 compound_component.SetCompound(swap_command.CompoundA);
                 compound_component.transform.SetParent(CellComponent.transform);
                 compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
@@ -237,7 +238,7 @@ public class ActionComponent : MonoBehaviour
                                    CellComponent.GetSlotComponent(swap_command.SlotB).CompoundComponent.gameObject)
                     .SetLength(1.0f * length);
 
-                compound_component = new GameObject("compound").AddComponent<CompoundComponent>();
+                compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                 compound_component.SetCompound(swap_command.CompoundB);
 
                 compound_component.gameObject.AddComponent<MoveAnimation>()
@@ -363,6 +364,8 @@ public class RotationAnimation : ActionAnimation
     CellComponent cell_component;
     int rotation_count;
 
+    float starting_rotation;
+
     protected override void Update()
     {
         base.Update();
@@ -371,16 +374,16 @@ public class RotationAnimation : ActionAnimation
             return;
 
         if (GetMoment() < 1)
-        {
-            cell_component.transform.rotation = Quaternion.identity;
-            cell_component.transform.Rotate(new Vector3(0, 0, rotation_count * -60 * GetMoment()));
-        }
+            cell_component.transform.localEulerAngles = 
+                new Vector3(0, 0, starting_rotation + rotation_count * -60 * GetMoment());
     }
 
     public RotationAnimation SetParameters(CellComponent cell_component_, int rotation_count_)
     {
         cell_component = cell_component_;
         rotation_count = rotation_count_;
+
+        starting_rotation = cell_component.transform.eulerAngles.z;
 
         return this;
     }
@@ -391,6 +394,7 @@ public class TransformAnimation : ActionAnimation
 
 }
 
+//switch to Transforms instead of GameObjects
 public class MoveAnimation : ActionAnimation
 {
     GameObject source, target;

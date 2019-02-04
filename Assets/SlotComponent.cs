@@ -3,17 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SlotComponent : GoodBehavior
+public class SlotComponent : GoodBehavior, Spawner
 {
     public Cell.Slot Slot { get; private set; }
 
-    public GameObject LeftCorner { get; private set; }
+    [SerializeField]
+    Transform left_corner, right_corner, outside;
+    public Transform LeftCorner { get { return left_corner; } }
+    public Transform RightCorner { get { return right_corner; } }
+    public Transform Outside { get { return outside; } }
 
-    public GameObject RightCorner { get; private set; }
+    [SerializeField]
+    CompoundComponent compound_component;
+    public CompoundComponent CompoundComponent { get { return compound_component; } }
 
-    public GameObject Outside { get; private set; }
-
-    public CompoundComponent CompoundComponent { get; private set; }
+    [SerializeField]
+    SpriteRenderer highlight;
 
     public CellComponent CellComponent
     {
@@ -23,30 +28,6 @@ public class SlotComponent : GoodBehavior
     public Vector2 Center
     {
         get { return CompoundComponent.transform.position; }
-    }
-
-    SpriteRenderer highlight;
-    bool is_highlighted = false;
-    public bool IsHighlighted
-    {
-        get { return is_highlighted; }
-
-        set
-        {
-            if (is_highlighted == value)
-                return;
-
-            is_highlighted = value;
-
-            if (highlight == null)
-            {
-                highlight = new GameObject("highlight").AddComponent<SpriteRenderer>();
-                highlight.sprite = Resources.Load<Sprite>("slot_highlight");
-                highlight.transform.SetParent(transform, false);
-            }
-
-            highlight.gameObject.SetActive(is_highlighted);
-        }
     }
 
     DetailPanel detail_panel;
@@ -68,19 +49,7 @@ public class SlotComponent : GoodBehavior
 
     private void Awake()
     {
-        gameObject.AddComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("slot");
-
-        LeftCorner = new GameObject("left_corner");
-        LeftCorner.transform.parent = transform;
-        LeftCorner.transform.localPosition = new Vector3(-0.4f, 1.5f);
-
-        RightCorner = new GameObject("right_corner");
-        RightCorner.transform.parent = transform;
-        RightCorner.transform.localPosition = new Vector3(0.4f, 1.5f);
-
-        Outside = new GameObject("outside");
-        Outside.transform.parent = transform;
-        Outside.transform.localPosition = new Vector3(0.0f, 3.0f);
+        
     }
 
     void Start()
@@ -95,19 +64,31 @@ public class SlotComponent : GoodBehavior
             CompoundComponent.SetCompound(Slot.Compound);
             detail_panel = null;
         }
+
+        highlight.gameObject.SetActive(IsTouched);
     }
 
     public SlotComponent SetSlot(Cell.Slot slot)
     {
         Slot = slot;
 
-        if(CompoundComponent == null)
-        {
-            CompoundComponent = new GameObject("compound").AddComponent<CompoundComponent>();
-            CompoundComponent.transform.parent = this.transform;
-            CompoundComponent.transform.localPosition = new Vector3(0, 1.3f, 0);
-        }
-
         return this;
+    }
+
+    public GameObject Spawn()
+    {
+        Cell.Slot slot = Slot;
+        if (slot.Compound == null)
+            return null;
+
+        CompoundTile compound_tile = Instantiate(Scene.Micro.Prefabs.CompoundTile);
+        compound_tile.transform.parent = Scene.Micro.Canvas.transform;
+
+        if (Input.GetKey(KeyCode.LeftControl))
+            compound_tile.Compound = slot.Compound.Split(slot.Compound.Quantity / 2);
+        else
+            compound_tile.Compound = slot.RemoveCompound();
+
+        return compound_tile.gameObject;
     }
 }

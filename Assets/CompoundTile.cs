@@ -181,11 +181,11 @@ public class CompoundTile : GoodBehavior
 
             CellComponent cell_component = organism_component.CellComponentPointedAt;
 
-            if (cell_component.PartPointedAt == CellComponent.Part.Cytozol)
+            if (cell_component.IsCytozolTouched)
                 organism_component.Organism.Cytozol.AddCompound(Compound);
-            else
+            else if(cell_component.SlotComponentTouched != null)
             {
-                Cell.Slot slot = cell_component.Cell.Slots[(int)cell_component.PartPointedAt];
+                Cell.Slot slot = cell_component.SlotComponentTouched.Slot;
 
                 if (slot.Compound == null)
                     slot.AddCompound(Compound);

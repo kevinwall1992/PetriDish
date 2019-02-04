@@ -7,7 +7,7 @@ public class CompoundComponent : GoodBehavior
 {
     Compound compound;
 
-    string current_molecule_name = "";
+    Molecule current_molecule;
 
     public Compound Compound
     {
@@ -21,7 +21,7 @@ public class CompoundComponent : GoodBehavior
 
     private void Awake()
     {
-        gameObject.AddComponent<SpriteRenderer>();
+        
     }
 
     void Start()
@@ -36,22 +36,19 @@ public class CompoundComponent : GoodBehavior
 
     void ValidateCompound()
     {
-        if (compound == null)
+        if(SlotComponent != null && SlotComponent.Slot.Compound != Compound)
+            SetCompound(SlotComponent.Slot.Compound);
+
+        if (Compound == null)
         {
-            if (current_molecule_name != "")
-            {
-                gameObject.GetComponent<SpriteRenderer>().sprite = null;
-                current_molecule_name = "";
-            }
-
-            return;
+            gameObject.GetComponent<SpriteRenderer>().sprite = null;
+            current_molecule = null;
         }
-        else if(current_molecule_name == compound.Molecule.Name)
-            return;
-
-
-        gameObject.GetComponent<SpriteRenderer>().sprite = GetSprite(compound.Molecule);
-        current_molecule_name = Compound.Molecule.Name;
+        else if (current_molecule != Compound.Molecule)
+        {
+            gameObject.GetComponent<SpriteRenderer>().sprite = GetSprite(compound.Molecule);
+            current_molecule = Compound.Molecule;
+        }
     }
 
     public CompoundComponent SetCompound(Compound compound_)

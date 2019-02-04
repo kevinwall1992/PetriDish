@@ -268,6 +268,16 @@ public static class MathUtility
 
         return result;
     }
+
+    public static float RadiansToDegrees(float radians)
+    {
+        return 360 * radians / (2 * Mathf.PI);
+    }
+
+    public static float DegreesToRadians(float degrees)
+    {
+        return (2 * Mathf.PI) * degrees / 360;
+    }
 }
 
 public abstract class GenericFunction<T>

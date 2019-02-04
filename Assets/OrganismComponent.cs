@@ -7,9 +7,9 @@ using UnityEngine.EventSystems;
 
 public class OrganismComponent : GoodBehavior
 {
-    List<CellComponent> cell_components= new List<CellComponent>();
-
     Queue<List<Action>> actions= new Queue<List<Action>>();
+
+    IEnumerable<CellComponent> CellComponents { get { return GetComponentsInChildren<CellComponent>(); } }
 
     public Organism Organism { get; private set; }
 
@@ -19,7 +19,7 @@ public class OrganismComponent : GoodBehavior
     {
         get
         {
-            foreach (CellComponent cell_component in cell_components)
+            foreach (CellComponent cell_component in CellComponents)
                 if (cell_component.IsPointedAt)
                     return cell_component;
 
@@ -46,6 +46,9 @@ public class OrganismComponent : GoodBehavior
                    GetComponents<ActionComponent>().Length > 0;
         }
     }
+
+    [SerializeField]
+    public Color color;
 
     [SerializeField]
     GameObject north, east, south, west;
@@ -93,7 +96,8 @@ public class OrganismComponent : GoodBehavior
     {
         ValidateCells();
 
-        Utility.SetLayer(gameObject, GetComponentInParent<ExampleComponent>() != null ? "Example" : "Visualization");
+        foreach (CellComponent cell_component in CellComponents)
+            cell_component.GetComponent<SpriteRenderer>().color = color;
 
         if (GetComponents<ActionComponent>().Length > 0)
             return;
@@ -111,12 +115,11 @@ public class OrganismComponent : GoodBehavior
 
     void SetCellTransformations()
     {
-        foreach (CellComponent cell_component in cell_components)
+        foreach (CellComponent cell_component in CellComponents)
         {
             Vector2Int position = Organism.GetCellPosition(cell_component.Cell);
 
-            cell_component.transform.parent = transform;
-            cell_component.transform.localPosition= new Vector3(position.x* 4.2f* 0.87f, (position.y+ (position.x % 2 == 1 ? 0.5f : 0)) * 4.2f);
+            cell_component.transform.position= new Vector3(position.x* 4.2f* 0.87f, (position.y+ (position.x % 2 == 1 ? 0.5f : 0)) * 4.2f);
         }
     }
 
@@ -124,25 +127,24 @@ public class OrganismComponent : GoodBehavior
     {
         List<Cell> cells = Organism.GetCells();
 
-        List<CellComponent> cell_components_copy = new List<CellComponent>(cell_components);
-        foreach (CellComponent cell_component in cell_components_copy)
+        foreach (CellComponent cell_component in CellComponents)
             if (!cells.Contains(cell_component.Cell))
-            {
-                cell_components.Remove(cell_component);
                 GameObject.Destroy(cell_component.gameObject);
-            }
 
-        if (cell_components.Count != Organism.GetCellCount())
+        if (CellComponents.Count() != Organism.GetCellCount())
             foreach (Cell cell in cells)
             {
                 bool found_cell = false;
 
-                foreach (CellComponent cell_component in cell_components)
+                foreach (CellComponent cell_component in CellComponents)
                     if (cell_component.Cell == cell)
                         found_cell = true;
 
                 if (!found_cell)
-                    cell_components.Add(new GameObject("cell").AddComponent<CellComponent>().SetCell(cell));
+                {
+                    CellComponent cell_component = Instantiate(Scene.Micro.Prefabs.CellComponent).SetCell(cell);
+                    cell_component.transform.SetParent(transform);
+                }
             }
 
         SetCellTransformations();
@@ -160,7 +162,7 @@ public class OrganismComponent : GoodBehavior
         if (cell.Organism != Organism)
             return null;
 
-        foreach (CellComponent cell_component in cell_components)
+        foreach (CellComponent cell_component in CellComponents)
             if (cell_component.Cell == cell)
                 return cell_component;
 
@@ -187,7 +189,7 @@ public class OrganismComponent : GoodBehavior
                      move_actions = new List<Action>(),
                      powered_actions = new List<Action>();
 
-        foreach (CellComponent cell_component in cell_components)
+        foreach (CellComponent cell_component in CellComponents)
             foreach (Action action in cell_component.Cell.GetActions())
             {
                 if (action is Interpretase.Command)
@@ -208,12 +210,11 @@ public class OrganismComponent : GoodBehavior
 
     public void ResetExperiment(string dna_sequence= "")
     {
-        foreach (CellComponent cell_component in cell_components)
+        foreach (CellComponent cell_component in CellComponents)
         {
             Organism.RemoveCell(cell_component.Cell);
             GameObject.Destroy(cell_component.gameObject);
         }
-        cell_components.Clear();
 
         Cell cell = Organism.GetCell(new Vector2Int(0, 0));
 

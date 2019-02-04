@@ -35,6 +35,18 @@ public class MicroPrefabs : MonoBehaviour
 
     //Game
     [SerializeField]
+    OrganismComponent organism_component;
+    public OrganismComponent OrganismComponent { get { return organism_component; } }
+
+    [SerializeField]
+    CellComponent cell_component;
+    public CellComponent CellComponent { get { return cell_component; } }
+
+    [SerializeField]
+    CompoundComponent compound_component;
+    public CompoundComponent CompoundComponent { get { return compound_component; } }
+
+    [SerializeField]
     Animator spore;
     public Animator Spore { get { return spore; } }
 }

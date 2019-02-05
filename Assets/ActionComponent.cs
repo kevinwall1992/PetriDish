@@ -254,10 +254,10 @@ public class ActionComponent : MonoBehaviour
 
             if (action is Sporulase.SporulateAction)
             {
-                Animator spore = Instantiate(Scene.Micro.Prefabs.Spore);
-                spore.transform.SetParent(Scene.Micro.Visualization.transform);
+                Animator spore_animator = Instantiate(Scene.Micro.Prefabs.SporeAnimator);
+                spore_animator.transform.SetParent(Scene.Micro.Visualization.transform);
 
-                spore.gameObject.AddComponent<AnimatorAnimation>()
+                spore_animator.gameObject.AddComponent<AnimatorAnimation>()
                     .SetLength(0.2f * length)
                     .Smooth();
 
@@ -268,11 +268,11 @@ public class ActionComponent : MonoBehaviour
                     .SetParameters(true)
                     .SetLength(0.2f * length);
 
-                spore.gameObject.AddComponent<MoveAnimation>()
+                spore_animator.gameObject.AddComponent<MoveAnimation>()
                     .SetParameters(CellComponent.gameObject, OrganismComponent.North)
                     .SetLength(25, 0.3f * length);
 
-                spore.gameObject.AddComponent<FadeAnimation>()
+                spore_animator.gameObject.AddComponent<FadeAnimation>()
                     .SetParameters(false, true)
                     .SetLength(0.7f * length, 0.3f * length);
             }

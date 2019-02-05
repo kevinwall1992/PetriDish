@@ -47,8 +47,8 @@ public class MicroPrefabs : MonoBehaviour
     public CompoundComponent CompoundComponent { get { return compound_component; } }
 
     [SerializeField]
-    Animator spore;
-    public Animator Spore { get { return spore; } }
+    Animator spore_animator;
+    public Animator SporeAnimator { get { return spore_animator; } }
 
     [SerializeField]
     Animator construction_animator;

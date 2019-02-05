@@ -92,7 +92,7 @@ public class ExampleComponent : MonoBehaviour
             water_locale.RemoveOrganism(organism_component.Organism);
         else
         {
-            organism_component = new GameObject("example_organism").AddComponent<OrganismComponent>();
+            organism_component = Instantiate(Scene.Micro.Prefabs.OrganismComponent);
             organism_component.transform.parent = transform;
         }
 

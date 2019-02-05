@@ -21,6 +21,11 @@ public class ActionComponent : MonoBehaviour
         get { return OrganismComponent.GetCellComponent(action.Cell); }
     }
 
+    SlotComponent SlotComponent
+    {
+        get { return OrganismComponent.GetSlotComponent(action.Slot); }
+    }
+
     public void SetAction(Action action_, float length_)
     {
         action = action_;
@@ -270,6 +275,30 @@ public class ActionComponent : MonoBehaviour
                 spore.gameObject.AddComponent<FadeAnimation>()
                     .SetParameters(false, true)
                     .SetLength(0.7f * length, 0.3f * length);
+            }
+
+            if (action is Constructase.ConstructCell)
+            {
+                Transform adjustment = new GameObject("adjustment").GetComponent<Transform>();
+                adjustment.SetParent(Scene.Micro.Visualization.transform);
+
+                Animator construction_animator = Instantiate(Scene.Micro.Prefabs.ConstructionAnimator);
+                construction_animator.transform.SetParent(adjustment);
+                construction_animator.transform.Translate(-0.150f, -0.04f, 0);
+
+                Organism.HexagonalDirection direction = SlotComponent.Slot.Direction;
+                adjustment.Rotate(0, 0, (((int)direction + 5) % 6) * -60);
+
+                Vector2Int cell_position = OrganismComponent.Organism.GetNeighborPosition(CellComponent.Cell, direction);
+                adjustment.position = OrganismComponent.CellPositionToWorldPosition(cell_position);
+
+                construction_animator.gameObject.AddComponent<AnimatorAnimation>()
+                    .SetLength(1.0f * length)
+                    .Smooth();
+
+                construction_animator.gameObject.AddComponent<FadeAnimation>()
+                    .SetParameters(false, true)
+                    .SetLength(0.1f * length, 0.9f * length);
             }
         }
     }

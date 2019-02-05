@@ -46,6 +46,13 @@ public class Organism : Chronal
         return new Vector2Int(-1, -1);
     }
 
+    public Vector2Int GetNeighborPosition(Cell cell, HexagonalDirection direction)
+    {
+        Vector2Int cell_position = GetCellPosition(cell);
+
+        return cell_position + GetDisplacement(cell_position.x % 2 == 0, direction);
+    }
+
     public Cell GetCell(Vector2Int position)
     {
         return cells[position.x][position.y];
@@ -67,13 +74,6 @@ public class Organism : Chronal
         }
 
         return Vector2Int.zero;
-    }
-
-    Vector2Int GetNeighborPosition(Cell cell, HexagonalDirection direction)
-    {
-        Vector2Int cell_position = GetCellPosition(cell);
-
-        return cell_position + GetDisplacement(cell_position.x % 2 == 0, direction);
     }
 
     void CheckForBreaks()

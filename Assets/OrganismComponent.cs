@@ -116,11 +116,7 @@ public class OrganismComponent : GoodBehavior
     void SetCellTransformations()
     {
         foreach (CellComponent cell_component in CellComponents)
-        {
-            Vector2Int position = Organism.GetCellPosition(cell_component.Cell);
-
-            cell_component.transform.position= new Vector3(position.x* 4.2f* 0.87f, (position.y+ (position.x % 2 == 1 ? 0.5f : 0)) * 4.2f);
-        }
+            cell_component.transform.position = CellPositionToWorldPosition(Organism.GetCellPosition(cell_component.Cell));
     }
 
     void ValidateCells()
@@ -173,6 +169,11 @@ public class OrganismComponent : GoodBehavior
     public SlotComponent GetSlotComponent(Cell.Slot slot)
     {
         return GetCellComponent(slot.Cell).GetSlotComponent(slot);
+    }
+
+    public Vector2 CellPositionToWorldPosition(Vector2Int position)
+    {
+        return transform.TransformPoint(new Vector2(position.x * 4.2f * 0.87f, (position.y + (position.x % 2 == 1 ? 0.5f : 0)) * 4.2f));
     }
 
     List<Action> FilterActions<T>(List<Action> actions)

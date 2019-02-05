@@ -49,4 +49,8 @@ public class MicroPrefabs : MonoBehaviour
     [SerializeField]
     Animator spore;
     public Animator Spore { get { return spore; } }
+
+    [SerializeField]
+    Animator construction_animator;
+    public Animator ConstructionAnimator { get { return construction_animator; } }
 }

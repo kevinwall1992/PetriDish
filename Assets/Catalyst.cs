@@ -174,6 +174,9 @@ public class Constructase : ProgressiveCatalyst
 
     protected override Action GetAction(Cell.Slot slot)
     {
+        if (slot.AdjacentCell != null)
+            return null;
+
         return new ConstructCell(slot);
     }
 

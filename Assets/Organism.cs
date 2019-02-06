@@ -132,13 +132,19 @@ public class Organism : Chronal
                position.y >= 0 && position.y < cells[0].Count;
     }
 
-    //Expands _once_ in each direction towards position, if necessary
+    //Position is not guaranteed to be within bounds after
+    //this call, it only expands towards is once.
+    //(except in the case of -x positions, which 
+    //require expanding an even number of times)
     void ExpandTowardsPosition(Vector2Int position)
     {
         if (cells.Count == position.x)
             cells.Add(Utility.CreateNullList<Cell>(cells[0].Count));
         else if (position.x == -1)
+        {
             cells.Insert(0, Utility.CreateNullList<Cell>(cells[0].Count));
+            cells.Insert(0, Utility.CreateNullList<Cell>(cells[0].Count));
+        }
 
         if (cells[0].Count == position.y)
             foreach (List<Cell> column in cells)

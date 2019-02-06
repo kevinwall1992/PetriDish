@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 public class MicroVisualization : GoodBehavior
 {
-    OrganismComponent organism_component;
-
     WaterLocale water_locale;
 
     bool take_one_step = false;
+
+    public OrganismComponent OrganismComponent { get; private set; }
 
     bool is_paused = true;
     public bool IsPaused
@@ -33,11 +33,6 @@ public class MicroVisualization : GoodBehavior
 
     public float Speed { get; set; }
 
-    public List<OrganismComponent> OrganismComponents
-    {
-        get { return Utility.CreateList(organism_component); }
-    }
-
     private void Awake()
     {
         water_locale = WaterLocale.CreateVentLocale();
@@ -45,10 +40,10 @@ public class MicroVisualization : GoodBehavior
 
     void Start()
     {
-        organism_component = GetComponentInChildren<OrganismComponent>();
-        water_locale.AddOrganism(organism_component.Organism);
+        OrganismComponent = GetComponentInChildren<OrganismComponent>();
+        water_locale.AddOrganism(OrganismComponent.Organism);
 
-        organism_component.ResetExperiment("CACACAAATTCT" + Ribozyme.GetRibozymeFamily("Rotase")[0].Sequence + "TTTCATTCTAAGTGACAAACAAACCAGTGAGACGAAACAAAATTT");
+        OrganismComponent.ResetExperiment("CACACAAATTCT" + Ribozyme.GetRibozymeFamily("Rotase")[0].Sequence + "TTTCATTCTAAGTGACAAACAAACCAGTGAGACGAAACAAAATTT");
 
         Speed = 1.0f;
     }
@@ -68,10 +63,10 @@ public class MicroVisualization : GoodBehavior
         if (IsPaused && !take_one_step)
             return;
 
-        if (organism_component.IsVisualizingStep)
+        if (OrganismComponent.IsVisualizingStep)
             return;
 
-        organism_component.BeginStepVisualization();
+        OrganismComponent.BeginStepVisualization();
         take_one_step = false;
     }
 
@@ -82,8 +77,21 @@ public class MicroVisualization : GoodBehavior
         take_one_step = true;
     }
 
-    public OrganismComponent GetOrganismComponent(Organism organism)
+    void SwitchOrganism(int relative_index)
     {
-        return organism_component;
+        int index = MathUtility.Mod(water_locale.Organisms.IndexOf(OrganismComponent.Organism) + relative_index, 
+                                    water_locale.Organisms.Count);
+
+        OrganismComponent.SetOrganism(water_locale.Organisms[index]);
+    }
+
+    public void NextOrganism()
+    {
+        SwitchOrganism(1);
+    }
+
+    public void PreviousOrganism()
+    {
+        SwitchOrganism(-1);
     }
 }

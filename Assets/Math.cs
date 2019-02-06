@@ -278,6 +278,15 @@ public static class MathUtility
     {
         return (2 * Mathf.PI) * degrees / 360;
     }
+
+    //This always returns a value between 0 and divisor - 1
+    public static int Mod(int dividend, int divisor)
+    {
+        while (dividend < 0)
+            dividend += divisor;
+
+        return dividend % divisor;
+    }
 }
 
 public abstract class GenericFunction<T>

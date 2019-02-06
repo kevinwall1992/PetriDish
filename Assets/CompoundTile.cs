@@ -175,9 +175,9 @@ public class CompoundTile : GoodBehavior
         }
         else if (Scene.Micro.TrashcanButton.IsPointedAt)
             Scene.Micro.TrashcanButton.Trashcan.ThrowAway(compound);
-        else if (Scene.Micro.Visualization.OrganismComponents[0].IsPointedAt)
+        else if (Scene.Micro.Visualization.OrganismComponent.IsPointedAt)
         {
-            OrganismComponent organism_component = Scene.Micro.Visualization.OrganismComponents[0];
+            OrganismComponent organism_component = Scene.Micro.Visualization.OrganismComponent;
 
             CellComponent cell_component = organism_component.CellComponentPointedAt;
 

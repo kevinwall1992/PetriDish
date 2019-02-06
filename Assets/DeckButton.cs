@@ -8,7 +8,7 @@ public class DeckButton : ScalingButton
     {
         base.OnPointerClick(eventData);
 
-        DetailPanel deck_panel = Scene.Micro.Visualization.OrganismComponents[0].DeckDetailPanel;
+        DetailPanel deck_panel = Scene.Micro.Visualization.OrganismComponent.DeckDetailPanel;
 
         if (deck_panel.IsOpen)
             deck_panel.Close();

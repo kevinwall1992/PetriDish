@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Linq;
 using System.Reflection;
 using UnityEngine.EventSystems;
+using System;
 
 public class OrganismComponent : GoodBehavior
 {
@@ -113,12 +114,6 @@ public class OrganismComponent : GoodBehavior
             }
     }
 
-    void SetCellTransformations()
-    {
-        foreach (CellComponent cell_component in CellComponents)
-            cell_component.transform.position = CellPositionToWorldPosition(Organism.GetCellPosition(cell_component.Cell));
-    }
-
     void ValidateCells()
     {
         List<Cell> cells = Organism.GetCells();
@@ -140,10 +135,9 @@ public class OrganismComponent : GoodBehavior
                 {
                     CellComponent cell_component = Instantiate(Scene.Micro.Prefabs.CellComponent).SetCell(cell);
                     cell_component.transform.SetParent(transform);
+                    cell_component.transform.position = CellPositionToWorldPosition(Organism.GetCellPosition(cell_component.Cell));
                 }
             }
-
-        SetCellTransformations();
     }
 
     public void SetOrganism(Organism organism)
@@ -173,7 +167,21 @@ public class OrganismComponent : GoodBehavior
 
     public Vector2 CellPositionToWorldPosition(Vector2Int position)
     {
-        return transform.TransformPoint(new Vector2(position.x * 4.2f * 0.87f, (position.y + (position.x % 2 == 1 ? 0.5f : 0)) * 4.2f));
+        Func<Vector2Int, Vector2> hexagon_tiler = (p) => (new Vector2(p.x * 4.2f * 0.87f,
+                                                                     (p.y + (p.x % 2 == 0 ? 0 : 0.5f)) * 4.2f));
+
+        Vector2 displacement = Vector2.zero;
+
+        if(CellComponents.Count() > 0)
+        {
+            CellComponent cell_component = CellComponents.First();
+            displacement = (Vector2)cell_component.transform.position -
+                           hexagon_tiler(Organism.GetCellPosition(cell_component.Cell));
+        }
+
+        Vector2 world_position = transform.TransformPoint(hexagon_tiler(position));
+
+        return  world_position + displacement;
     }
 
     List<Action> FilterActions<T>(List<Action> actions)

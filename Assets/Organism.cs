@@ -380,6 +380,39 @@ public class Organism : Chronal, Versionable<Organism>
         foreach (Molecule molecule in other.cytozol.Molecules)
             cytozol.AddCompound(new Compound(molecule.Copy(), other.cytozol.GetQuantity(molecule)));
     }
+
+    public bool IsSameVersion(Organism other)
+    {
+        if (cells.Count != other.cells.Count ||
+           (cells.Count > 0 && cells[0].Count != other.cells[0].Count))
+            return false;
+
+        for (int row = 0; row < cells.Count; row++)
+            for (int column = 0; column < cells[row].Count; column++)
+                for (int slot_index = 0; slot_index < 6; slot_index++)
+                {
+                    Compound this_compound = cells[row][column].Slots[slot_index].Compound;
+                    Compound other_compound = other.cells[row][column].Slots[slot_index].Compound;
+
+                    if (this_compound == null && other_compound == null)
+                        continue;
+
+                    if (this_compound == null || other_compound == null)
+                        return false;
+
+                    if (!this_compound.Molecule.Equals(other_compound.Molecule))
+                        return false;
+
+                    if (this_compound.Quantity != other_compound.Quantity)
+                        return false;
+                }
+
+        foreach (Molecule molecule in cytozol.Molecules)
+            if (cytozol.GetQuantity(molecule) != other.cytozol.GetQuantity(molecule))
+                return false;
+
+        return true;
+    }
 }
 
 

@@ -25,11 +25,14 @@ class Doer<T> : IDoer where T : Versionable<T>
     {
         versionable = versionable_;
 
-        Do();
+        past.Push(versionable.Copy());
     }
 
     public void Do()
     {
+        if (versionable.IsSameVersion(past.Peek()))
+            return;
+
         past.Push(versionable.Copy());
         future.Clear();
     }

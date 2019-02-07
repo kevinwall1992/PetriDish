@@ -66,14 +66,28 @@ public class DNAPanel : DetailPanel
         base.Update();
     }
 
+    private void OnEnable()
+    {
+        if (DNA == null)
+            return;
+
+        ClearDNASequence();
+        AddDNASequence(DNA.Sequence);
+    }
+
     private void OnDisable()
     {
         if (DNA == null)
             return;
 
+        if (DNA.Sequence == GetDNASequence())
+            return;
+
         DNA.RemoveStrand(0, DNA.CodonCount);
         DNA.AddSequence(GetDNASequence());
         DNA.ActiveCodonIndex = 0;
+
+        Scene.Micro.Editor.Do();
     }
 
     void InitializeSequenceElements()

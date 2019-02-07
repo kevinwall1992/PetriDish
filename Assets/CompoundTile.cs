@@ -192,6 +192,8 @@ public class CompoundTile : GoodBehavior
             }
         }
 
+        Scene.Micro.Editor.Do();
+
         Destroy(gameObject);
     }
 }

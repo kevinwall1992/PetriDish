@@ -4,7 +4,7 @@ using System.Linq;
 using System;
 
 
-public class Organism : Chronal
+public class Organism : Chronal, Versionable<Organism>
 {
     List<List<Cell>> cells= new List<List<Cell>>();
 
@@ -342,10 +342,43 @@ public class Organism : Chronal
             }
         }
 
+        organism.cytozol = new Cytozol(0);
         foreach (Molecule molecule in cytozol.Molecules)
             organism.cytozol.AddCompound(new Compound(molecule, cytozol.GetQuantity(molecule)));
 
         return organism;
+    }
+
+    public void Checkout(Organism other)
+    {
+        cells.Clear();
+        for (int row = 0; row < other.cells.Count; row++)
+        {
+            cells.Add(new List<Cell>());
+
+            for (int column = 0; column < other.cells[row].Count; column++)
+            {
+                Cell other_cell = other.cells[row][column];
+                Cell cell_copy = new Cell(this);
+
+                for (int slot_index = 0; slot_index < 6; slot_index++)
+                {
+                    Cell.Slot slot = other_cell.Slots[slot_index];
+
+                    if (slot.Compound != null)
+                        cell_copy.Slots[slot_index].AddCompound(new Compound(slot.Compound.Molecule, slot.Compound.Quantity));
+                }
+
+                cells[row].Add(cell_copy);
+            }
+        }
+
+
+        foreach (Molecule molecule in cytozol.Molecules)
+            cytozol.RemoveCompound(molecule, cytozol.GetQuantity(molecule));
+
+        foreach (Molecule molecule in other.cytozol.Molecules)
+            cytozol.AddCompound(new Compound(molecule, other.cytozol.GetQuantity(molecule)));
     }
 }
 

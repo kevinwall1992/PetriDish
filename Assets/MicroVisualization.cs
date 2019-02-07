@@ -6,6 +6,7 @@ public class MicroVisualization : GoodBehavior
 {
     WaterLocale water_locale;
 
+    bool is_in_step = false;
     bool take_one_step = false;
 
     public OrganismComponent OrganismComponent { get; private set; }
@@ -45,6 +46,8 @@ public class MicroVisualization : GoodBehavior
 
         OrganismComponent.ResetExperiment("CACACAAATTCT" + Ribozyme.GetRibozymeFamily("Rotase")[0].Sequence + "TTTCATTCTAAGTGACAAACAAACCAGTGAGACGAAACAAAATTT");
 
+        Scene.Micro.Editor.TrackThis(OrganismComponent.Organism);
+
         Speed = 1.0f;
     }
 
@@ -60,13 +63,22 @@ public class MicroVisualization : GoodBehavior
         if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
             Scene.Micro.Camera.transform.Translate(new Vector3(scroll_speed * Time.deltaTime, 0));
 
-        if (IsPaused && !take_one_step)
-            return;
-
         if (OrganismComponent.IsVisualizingStep)
             return;
 
+        if(is_in_step)
+        {
+            is_in_step = false;
+
+            Scene.Micro.Editor.Do();
+        }
+
+        if (IsPaused && !take_one_step)
+            return;
+
         OrganismComponent.BeginStepVisualization();
+        is_in_step = true;
+
         take_one_step = false;
     }
 

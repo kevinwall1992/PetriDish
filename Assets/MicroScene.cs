@@ -9,6 +9,8 @@ public class MicroScene : Scene
 
     public MicroPrefabs Prefabs { get { return prefabs; } }
 
+    public MicroEditor Editor { get { return editor; } }
+
     public Camera Camera { get { return camera; } }
 
     public ExampleComponent ExampleComponent { get { return example_component; } }
@@ -32,6 +34,9 @@ public class MicroScene : Scene
 
     [SerializeField]
     MicroPrefabs prefabs;
+
+    [SerializeField]
+    MicroEditor editor;
 
     [SerializeField]
     Camera camera;

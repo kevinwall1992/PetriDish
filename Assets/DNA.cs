@@ -135,6 +135,14 @@ public class DNA : Polymer
                 default: break;
             }
     }
+
+    public override Molecule Copy()
+    {
+        if (this is Ribozyme)
+            return this;
+
+        return new DNA(Sequence);
+    }
 }
 
 

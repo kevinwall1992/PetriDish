@@ -4,7 +4,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
-public abstract class Molecule
+public abstract class Molecule : Copiable<Molecule>
 {
     static Dictionary<string, Molecule> molecules = new Dictionary<string, Molecule>();
 
@@ -176,6 +176,13 @@ public abstract class Molecule
             hash = hash * 23 + element.GetHashCode() * Elements[element];
 
         return hash;
+    }
+
+    //In most cases, molecules are immutable singletons,
+    //So here we simply return this
+    public virtual Molecule Copy()
+    {
+        return this;
     }
 }
 

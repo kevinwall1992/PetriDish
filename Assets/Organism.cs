@@ -335,7 +335,7 @@ public class Organism : Chronal, Versionable<Organism>
                     Cell.Slot slot = cell.Slots[slot_index];
 
                     if (slot.Compound != null)
-                        cell_copy.Slots[slot_index].AddCompound(new Compound(slot.Compound.Molecule, slot.Compound.Quantity));
+                        cell_copy.Slots[slot_index].AddCompound(new Compound(slot.Compound.Molecule.Copy(), slot.Compound.Quantity));
                 }
 
                 organism.cells[row].Add(cell_copy);
@@ -344,7 +344,7 @@ public class Organism : Chronal, Versionable<Organism>
 
         organism.cytozol = new Cytozol(0);
         foreach (Molecule molecule in cytozol.Molecules)
-            organism.cytozol.AddCompound(new Compound(molecule, cytozol.GetQuantity(molecule)));
+            organism.cytozol.AddCompound(new Compound(molecule.Copy(), cytozol.GetQuantity(molecule)));
 
         return organism;
     }
@@ -366,7 +366,7 @@ public class Organism : Chronal, Versionable<Organism>
                     Cell.Slot slot = other_cell.Slots[slot_index];
 
                     if (slot.Compound != null)
-                        cell_copy.Slots[slot_index].AddCompound(new Compound(slot.Compound.Molecule, slot.Compound.Quantity));
+                        cell_copy.Slots[slot_index].AddCompound(new Compound(slot.Compound.Molecule.Copy(), slot.Compound.Quantity));
                 }
 
                 cells[row].Add(cell_copy);
@@ -378,7 +378,7 @@ public class Organism : Chronal, Versionable<Organism>
             cytozol.RemoveCompound(molecule, cytozol.GetQuantity(molecule));
 
         foreach (Molecule molecule in other.cytozol.Molecules)
-            cytozol.AddCompound(new Compound(molecule, other.cytozol.GetQuantity(molecule)));
+            cytozol.AddCompound(new Compound(molecule.Copy(), other.cytozol.GetQuantity(molecule)));
     }
 }
 

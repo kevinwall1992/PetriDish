@@ -29,18 +29,14 @@ public class ScalingButton : GoodBehavior, IPointerClickHandler
 
     protected virtual void Update()
     {
-        if (!IsInteractable)
-        {
-            Image.color = new Color(Color.r, Color.g, Color.b, Color.a / 2);
-            return;
-        }
-
-        float scale = IsPointedAt ? 1.1f : 1;
+        float scale = IsPointedAt && IsInteractable ? 1.1f : 1;
         float speed = 15;
 
         transform.localScale = MathUtility.MakeUniformScale(Mathf.Lerp(transform.localScale.x, scale, speed * Time.deltaTime));
         
-        if (IsPointedAt)
+        if(!IsInteractable)
+            Image.color = new Color(Color.r, Color.g, Color.b, Color.a / 2);
+        else if (IsPointedAt)
             Image.color = Color.Lerp(Color, Tint, 0.5f);
         else
             Image.color = Color;

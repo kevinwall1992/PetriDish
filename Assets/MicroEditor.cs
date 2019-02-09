@@ -30,6 +30,17 @@ public class MicroEditor : MonoBehaviour, IDoer
         }
     }
 
+    private void Update()
+    {
+        if (Input.GetKey(KeyCode.LeftControl))
+        {
+            if (Input.GetKeyUp(KeyCode.Z))
+                Undo();
+            else if (Input.GetKeyUp(KeyCode.Y))
+                Redo();
+        }
+    }
+
     public void TrackThis<T>(Versionable<T> versionable) where T : Versionable<T>
     {
         doers.Add(new Doer<T>(versionable));

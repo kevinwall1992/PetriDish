@@ -353,7 +353,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.0000012038831}
+  m_AnchoredPosition: {x: 0, y: -0.000015256487}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &8480144089336027387
@@ -370,7 +370,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0
   m_MinWidth: -8.5
-  m_MinHeight: 103.5
+  m_MinHeight: 101.599976
   m_PreferredWidth: -1
   m_PreferredHeight: -1
   m_FlexibleWidth: -1
@@ -674,6 +674,7 @@ GameObject:
   - component: {fileID: 8480144090700210340}
   - component: {fileID: 8480144090700212059}
   - component: {fileID: 8480144090700210341}
+  - component: {fileID: 3273889980691331795}
   m_Layer: 5
   m_Name: DNAPanel
   m_TagString: Untagged
@@ -760,6 +761,18 @@ MonoBehaviour:
   arrow: {fileID: 8520354497436213246}
   codon_layout: {fileID: 8480144089807171998}
   sequence_layout: {fileID: 8480144089097043038}
+--- !u!225 &3273889980691331795
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8480144090700212057}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &8480144090744464263
 GameObject:
   m_ObjectHideFlags: 0
@@ -795,7 +808,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.14517212, y: 0.000035255285}
+  m_AnchoredPosition: {x: 0.14517212, y: 0.000007624791}
   m_SizeDelta: {x: -0.29034042, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &8480144090744464258

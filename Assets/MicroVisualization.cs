@@ -6,7 +6,6 @@ public class MicroVisualization : GoodBehavior
 {
     WaterLocale water_locale;
 
-    bool is_in_step = false;
     bool take_one_step = false;
 
     public OrganismComponent OrganismComponent { get; private set; }
@@ -31,6 +30,8 @@ public class MicroVisualization : GoodBehavior
             }
         }
     }
+
+    public bool IsVisualizingStep { get; private set; }
 
     public float Speed { get; set; }
 
@@ -66,9 +67,9 @@ public class MicroVisualization : GoodBehavior
         if (OrganismComponent.IsVisualizingStep)
             return;
 
-        if(is_in_step)
+        if(IsVisualizingStep)
         {
-            is_in_step = false;
+            IsVisualizingStep = false;
 
             Scene.Micro.Editor.Do();
         }
@@ -77,7 +78,7 @@ public class MicroVisualization : GoodBehavior
             return;
 
         OrganismComponent.BeginStepVisualization();
-        is_in_step = true;
+        IsVisualizingStep = true;
 
         take_one_step = false;
     }

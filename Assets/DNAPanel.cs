@@ -56,6 +56,8 @@ public class DNAPanel : DetailPanel
 
     protected override void Update()
     {
+        GetComponent<CanvasGroup>().interactable = !Scene.Micro.Visualization.IsVisualizingStep;
+
         if(DNA == null)
         {
             Destroy(gameObject);

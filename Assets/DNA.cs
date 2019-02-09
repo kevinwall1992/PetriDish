@@ -136,12 +136,23 @@ public class DNA : Polymer
             }
     }
 
+    public override bool Equals(object obj)
+    {
+        if (!base.Equals(obj))
+            return false;
+
+        return obj is DNA && (obj as DNA).ActiveCodonIndex == ActiveCodonIndex;
+    }
+
     public override Molecule Copy()
     {
         if (this is Ribozyme)
             return this;
 
-        return new DNA(Sequence);
+        DNA copy = new DNA(Sequence);
+        copy.ActiveCodonIndex = ActiveCodonIndex;
+
+        return copy;
     }
 }
 

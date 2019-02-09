@@ -14,6 +14,9 @@ public class DNAPanel : DetailPanel
     [SerializeField]
     GameObject grouping_panel_prefab;
 
+    [SerializeField]
+    Image arrow;
+
 
     public DNA DNA { get { return Data as DNA; } }
 
@@ -59,8 +62,26 @@ public class DNAPanel : DetailPanel
             return;
         }
 
-        if(!IsBeingEdited())
+        bool show_arrow = false;
+
+        if (!IsBeingEdited())
+        {
             UpdateDNASequence();
+
+            if (DNA.Sequence.Length > 0)
+                show_arrow = true;
+                
+        }
+
+        if (show_arrow)
+        {
+            arrow.gameObject.SetActive(true);
+            arrow.transform.position = Vector3.Lerp(arrow.transform.position,
+                                                    CodonLayout.GetCodonElement(DNA.ActiveCodonIndex).ArrowTransform.position,
+                                                    Time.deltaTime * 5);
+        }
+        else
+            arrow.gameObject.SetActive(false);
 
         if (Input.GetKeyUp(KeyCode.C))
             GUIUtility.systemCopyBuffer = DNA.Sequence;

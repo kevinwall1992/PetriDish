@@ -6,8 +6,13 @@ using UnityEngine.EventSystems;
 
 public class CodonElement : DNAPanelElement
 {
+    public static CodonElement ActiveCodonElement { get; set; }
+
     [SerializeField]
     CodonSelector codon_selector;
+
+    [SerializeField]
+    Transform arrow_transform;
 
     public string Codon
     {
@@ -19,6 +24,8 @@ public class CodonElement : DNAPanelElement
             UpdateTint();
         }
     }
+
+    public Transform ArrowTransform { get { return arrow_transform; } }
 
     void Start()
     {

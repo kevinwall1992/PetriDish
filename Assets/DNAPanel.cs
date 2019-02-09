@@ -76,9 +76,15 @@ public class DNAPanel : DetailPanel
         if (show_arrow)
         {
             arrow.gameObject.SetActive(true);
+
+            int logical_index = GetLogicalActiveCommandCodonIndex();
+            int visual_index = GetVisualActiveCommandCodonIndex();
+            if(logical_index != visual_index)
+                arrow.transform.SetParent(CodonLayout.GetCodonElement(logical_index).transform);
+
             arrow.transform.position = Vector3.Lerp(arrow.transform.position,
-                                                    CodonLayout.GetCodonElement(DNA.ActiveCodonIndex).ArrowTransform.position,
-                                                    Time.deltaTime * 5);
+                                                    arrow.GetComponentInParent<CodonElement>().ArrowTransform.position,
+                                                    Time.deltaTime * 5);   
         }
         else
             arrow.gameObject.SetActive(false);
@@ -240,6 +246,23 @@ public class DNAPanel : DetailPanel
     string GetVisualCodon(int index)
     {
         return CodonLayout.GetCodonElement(index).Codon;
+    }
+
+    int GetVisualActiveCommandCodonIndex()
+    {
+        CodonElement codon_element = arrow.GetComponentInParent<CodonElement>();
+        if (codon_element == null)
+            return -1;
+
+        return CodonLayout.GetElementIndex(codon_element.gameObject);
+    }
+
+    int GetLogicalActiveCommandCodonIndex()
+    {
+        int command_codon_index = DNA.ActiveCodonIndex - 1;
+        while (DNA.GetCodon(++command_codon_index)[0] != 'C') ;
+
+        return command_codon_index;
     }
 
     bool IsValidCodon(string codon)

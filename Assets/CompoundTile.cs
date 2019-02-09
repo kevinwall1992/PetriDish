@@ -163,6 +163,7 @@ public class CompoundTile : GoodBehavior
                     Destroy(dna_panel.CodonLayout.RemoveCodonElement(placeholder_index).gameObject);
 
                     dna_panel.AddDNASequence("TAA" + dna_sequence + "TTT", placeholder_index);
+                    dna_panel.ApplyChanges();
 
                     placeholder_index = -1;
                 }

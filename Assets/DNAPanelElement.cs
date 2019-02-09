@@ -46,5 +46,7 @@ public class DNAPanelElement : GoodBehavior, IDragHandler
     public override void OnEndDrag(PointerEventData eventData)
     {
         base.OnEndDrag(eventData);
+
+        DNAPanel.ApplyChanges();
     }
 }

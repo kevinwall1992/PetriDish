@@ -26,7 +26,10 @@ public class CodonSelector : GoodBehavior
             GetComponent<Image>().color = value ? Color.white : Color.clear;
 
             if (!value)
+            {
                 SelectedCodon = GetNearestCodon();
+                GetComponentInParent<DNAPanel>().ApplyChanges();
+            }
         }
     }
 

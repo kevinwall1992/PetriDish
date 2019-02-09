@@ -1,9 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
-using UnityEngine.UI;
-using System.Collections.Generic;
-using UnityEngine.EventSystems;
-
 
 public class DetailPanel : GoodBehavior
 {
@@ -14,18 +9,24 @@ public class DetailPanel : GoodBehavior
     [SerializeField]
     Position position;
 
-    object data;
-    public virtual object Data
+    System.Func<object> data_function;
+    public System.Func<object> DataFunction
     {
-        get { return data; }
+        get { return data_function; }
 
         set
         {
-            if (data == null)
-                data = value;
+            if (data_function == null)
+                data_function = value;
             else
-                Debug.Assert(false, "DetailPane.Data may not be set more than once");
+                Debug.Assert(false, "DetailPane.DataFunction may not be set more than once");
         }
+    }
+
+    public virtual object Data
+    {
+        get { return DataFunction(); }
+        set { DataFunction = () => (value); }
     }
 
     public bool IsOpen { get { return position == Position.Left ? Left == this : 

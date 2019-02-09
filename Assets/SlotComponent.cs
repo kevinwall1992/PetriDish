@@ -40,7 +40,7 @@ public class SlotComponent : GoodBehavior, Spawner
                 if (CompoundComponent.Compound.Molecule is Catalyst)
                     detail_panel = CatalystPanel.Create(CompoundComponent.Compound.Molecule as Catalyst);
                 else if (CompoundComponent.Compound.Molecule is DNA)
-                    detail_panel = DNAPanel.Create(CompoundComponent.Compound.Molecule as DNA);
+                    detail_panel = DNAPanel.Create(Slot);
             }
 
             return detail_panel;

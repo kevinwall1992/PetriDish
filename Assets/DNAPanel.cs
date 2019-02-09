@@ -53,8 +53,17 @@ public class DNAPanel : DetailPanel
 
     protected override void Update()
     {
+        if(DNA == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        if(!IsBeingEdited())
+            UpdateDNASequence();
+
         if (Input.GetKeyUp(KeyCode.C))
-            GUIUtility.systemCopyBuffer = GetDNASequence();
+            GUIUtility.systemCopyBuffer = DNA.Sequence;
         if (Input.GetKeyUp(KeyCode.V))
             AddDNASequence(GUIUtility.systemCopyBuffer);
         if (Input.GetKeyUp(KeyCode.B))
@@ -64,30 +73,6 @@ public class DNAPanel : DetailPanel
             FormatCodons();
 
         base.Update();
-    }
-
-    private void OnEnable()
-    {
-        if (DNA == null)
-            return;
-
-        ClearDNASequence();
-        AddDNASequence(DNA.Sequence);
-    }
-
-    private void OnDisable()
-    {
-        if (DNA == null)
-            return;
-
-        if (DNA.Sequence == GetDNASequence())
-            return;
-
-        DNA.RemoveStrand(0, DNA.CodonCount);
-        DNA.AddSequence(GetDNASequence());
-        DNA.ActiveCodonIndex = 0;
-
-        Scene.Micro.Editor.Do();
     }
 
     void InitializeSequenceElements()
@@ -160,7 +145,7 @@ public class DNAPanel : DetailPanel
 
         int indentation_level = 0;
 
-        DNA dna = new DNA(GetDNASequence());
+        DNA dna = DNA.Copy() as DNA;
         int codon_index = 0;
 
         while (codon_index < dna.CodonCount)
@@ -197,7 +182,7 @@ public class DNAPanel : DetailPanel
     {
         Dictionary<int, int> command_groups = new Dictionary<int, int>();
 
-        DNA dna = new DNA(GetDNASequence());
+        DNA dna = DNA.Copy() as DNA;
 
         int command_codon_index = Interpretase.FindCommandCodon(dna, 0);
         while (command_codon_index >= 0)
@@ -212,14 +197,16 @@ public class DNAPanel : DetailPanel
         return command_groups;
     }
 
-    bool IsValidCodon(string codon)
+    bool IsBeingEdited()
     {
-        return (codon[0] == 'A' || codon[0] == 'C' || codon[0] == 'G' || codon[0] == 'T') &&
-                (codon[1] == 'A' || codon[1] == 'C' || codon[1] == 'G' || codon[1] == 'T') &&
-                (codon[2] == 'A' || codon[2] == 'C' || codon[2] == 'G' || codon[2] == 'T');
+        foreach (DNAPanelElement element in GetComponentsInChildren<DNAPanelElement>())
+            if (element.IsBeingDragged)
+                return true;
+
+        return false;
     }
 
-    public string GetDNASequence()
+    string GetVisualDNASequence()
     {
         string sequence = "";
 
@@ -227,6 +214,102 @@ public class DNAPanel : DetailPanel
             sequence += CodonLayout.GetCodonElement(i).Codon;
 
         return sequence;
+    }
+
+    string GetVisualCodon(int index)
+    {
+        return CodonLayout.GetCodonElement(index).Codon;
+    }
+
+    bool IsValidCodon(string codon)
+    {
+        return (codon[0] == 'A' || codon[0] == 'C' || codon[0] == 'G' || codon[0] == 'T') &&
+                (codon[1] == 'A' || codon[1] == 'C' || codon[1] == 'G' || codon[1] == 'T') &&
+                (codon[2] == 'A' || codon[2] == 'C' || codon[2] == 'G' || codon[2] == 'T');
+    }
+
+    void UpdateDNASequence()
+    {
+        if (GetVisualDNASequence() == DNA.Sequence)
+            return;
+
+        int visual_codon_count = GetVisualDNASequence().Length / 3;
+        int length_difference = DNA.CodonCount - visual_codon_count;
+
+        //addition
+        if (length_difference > 0)
+        {
+            int new_codon_index = visual_codon_count;
+
+            //Could abstract this as everyone uses this same loop
+            for (int i = 0; i < visual_codon_count; i++)
+                if (DNA.GetCodon(i) != GetVisualCodon(i))
+                {
+                    new_codon_index = i;
+                    break;
+                }
+
+            AddDNASequence(DNA.Sequence.Substring(new_codon_index * 3, + length_difference * 3), new_codon_index);
+        }
+
+        //replacement or move
+        else if (length_difference == 0)
+        {
+            int first_change_index = -1,
+                second_change_index = -1;
+
+            for (int i = 0; i < visual_codon_count; i++)
+                if (DNA.GetCodon(i) != GetVisualCodon(i))
+                {
+                    first_change_index = i;
+                    break;
+                }
+
+            for (int i = visual_codon_count - 1; i >= 0; i--)
+                if (DNA.GetCodon(i) != GetVisualCodon(i))
+                {
+                    second_change_index = i;
+                    break;
+                }
+
+            //replacement
+            if (first_change_index == second_change_index)
+                CodonLayout.GetCodonElement(first_change_index).Codon = DNA.GetCodon(first_change_index);
+
+            //move
+            else
+            {
+                if(DNA.GetCodon(first_change_index) == GetVisualCodon(first_change_index + 1))
+                    CodonLayout.AddCodonElement(CodonLayout.RemoveCodonElement(first_change_index), second_change_index);
+                else
+                    CodonLayout.AddCodonElement(CodonLayout.RemoveCodonElement(second_change_index), first_change_index);
+            }
+        }
+
+        //removal
+        else if(length_difference < 0)
+        {
+            int removed_codon_index = DNA.CodonCount;
+
+            for (int i = 0; i < DNA.CodonCount; i++)
+                if (DNA.GetCodon(i) != GetVisualCodon(i))
+                {
+                    removed_codon_index = i;
+                    break;
+                }
+
+            for (int i = 0; i < -length_difference; i++)
+                Destroy(CodonLayout.RemoveCodonElement(removed_codon_index).gameObject);
+        }
+    }
+
+    public void ApplyChanges()
+    {
+        DNA.RemoveStrand(0, DNA.CodonCount);
+        DNA.AddSequence(GetVisualDNASequence());
+        DNA.ActiveCodonIndex = 0;
+
+        Scene.Micro.Editor.Do();
     }
 
     public void AddDNASequence(string sequence, int index = -1)
@@ -249,6 +332,7 @@ public class DNAPanel : DetailPanel
     public void ClearDNASequence()
     {
         CodonLayout.Clear();
+        ApplyChanges();
     }
 
     public void AddDNASequenceElement(string sequence, string description)
@@ -262,12 +346,27 @@ public class DNAPanel : DetailPanel
         dna_seqence_element.Description = description;
     }
 
-    public static DNAPanel Create(DNA dna)
+    public static DNAPanel Create(Cell.Slot slot)
     {
+        if (slot.Compound == null || !(slot.Compound.Molecule is DNA))
+            return null;
+
         DNAPanel dna_panel = Instantiate(Scene.Micro.Prefabs.DNAPanel);
         dna_panel.transform.SetParent(Scene.Micro.Canvas.transform, false);
 
-        dna_panel.Data = dna;
+        Organism organism = slot.Cell.Organism;
+        Vector2Int cell_position = slot.Cell.Organism.GetCellPosition(slot.Cell);
+        int slot_index = slot.Index;
+
+        dna_panel.DataFunction = 
+            delegate () 
+            {
+                Compound compound = organism.GetCell(cell_position).Slots[slot_index].Compound;
+                if (compound == null)
+                    return null;
+
+                return compound.Molecule;
+            };
 
         return dna_panel;
     }

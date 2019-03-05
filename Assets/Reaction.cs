@@ -328,7 +328,7 @@ public class Reaction
         else
         {
             optimal_temperature = new Attribute(new NormalDistribution(mean_optimal_temperature, 10), 1);
-            temperature_tolerance = new Attribute(new NormalDistribution(0, relative_temperature_tolerance * 5), 1);
+            temperature_tolerance = new Attribute(new NormalDistribution(0, relative_temperature_tolerance * 15), 1);
         }
 
         optimal_pH = new Attribute(new NormalDistribution(mean_optimal_pH, 0.5f), 1);
@@ -527,6 +527,35 @@ public class Reaction
 
         float ATP_balance;
 
+        public override Example Example
+        {
+            get
+            {
+                Organism organism = new Organism();
+                Cell cell = organism.GetCells()[0];
+
+                if (ATP_balance > 0)
+                {
+                    organism.Cytozol.AddCompound(Molecule.ADP, ATP_balance * 10);
+                    organism.Cytozol.AddCompound(Molecule.Phosphate, ATP_balance * 10);
+                }
+                else
+                    organism.Cytozol.AddCompound(Molecule.ATP, -ATP_balance * 10);
+
+                foreach (Compound compound in cytozol_reactants)
+                    organism.Cytozol.AddCompound(compound.Molecule, compound.Quantity * 10);
+
+                //Need to determine type of catalyst
+                //Assuming ribozyme for now
+                cell.Slots[0].AddCompound(new Ribozyme(this, 1), 1);
+
+                foreach(Compound compound in slot_reactants.Keys)
+                    cell.Slots[slot_reactants[compound]].AddCompound(compound);
+
+                return new Example(organism, 1);
+            }
+        }
+
         public CatalystImplementation(string name, Reaction reaction_) : base(name, 2, reaction_.description)
         {
             reaction = reaction_;
@@ -569,7 +598,6 @@ public class Reaction
             enthalpy += kJ_lost;
 
             ATP_balance = enthalpy / kJ_per_ATP;
-
 
             List<ActivityFunction> activity_functions = Utility.CreateList<ActivityFunction>(new ConstantActivityFunction(reaction.productivity.Value));
 

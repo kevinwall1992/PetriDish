@@ -149,6 +149,11 @@ public class Cell
                 Compound.Quantity += compound.Quantity;
         }
 
+        public void AddCompound(Molecule molecule, float quantity)
+        {
+            AddCompound(new Compound(molecule, quantity));
+        }
+
         public Compound RemoveCompound()
         {
             return Compound.Split(Compound.Quantity);

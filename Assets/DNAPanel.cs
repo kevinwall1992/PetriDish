@@ -58,7 +58,7 @@ public class DNAPanel : DetailPanel
     {
         GetComponent<CanvasGroup>().interactable = !Scene.Micro.Visualization.IsVisualizingStep;
 
-        if(DNA == null)
+        if (DNA == null)
         {
             Destroy(gameObject);
             return;
@@ -86,7 +86,7 @@ public class DNAPanel : DetailPanel
             }
 
             int visual_index = GetVisualActiveCommandCodonIndex();
-            if(logical_index != visual_index)
+            if (logical_index != visual_index)
                 arrow.transform.SetParent(CodonLayout.GetCodonElement(logical_index).transform);
 
             arrow.transform.position = Vector3.Lerp(arrow.transform.position,
@@ -132,13 +132,12 @@ public class DNAPanel : DetailPanel
 
         AddDNASequenceElement("AAA", "0");
 
-        AddDNASequenceElement(Ribozyme.GetRibozymeFamily("Interpretase")[0].Sequence, "Interpretase");
-        AddDNASequenceElement(Ribozyme.GetRibozymeFamily("Rotase")[0].Sequence, "Rotase");
-        AddDNASequenceElement(Ribozyme.GetRibozymeFamily("Constructase")[0].Sequence, "Constructase");
+        foreach (string name in Ribozyme.FamilyNames)
+            AddDNASequenceElement("TAA" + Ribozyme.GetFamily(name)[0].Sequence + "TTT", name);
 
         foreach (Reaction reaction in Reaction.Reactions)
             if (reaction.Catalyst is Ribozyme)
-                AddDNASequenceElement((reaction.Catalyst as Ribozyme).Sequence, (reaction.Catalyst as Ribozyme).Name);
+                AddDNASequenceElement("TAA" + (reaction.Catalyst as Ribozyme).Sequence + "TTT", (reaction.Catalyst as Ribozyme).Name);
     }
 
     void FormatCodons()
@@ -302,7 +301,7 @@ public class DNAPanel : DetailPanel
                     break;
                 }
 
-            AddDNASequence(DNA.Sequence.Substring(new_codon_index * 3, + length_difference * 3), new_codon_index);
+            AddDNASequence(DNA.Sequence.Substring(new_codon_index * 3, +length_difference * 3), new_codon_index);
         }
 
         //replacement or move
@@ -332,7 +331,7 @@ public class DNAPanel : DetailPanel
             //move
             else
             {
-                if(DNA.GetCodon(first_change_index) == GetVisualCodon(first_change_index + 1))
+                if (DNA.GetCodon(first_change_index) == GetVisualCodon(first_change_index + 1))
                     CodonLayout.AddCodonElement(CodonLayout.RemoveCodonElement(first_change_index), second_change_index);
                 else
                     CodonLayout.AddCodonElement(CodonLayout.RemoveCodonElement(second_change_index), first_change_index);
@@ -340,7 +339,7 @@ public class DNAPanel : DetailPanel
         }
 
         //removal
-        else if(length_difference < 0)
+        else if (length_difference < 0)
         {
             int removed_codon_index = DNA.CodonCount;
 
@@ -411,8 +410,8 @@ public class DNAPanel : DetailPanel
         Vector2Int cell_position = slot.Cell.Organism.GetCellPosition(slot.Cell);
         int slot_index = slot.Index;
 
-        dna_panel.DataFunction = 
-            delegate () 
+        dna_panel.DataFunction =
+            delegate ()
             {
                 Compound compound = organism.GetCell(cell_position).Slots[slot_index].Compound;
                 if (compound == null)

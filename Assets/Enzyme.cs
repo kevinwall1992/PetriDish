@@ -8,6 +8,8 @@ public class Enzyme : Polymer, Catalyst
 
     static Dictionary<string, AminoAcid> amino_acid_codon_map = new Dictionary<string, AminoAcid>();
 
+    public static IEnumerable<string> FamilyNames { get { return enzyme_families.Keys; } }
+
     static Enzyme()
     {
         amino_acid_codon_map["AGC"] = AminoAcid.Alanine;
@@ -74,7 +76,7 @@ public class Enzyme : Polymer, Catalyst
         return null;
     }
 
-    public static List<Enzyme> GetEnzymeFamily(string name)
+    public static List<Enzyme> GetFamily(string name)
     {
         return enzyme_families[name];
     }

@@ -45,7 +45,7 @@ public class MicroVisualization : GoodBehavior
         OrganismComponent = GetComponentInChildren<OrganismComponent>();
         water_locale.AddOrganism(OrganismComponent.Organism);
 
-        OrganismComponent.ResetExperiment("CACACAAATTCT" + Ribozyme.GetRibozymeFamily("Rotase")[0].Sequence + "TTTCATTCTAAGTGACAAACAAACCAGTGAGACGAAACAAAATTT");
+        OrganismComponent.ResetExperiment("CACACAAATTCT" + Ribozyme.GetFamily("Rotase")[0].Sequence + "TTTCATTCTAAGTGACAAACAAACCAGTGAGACGAAACAAAATTT");
 
         Scene.Micro.Editor.TrackThis(OrganismComponent.Organism);
 

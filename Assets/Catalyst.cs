@@ -127,7 +127,7 @@ public class Rotase : ProgressiveCatalyst
             Organism organism = new Organism();
             Cell cell = organism.GetCell(new Vector2Int(0, 0));
 
-            cell.Slots[0].AddCompound(new Compound(Ribozyme.GetRibozymeFamily(Name)[0], 1));
+            cell.Slots[0].AddCompound(new Compound(Ribozyme.GetFamily(Name)[0], 1));
             cell.Slots[5].AddCompound(new Compound(Molecule.ATP, 1));
 
             return new Example(organism, 1);

@@ -5,6 +5,8 @@ public class Ribozyme : DNA, Catalyst
     static Dictionary<string, Ribozyme> ribozymes = new Dictionary<string, Ribozyme>();
     static Dictionary<string, List<Ribozyme>> ribozyme_families = new Dictionary<string, List<Ribozyme>>();
 
+    public static IEnumerable<string> FamilyNames { get { return ribozyme_families.Keys; } }
+
     static Ribozyme()
     {
         new Ribozyme(new Interpretase(), 10);
@@ -43,7 +45,7 @@ public class Ribozyme : DNA, Catalyst
         return null;
     }
 
-    public static List<Ribozyme> GetRibozymeFamily(string name)
+    public static List<Ribozyme> GetFamily(string name)
     {
         return ribozyme_families[name];
     }

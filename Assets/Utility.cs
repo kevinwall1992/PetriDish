@@ -213,4 +213,23 @@ public class Utility
 
         return false;
     }
+
+    public static T GetOrAddComponent<T>(GameObject game_object) where T : MonoBehaviour
+    {
+        T component = game_object.GetComponent<T>();
+        if (component == null)
+            component = game_object.AddComponent<T>();
+
+        return component;
+    }
+
+    public static T GetOrAddComponent<T>(MonoBehaviour mono_behavior) where T : MonoBehaviour
+    {
+        return GetOrAddComponent<T>(mono_behavior.gameObject);
+    }
+
+    public static T GetOrAddComponent<T>(Transform transform) where T : MonoBehaviour
+    {
+        return GetOrAddComponent<T>(transform.gameObject);
+    }
 }

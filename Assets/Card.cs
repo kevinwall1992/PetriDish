@@ -120,6 +120,8 @@ public class Card : GoodBehavior, IPointerClickHandler, Spawner
         {
             compound_image.color = Color.Lerp(compound_image.color, Color.clear, Time.deltaTime * lerp_speed);
             card_scene_image.color = Color.Lerp(card_scene_image.color, Color.white, Time.deltaTime * lerp_speed);
+
+            Scene.Micro.Visualization.Speed = Utility.GetOrAddComponent<GoodBehavior>(image_panel).IsPointedAt ? 0.3f : 1;
         }
         else
         {

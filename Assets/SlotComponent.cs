@@ -8,9 +8,10 @@ public class SlotComponent : GoodBehavior, Spawner
     public Cell.Slot Slot { get; private set; }
 
     [SerializeField]
-    Transform left_corner, right_corner, outside;
+    Transform left_corner, right_corner, bottom_corner, outside;
     public Transform LeftCorner { get { return left_corner; } }
     public Transform RightCorner { get { return right_corner; } }
+    public Transform BottomCorner { get { return bottom_corner; } }
     public Transform Outside { get { return outside; } }
 
     [SerializeField]

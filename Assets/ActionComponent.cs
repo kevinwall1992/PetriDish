@@ -39,6 +39,13 @@ public class ActionComponent : MonoBehaviour
         Queue<Action> actions = new Queue<Action>();
         actions.Enqueue(action);
 
+        List<Transform> compound_positions = Utility.CreateList(SlotComponent.CompoundComponent.transform,
+                                                              SlotComponent.LeftCorner,
+                                                              SlotComponent.RightCorner,
+                                                              SlotComponent.BottomCorner);
+        Queue<Transform> incoming_compound_positions = new Queue<Transform>(compound_positions),
+                         outgoing_compound_positions = new Queue<Transform>(compound_positions);
+
         while (actions.Count > 0)
         {
             Action action = actions.Dequeue();
@@ -98,10 +105,13 @@ public class ActionComponent : MonoBehaviour
                     CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                     compound_component.SetCompound(compound);
                     compound_component.transform.SetParent(CellComponent.transform);
+                    compound_component.transform.localScale = new Vector3(0.75f, 0.75f);
                     compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
+                    Transform target = outgoing_compound_positions.Dequeue();
+
                     compound_component.gameObject.AddComponent<MoveAnimation>()
-                        .SetParameters(CellComponent.gameObject, CellComponent.GetSlotComponent(action.Slot).CompoundComponent.gameObject)
+                        .SetParameters(CellComponent.gameObject, target != null ? target.gameObject : SlotComponent.CompoundComponent.gameObject)
                         .SetLength(0.5f * length);
 
                     compound_component.gameObject.AddComponent<FadeAnimation>()
@@ -111,22 +121,16 @@ public class ActionComponent : MonoBehaviour
 
                 foreach (Compound compound in reaction.GetCytozolProducts())
                 {
-                    GameObject source = CellComponent.GetSlotComponent(action.Slot).CompoundComponent.gameObject;
-                    if (reaction.GetCytozolProducts().Count == 2)
-                    {
-                        if (reaction.GetCytozolProducts().IndexOf(compound) == 0)
-                            source = CellComponent.GetSlotComponent(action.Slot).LeftCorner.gameObject;
-                        else
-                            source = CellComponent.GetSlotComponent(action.Slot).RightCorner.gameObject;
-                    }
-
                     CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                     compound_component.SetCompound(compound);
                     compound_component.transform.SetParent(CellComponent.transform);
+                    compound_component.transform.localScale = new Vector3(0.75f, 0.75f);
                     compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
+                    Transform source = incoming_compound_positions.Dequeue();
+
                     compound_component.gameObject.AddComponent<MoveAnimation>()
-                        .SetParameters(source, CellComponent.gameObject)
+                        .SetParameters(source != null ? source.gameObject : SlotComponent.CompoundComponent.gameObject, CellComponent.gameObject)
                         .SetLength(0.5f * length, 0.5f * length);
 
                     compound_component.gameObject.AddComponent<FadeAnimation>()

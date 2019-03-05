@@ -103,14 +103,18 @@ public class CodonElement : DNAPanelElement
         switch (codon[0])
         {
             case 'A':
+                bool is_location = false;
+
                 int this_codon_index;
                 int command_codon_index = this_codon_index = DNAPanel.CodonLayout.GetElementIndex(gameObject);
                 while (--command_codon_index > 0 && DNAPanel.DNA.GetCodon(command_codon_index)[0] != 'C') ;
+                if (command_codon_index < 0)
+                    is_location = true;
+
                 int operand_index = this_codon_index - command_codon_index - 1;
 
-                bool is_location = false;
-
-                if (DNAPanel.DNA.GetCodon(this_codon_index - 1) == "GAA")
+                if (is_location) ;
+                else if (DNAPanel.DNA.GetCodon(this_codon_index - 1) == "GAA")
                     is_location = true;
                 else
                     switch (DNAPanel.DNA.GetCodon(command_codon_index))

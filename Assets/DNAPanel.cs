@@ -72,7 +72,6 @@ public class DNAPanel : DetailPanel
 
             if (DNA.Sequence.Length > 0)
                 show_arrow = true;
-                
         }
 
         if (show_arrow)
@@ -80,6 +79,12 @@ public class DNAPanel : DetailPanel
             arrow.gameObject.SetActive(true);
 
             int logical_index = GetLogicalActiveCommandCodonIndex();
+            if (logical_index < 0)
+            {
+                arrow.gameObject.SetActive(false);
+                return;
+            }
+
             int visual_index = GetVisualActiveCommandCodonIndex();
             if(logical_index != visual_index)
                 arrow.transform.SetParent(CodonLayout.GetCodonElement(logical_index).transform);
@@ -262,7 +267,9 @@ public class DNAPanel : DetailPanel
     int GetLogicalActiveCommandCodonIndex()
     {
         int command_codon_index = DNA.ActiveCodonIndex - 1;
-        while (DNA.GetCodon(++command_codon_index)[0] != 'C') ;
+        while (DNA.GetCodon(++command_codon_index)[0] != 'C')
+            if (command_codon_index >= DNA.CodonCount - 1)
+                return -1;
 
         return command_codon_index;
     }

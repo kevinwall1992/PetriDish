@@ -165,7 +165,6 @@ public class Solution : MutableContainer<Compound>, Volume
         public PrecisionSolution(decimal water_quantity)
         {
             AddCompound(Molecule.Water, water_quantity);
-            heat = 298 * water_quantity * Molecule.Water.Mass;
         }
 
         PrecisionCompound GetCompound(Molecule molecule)
@@ -213,7 +212,9 @@ public class Solution : MutableContainer<Compound>, Volume
                 }
 
             GetCompound(compound.molecule).quantity += compound.quantity;
-            heat += Temperature * compound.molecule.Mass * compound.quantity;
+
+            //Just assume temperature of compounds added for now.
+            heat += 298 * compound.molecule.Mass * compound.quantity;
 
             if (!is_primitive_ion)
             {

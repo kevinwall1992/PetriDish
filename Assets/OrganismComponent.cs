@@ -109,6 +109,8 @@ public class OrganismComponent : GoodBehavior
                 float length = 1.5f;
                 if (action is PoweredAction)
                     length = 3;
+                else if(action is ReactionAction || action is EnergeticReactionAction)
+                    length = 3;
 
                 gameObject.AddComponent<ActionComponent>().SetAction(action, length);
             }
@@ -203,7 +205,7 @@ public class OrganismComponent : GoodBehavior
             {
                 if (action is Interpretase.Command)
                     commands.Add(action);
-                else if (action is ReactionAction)
+                else if (action is ReactionAction || action is EnergeticReactionAction)
                     reactions.Add(action);
                 else if (action is MoveToSlotAction)
                     move_actions.Add(action);

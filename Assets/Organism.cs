@@ -302,7 +302,7 @@ public class Organism : Chronal, Versionable<Organism>
                     {
                         if (action is Interpretase.Command)
                             commands.Add(action);
-                        else if (action is ReactionAction)
+                        else if (action is ReactionAction || action is EnergeticReactionAction)
                             reactions.Add(action);
                         else if (action is MoveToSlotAction)
                             move_actions.Add(action);

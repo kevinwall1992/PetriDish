@@ -77,7 +77,7 @@ public class CellComponent : GoodBehavior, IPointerClickHandler
 
         if (IsCytozolTouched)
             OrganismComponent.CytozolDetailPanel.Open();
-        else
+        else if(SlotComponentPointedAt.DetailPanel != null)
             SlotComponentPointedAt.DetailPanel.Open();
        
     }

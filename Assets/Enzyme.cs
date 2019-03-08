@@ -116,6 +116,7 @@ public class Enzyme : Polymer, Catalyst
     public string Description { get { return Catalyst.Description; } }
     public int Price { get { return Catalyst.Price; } }
     public Example Example { get { return Catalyst.Example; } }
+    public int Power { get { return Catalyst.Power; } }
 
     public CatalystOrientation Orientation { get { return Catalyst.Orientation; } }
     public IEnumerable<Compound> Cofactors { get { return Catalyst.Cofactors; } }
@@ -135,10 +136,11 @@ public class Enzyme : Polymer, Catalyst
 
     public string DNASequence { get { return AminoAcidSequenceToDNASequence(AminoAcidSequence); } }
 
-    public Enzyme(Catalyst catalyst_, int length)
+    public Enzyme(Catalyst catalyst_)
     {
         Catalyst = catalyst_;
 
+        int length = Catalyst.Power / 2;
         List<AminoAcid> amino_acid_sequence = GenerateAminoAcidSequence(length);
         Enzyme enzyme = GetEnzyme(Catalyst, length);
         if (enzyme != null)
@@ -149,14 +151,6 @@ public class Enzyme : Polymer, Catalyst
 
         if (!enzymes.ContainsKey(DNASequence))
             enzymes[DNASequence] = this;
-    }
-
-    private Enzyme(Catalyst catalyst_, string dna_sequence)
-    {
-        Catalyst = catalyst_;
-
-        foreach (AminoAcid amino_acid in DNASequenceToAminoAcidSequence(dna_sequence))
-            AddMonomer(amino_acid);
     }
 
     public override void AddMonomer(Monomer monomer)
@@ -175,24 +169,9 @@ public class Enzyme : Polymer, Catalyst
         Catalyst mutant_catalyst = Catalyst.Mutate();
 
         if (MathUtility.Roll(0.9f))
-        {
-            Enzyme enzyme = Enzyme.GetEnzyme(mutant_catalyst, AminoAcidSequence.Count);
-
-            if (enzyme == null)
-                enzyme = new Enzyme(mutant_catalyst, AminoAcidSequence.Count);
-
-            return enzyme;
-        }
+            return new Enzyme(mutant_catalyst);
         else
-        {
-            int codon_count = AminoAcidSequence.Count * 2;
-            Ribozyme ribozyme = Ribozyme.GetRibozyme(mutant_catalyst, codon_count);
-
-            if (ribozyme == null)
-                ribozyme = new Ribozyme(mutant_catalyst, codon_count);
-
-            return ribozyme;
-        }
+            return new Ribozyme(mutant_catalyst);
     }
 
     public void RotateLeft() { Catalyst.RotateLeft(); }
@@ -205,7 +184,7 @@ public class Enzyme : Polymer, Catalyst
 
     public override Molecule Copy()
     {
-        return new Enzyme(Catalyst.Copy(), DNASequence);
+        return new Enzyme(Catalyst.Copy());
     }
 }
 

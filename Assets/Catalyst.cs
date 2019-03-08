@@ -11,6 +11,8 @@ public interface Catalyst : Copiable<Catalyst>
 
     Example Example { get; }
 
+    int Power { get; }
+
     //State
     CatalystOrientation Orientation { get; }
     IEnumerable<Compound> Cofactors { get; }
@@ -40,6 +42,8 @@ public abstract class ProgressiveCatalyst : Catalyst
     public int Price { get; private set; }
 
     public virtual Example Example { get { return null; } }
+
+    public abstract int Power { get; }
 
     public CatalystOrientation Orientation { get; private set; }
     public IEnumerable<Compound> Cofactors { get { return cofactors; } }
@@ -172,6 +176,8 @@ public class Rotase : ProgressiveCatalyst
         }
     }
 
+    public override int Power { get { return 6; } }
+
     public Rotase() : base("Rotase", 1, "Rotates cells")
     {
 
@@ -210,6 +216,8 @@ public class Rotase : ProgressiveCatalyst
 
 public class Constructase : ProgressiveCatalyst
 {
+    public override int Power { get { return 8; } }
+
     public Constructase() : base("Constructase", 1, "Makes new cells")
     {
 
@@ -257,6 +265,8 @@ public class Constructase : ProgressiveCatalyst
 public class Pipase : InstantCatalyst
 {
     Cell.Slot.Relation source_relation, destination_relation;
+
+    public override int Power { get { return 5; } }
 
     public Pipase(Cell.Slot.Relation source_, Cell.Slot.Relation destination_) : base("Pipase", 1, "Moves compounds from a specific slot to another")
     {
@@ -316,6 +326,8 @@ public class Pumpase : InstantCatalyst
 {
     bool pump_out;
     Molecule molecule;
+
+    public override int Power { get { return 6; } }
 
     public Pumpase(bool pump_out_, Molecule molecule_) 
         : base(pump_out_ ? "Exopumpase" : "Endopumpase", 
@@ -483,6 +495,8 @@ public class PumpAction : Action
 
 public class Transcriptase : InstantCatalyst
 {
+    public override int Power { get { return 9; } }
+
     public Transcriptase() : base("Transcriptase", 3, "Copies DNA")
     {
 
@@ -555,6 +569,8 @@ public class Transcriptase : InstantCatalyst
 
 public class Actuase : InstantCatalyst
 {
+    public override int Power { get { return 7; } }
+
     public Actuase() : base("Actuase", 2, "Moves compounds using a DNA program.")
     {
 
@@ -594,6 +610,8 @@ public class Actuase : InstantCatalyst
 
 public class Sporulase : ProgressiveCatalyst
 {
+    public override int Power { get { return 8; } }
+
     public Sporulase() : base("Sporulase", 2, "Detatches a cell, creating a new organism")
     {
 

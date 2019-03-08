@@ -44,8 +44,10 @@ public class Ribozyme : DNA, Catalyst
         return dna_sequence;
     }
 
-    static string GetDNASequence(Catalyst catalyst, int codon_count)
+    static string GetDNASequence(Catalyst catalyst)
     {
+        int codon_count = catalyst.Power;
+
         Ribozyme ribozyme = GetRibozyme(catalyst, codon_count);
         if (ribozyme != null)
             return ribozyme.Sequence;
@@ -61,21 +63,17 @@ public class Ribozyme : DNA, Catalyst
     public string Description { get { return Catalyst.Description; } }
     public int Price { get { return Catalyst.Price; } }
     public Example Example { get { return Catalyst.Example; } }
+    public int Power { get { return Catalyst.Power; } }
 
     public CatalystOrientation Orientation { get { return Catalyst.Orientation; } }
     public IEnumerable<Compound> Cofactors { get { return Catalyst.Cofactors; } }
 
-    public Ribozyme(Catalyst catalyst_, int codon_count) : base(GetDNASequence(catalyst_, codon_count))
+    public Ribozyme(Catalyst catalyst_) : base(GetDNASequence(catalyst_))
     {
         Catalyst = catalyst_;
 
         if (!ribozymes.ContainsKey(Sequence))
             ribozymes[Sequence] = this;
-    }
-
-    private Ribozyme(Catalyst catalyst_, string sequence) : base(sequence)
-    {
-        Catalyst = catalyst_;
     }
 
     public Action Catalyze(Cell.Slot slot)
@@ -88,24 +86,9 @@ public class Ribozyme : DNA, Catalyst
         Catalyst mutant_catalyst = Catalyst.Mutate();
 
         if (MathUtility.Roll(0.9f))
-        {
-            Ribozyme ribozyme = Ribozyme.GetRibozyme(mutant_catalyst, CodonCount);
-
-            if (ribozyme == null)
-                ribozyme = new Ribozyme(mutant_catalyst, CodonCount);
-
-            return ribozyme;
-        }
+            return new Ribozyme(mutant_catalyst);
         else
-        {
-            int length = CodonCount / 2;
-            Enzyme enzyme = Enzyme.GetEnzyme(mutant_catalyst, length);
-
-            if(enzyme == null)
-                enzyme = new Enzyme(mutant_catalyst, length);
-
-            return enzyme;
-        }
+            return new Enzyme(mutant_catalyst);
     }
 
     public void RotateLeft() { Catalyst.RotateLeft(); }
@@ -118,6 +101,6 @@ public class Ribozyme : DNA, Catalyst
 
     public override Molecule Copy()
     {
-        return new Ribozyme(Catalyst.Copy(), Sequence);
+        return new Ribozyme(Catalyst.Copy());
     }
 }

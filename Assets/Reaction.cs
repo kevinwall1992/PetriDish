@@ -547,12 +547,23 @@ public class Reaction
 
                 //Need to determine type of catalyst
                 //Assuming ribozyme for now
-                cell.Slots[0].AddCompound(new Ribozyme(this, 1), 1);
+                cell.Slots[0].AddCompound(new Ribozyme(this), 1);
 
                 foreach(Compound compound in slot_reactants.Keys)
                     cell.Slots[slot_reactants[compound]].AddCompound(compound);
 
                 return new Example(organism, 1);
+            }
+        }
+
+        public override int Power
+        {
+            get
+            {
+                return (int)(8 *
+                             reaction.potential.Value /
+                             reaction.GetMaxWeight() /
+                             PotentialFunction.BasePotential);
             }
         }
 
@@ -724,10 +735,7 @@ public class Reaction
         Reaction reaction;
 
         public ReactionRibozyme(string name, Reaction reaction_) 
-            : base(new CatalystImplementation(name, reaction_), (int)(8 * 
-                               reaction_.potential.Value / 
-                               reaction_.GetMaxWeight() / 
-                               PotentialFunction.BasePotential))
+            : base(new CatalystImplementation(name, reaction_))
         {
             reaction = reaction_;
         }
@@ -743,10 +751,7 @@ public class Reaction
         Reaction reaction;
 
         public ReactionEnzyme(string name, Reaction reaction_)
-            : base(new CatalystImplementation(name, reaction_), (int)(16 *
-                               reaction_.potential.Value /
-                               reaction_.GetMaxWeight() /
-                               PotentialFunction.BasePotential))
+            : base(new CatalystImplementation(name, reaction_))
         {
             reaction = reaction_;
         }

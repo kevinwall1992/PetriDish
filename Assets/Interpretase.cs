@@ -3,6 +3,8 @@
 
 public class Interpretase : ProgressiveCatalyst
 {
+    public override int Power { get { return 10; } }
+
     public Interpretase() : base("Interpretase", 3, "Interprets DNA programs")
     {
 

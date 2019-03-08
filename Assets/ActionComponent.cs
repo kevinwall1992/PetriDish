@@ -206,11 +206,11 @@ public class ActionComponent : MonoBehaviour
                 }
                 else if (action is MoveToCytozolAction)
                 {
-                    MoveToCytozolAction move_to_cytozol_action = action as MoveToCytozolAction;
+                    MoveToCytozolAction move_to_cytosol_action = action as MoveToCytozolAction;
 
-                    compound_component.SetCompound(move_to_cytozol_action.MovedCompound);
+                    compound_component.SetCompound(move_to_cytosol_action.MovedCompound);
 
-                    source_slot = move_to_cytozol_action.Source;
+                    source_slot = move_to_cytosol_action.Source;
                     destination_game_object = OrganismComponent.gameObject;
                 }
                 else if (action is MoveToLocaleAction)

@@ -210,8 +210,8 @@ public class ReactionAction : Action
 {
     protected Dictionary<Cell.Slot, Compound> slot_reactants = new Dictionary<Cell.Slot, Compound>(),
                                               slot_products = new Dictionary<Cell.Slot, Compound>();
-    protected List<Compound> cytozol_reactants = new List<Compound>(),
-                             cytozol_products = new List<Compound>();
+    protected List<Compound> cytosol_reactants = new List<Compound>(),
+                             cytosol_products = new List<Compound>();
 
     public IEnumerable<Cell.Slot> ReactantSlots { get { return slot_reactants.Keys; } }
     public IEnumerable<Cell.Slot> ProductSlots { get { return slot_products.Keys; } }
@@ -219,8 +219,8 @@ public class ReactionAction : Action
     public ReactionAction(Cell.Slot slot,
                     Dictionary<Cell.Slot, Compound> slot_reactants_, 
                     Dictionary<Cell.Slot, Compound> slot_products_, 
-                    List<Compound> cytozol_reactants_, 
-                    List<Compound> cytozol_products_,
+                    List<Compound> cytosol_reactants_, 
+                    List<Compound> cytosol_products_,
                     float cost = 1) : base(slot, cost)
     {
         if(slot_reactants_ != null)
@@ -229,11 +229,11 @@ public class ReactionAction : Action
         if (slot_products_ != null)
             slot_products = slot_products_;
 
-        if (cytozol_reactants_ != null)
-            cytozol_reactants = cytozol_reactants_;
+        if (cytosol_reactants_ != null)
+            cytosol_reactants = cytosol_reactants_;
 
-        if (cytozol_products_ != null)
-            cytozol_products = cytozol_products_;
+        if (cytosol_products_ != null)
+            cytosol_products = cytosol_products_;
     }
 
     protected ReactionAction(Cell.Slot slot) : base(slot, 1)
@@ -254,7 +254,7 @@ public class ReactionAction : Action
                 source.Compound.Quantity < slot_reactants[source].Quantity)
                 Fail();
 
-        foreach (Compound reactant in cytozol_reactants)
+        foreach (Compound reactant in cytosol_reactants)
             if (Organism.Cytozol.GetQuantity(reactant.Molecule) < reactant.Quantity)
                 Fail();
 
@@ -266,7 +266,7 @@ public class ReactionAction : Action
         foreach (Cell.Slot source in slot_reactants.Keys)
             source.Compound.Split(slot_reactants[source].Quantity);
 
-        foreach (Compound reactant in cytozol_reactants)
+        foreach (Compound reactant in cytosol_reactants)
             Organism.Cytozol.RemoveCompound(reactant);
     }
 
@@ -275,7 +275,7 @@ public class ReactionAction : Action
         foreach (Cell.Slot destination in slot_products.Keys)
             destination.AddCompound(slot_products[destination]);
 
-        foreach (Compound product in cytozol_products)
+        foreach (Compound product in cytosol_products)
             Organism.Cytozol.AddCompound(product);
     }
 
@@ -302,12 +302,12 @@ public class ReactionAction : Action
     //Want to make these two immutable/readonly lists somehow
     public List<Compound> GetCytozolReactants()
     {
-        return cytozol_reactants;
+        return cytosol_reactants;
     }
 
     public List<Compound> GetCytozolProducts()
     {
-        return cytozol_products;
+        return cytosol_products;
     }
 }
 

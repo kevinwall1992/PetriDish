@@ -59,15 +59,15 @@ public class OrganismComponent : GoodBehavior
     public GameObject South { get { return south; } }
     public GameObject West { get { return west; } }
 
-    DetailPanel cytozol_detail_panel;
+    DetailPanel cytosol_detail_panel;
     public DetailPanel CytozolDetailPanel
     {
         get
         {
-            if (cytozol_detail_panel == null)
-                cytozol_detail_panel = CompoundGridPanel.Create(Organism.Cytozol);
+            if (cytosol_detail_panel == null)
+                cytosol_detail_panel = CompoundGridPanel.Create(Organism.Cytozol);
 
-            return cytozol_detail_panel;
+            return cytosol_detail_panel;
         }
     }
 

@@ -6,10 +6,10 @@ using UnityEngine.EventSystems;
 public class CellComponent : GoodBehavior, IPointerClickHandler
 {
     [SerializeField]
-    Collider2D cytozol_collider;
+    Collider2D cytosol_collider;
 
     [SerializeField]
-    SpriteRenderer cytozol_highlight;
+    SpriteRenderer cytosol_highlight;
 
     int last_slot0_index = 0;
 
@@ -47,12 +47,12 @@ public class CellComponent : GoodBehavior, IPointerClickHandler
 
     public bool IsCytozolPointedAt
     {
-        get { return cytozol_collider.GetComponent<GoodBehavior>().IsPointedAt; }
+        get { return cytosol_collider.GetComponent<GoodBehavior>().IsPointedAt; }
     }
 
     public bool IsCytozolTouched
     {
-        get { return cytozol_collider.GetComponent<GoodBehavior>().IsTouched; }
+        get { return cytosol_collider.GetComponent<GoodBehavior>().IsTouched; }
     }
 
     private void Awake()
@@ -67,7 +67,7 @@ public class CellComponent : GoodBehavior, IPointerClickHandler
 
     void Update()
     {
-        cytozol_highlight.gameObject.SetActive(IsCytozolTouched);
+        cytosol_highlight.gameObject.SetActive(IsCytozolTouched);
     }
 
     public void OnPointerClick(PointerEventData eventData)

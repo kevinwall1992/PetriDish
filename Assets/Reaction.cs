@@ -521,8 +521,8 @@ public class Reaction
 
         Dictionary<Compound, int> slot_reactants= new Dictionary<Compound, int>(), 
                                   slot_products= new Dictionary<Compound, int>();
-        List<Compound> cytozol_reactants= new List<Compound>(), 
-                       cytozol_products= new List<Compound>();
+        List<Compound> cytosol_reactants= new List<Compound>(), 
+                       cytosol_products= new List<Compound>();
         ActivityFunction activity_function;
 
         float ATP_balance;
@@ -542,7 +542,7 @@ public class Reaction
                 else
                     organism.Cytozol.AddCompound(Molecule.ATP, -ATP_balance * 10);
 
-                foreach (Compound compound in cytozol_reactants)
+                foreach (Compound compound in cytosol_reactants)
                     organism.Cytozol.AddCompound(compound.Molecule, compound.Quantity * 10);
 
                 //Need to determine type of catalyst
@@ -574,7 +574,7 @@ public class Reaction
                 if (reaction.reactants[compound].IsTrue)
                     slot_reactants[compound] = Utility.RemoveElementAt(available_slots, 0);
                 else
-                    cytozol_reactants.Add(compound);
+                    cytosol_reactants.Add(compound);
                 
                 enthalpy += compound.Molecule.Enthalpy;
             }
@@ -584,7 +584,7 @@ public class Reaction
                 if (reaction.products[compound].IsTrue)
                     slot_products[compound] = Utility.RemoveElementAt(available_slots, 0);
                 else
-                    cytozol_products.Add(compound);
+                    cytosol_products.Add(compound);
 
                 enthalpy -= compound.Molecule.Enthalpy;
             }
@@ -630,20 +630,20 @@ public class Reaction
             foreach (Compound compound in this.slot_products.Keys)
                 slot_products[slot.Cell.Slots[slot.Index + this.slot_products[compound]]] = new Compound(compound.Molecule, compound.Quantity * activity);
 
-            List<Compound> cytozol_reactants = new List<Compound>();
-            foreach (Compound compound in this.cytozol_reactants)
-                cytozol_reactants.Add(new Compound(compound.Molecule, compound.Quantity * activity));
+            List<Compound> cytosol_reactants = new List<Compound>();
+            foreach (Compound compound in this.cytosol_reactants)
+                cytosol_reactants.Add(new Compound(compound.Molecule, compound.Quantity * activity));
 
-            List<Compound> cytozol_products = new List<Compound>();
-            foreach (Compound compound in this.cytozol_products)
-                cytozol_products.Add(new Compound(compound.Molecule, compound.Quantity * activity));
+            List<Compound> cytosol_products = new List<Compound>();
+            foreach (Compound compound in this.cytosol_products)
+                cytosol_products.Add(new Compound(compound.Molecule, compound.Quantity * activity));
 
             return new EnergeticReactionAction(slot, 
                                                new ReactionAction(slot,
                                                                   slot_reactants,
                                                                   slot_products,
-                                                                  cytozol_reactants,
-                                                                  cytozol_products), 
+                                                                  cytosol_reactants,
+                                                                  cytosol_products), 
                                                ATP_balance * activity);
         }
 

@@ -9,11 +9,11 @@ public class Organism : Chronal, Versionable<Organism>
     List<List<Cell>> cells= new List<List<Cell>>();
 
     //3.3e-11 moles is based on model cell with volume of 0.6 cubic micrometers
-    Cytozol cytozol= new Cytozol(Measures.MolesToSmoles(3.3e-14f));
+    Cytozol cytosol= new Cytozol(Measures.MolesToSmoles(3.3e-14f));
 
     Membrane membrane;
 
-    public Cytozol Cytozol{ get { return cytozol; } }
+    public Cytozol Cytozol{ get { return cytosol; } }
     public Membrane Membrane { get { return membrane; } }
     public Locale Locale { get; set; }
 
@@ -342,9 +342,9 @@ public class Organism : Chronal, Versionable<Organism>
             }
         }
 
-        organism.cytozol = new Cytozol(0);
-        foreach (Molecule molecule in cytozol.Molecules)
-            organism.cytozol.AddCompound(new Compound(molecule.Copy(), cytozol.GetQuantity(molecule)));
+        organism.cytosol = new Cytozol(0);
+        foreach (Molecule molecule in cytosol.Molecules)
+            organism.cytosol.AddCompound(new Compound(molecule.Copy(), cytosol.GetQuantity(molecule)));
 
         return organism;
     }
@@ -374,11 +374,11 @@ public class Organism : Chronal, Versionable<Organism>
         }
 
 
-        foreach (Molecule molecule in cytozol.Molecules)
-            cytozol.RemoveCompound(molecule, cytozol.GetQuantity(molecule));
+        foreach (Molecule molecule in cytosol.Molecules)
+            cytosol.RemoveCompound(molecule, cytosol.GetQuantity(molecule));
 
-        foreach (Molecule molecule in other.cytozol.Molecules)
-            cytozol.AddCompound(new Compound(molecule.Copy(), other.cytozol.GetQuantity(molecule)));
+        foreach (Molecule molecule in other.cytosol.Molecules)
+            cytosol.AddCompound(new Compound(molecule.Copy(), other.cytosol.GetQuantity(molecule)));
     }
 
     public bool IsSameVersion(Organism other)
@@ -407,8 +407,8 @@ public class Organism : Chronal, Versionable<Organism>
                         return false;
                 }
 
-        foreach (Molecule molecule in cytozol.Molecules)
-            if (cytozol.GetQuantity(molecule) != other.cytozol.GetQuantity(molecule))
+        foreach (Molecule molecule in cytosol.Molecules)
+            if (cytosol.GetQuantity(molecule) != other.cytosol.GetQuantity(molecule))
                 return false;
 
         return true;

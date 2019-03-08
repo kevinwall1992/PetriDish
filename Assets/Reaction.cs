@@ -651,6 +651,11 @@ public class Reaction
         {
             return reaction.Mutate().Catalyst;
         }
+
+        public override Catalyst Copy()
+        {
+            return new CatalystImplementation(Name, reaction).CopyStateFrom(this);
+        }
     }
 
     Reaction Mutate()

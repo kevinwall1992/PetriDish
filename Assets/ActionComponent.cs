@@ -31,9 +31,9 @@ public class ActionComponent : MonoBehaviour
         action = action_;
         length = length_;
 
-        action.Prepare();
-        if (action.HasFailed)
+        if (!action.Prepare())
             return;
+
         action.Begin();
 
         Queue<Action> actions = new Queue<Action>();
@@ -65,8 +65,7 @@ public class ActionComponent : MonoBehaviour
             {
                 ReactionAction reaction = action as ReactionAction;
 
-                List<Cell.Slot> reactant_slots = reaction.GetReactantSlots();
-                foreach (Cell.Slot reactant_slot in reactant_slots)
+                foreach (Cell.Slot reactant_slot in reaction.ReactantSlots)
                 {
                     CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                     compound_component.SetCompound(reaction.GetReactant(reactant_slot));
@@ -83,8 +82,7 @@ public class ActionComponent : MonoBehaviour
                         .SetLength(0.2f * length, 0.4f * length);
                 }
 
-                List<Cell.Slot> product_slots = reaction.GetProductSlots();
-                foreach (Cell.Slot product_slot in product_slots)
+                foreach (Cell.Slot product_slot in reaction.ProductSlots)
                 {
                     CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                     compound_component.SetCompound(reaction.GetProduct(product_slot));

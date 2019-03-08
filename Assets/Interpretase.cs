@@ -31,6 +31,8 @@ public class Interpretase : ProgressiveCatalyst
 
         int operand_index = command_codon_index + 1;
 
+        Command null_command = new NullCommand(slot, dna_slot, step_codon_index);
+
         switch (codon)
         {
             case "CAA":
@@ -39,7 +41,7 @@ public class Interpretase : ProgressiveCatalyst
             case "CTT":
                 object source_location = CodonToLocation(slot, operand_index, out operand_index);
                 if (!(source_location is Cell.Slot))
-                    return new NullCommand(slot, dna_slot, step_codon_index);
+                    return null_command;
                 Cell.Slot source_slot = source_location as Cell.Slot;
 
                 float quantity = 0;
@@ -58,18 +60,18 @@ public class Interpretase : ProgressiveCatalyst
             case "CCA":
                 object a_location = CodonToLocation(slot, operand_index, out operand_index);
                 if (!(a_location is Cell.Slot))
-                    return new NullCommand(slot, dna_slot, step_codon_index);
+                    return null_command;
 
                 object b_location = CodonToLocation(slot, operand_index, out operand_index);
                 if (!(b_location is Cell.Slot))
-                    return new NullCommand(slot, dna_slot, step_codon_index);
+                    return null_command;
 
                 return new SwapCommand(slot, dna_slot, step_codon_index, a_location as Cell.Slot, b_location as Cell.Slot);
 
             case "CAC":
                 object activation_location = CodonToLocation(slot, operand_index, out operand_index);
                 if (!(activation_location is Cell.Slot))
-                    return new NullCommand(slot, dna_slot, step_codon_index);
+                    return null_command;
 
                 int activation_count = ComputeFunction(slot, operand_index);
 
@@ -78,19 +80,19 @@ public class Interpretase : ProgressiveCatalyst
             case "CAG":
                 object goto_location = CodonToLocation(slot, operand_index, out operand_index);
                 if (!(goto_location is string))
-                    return new NullCommand(slot, dna_slot, step_codon_index);
+                    return null_command;
 
                 int condition_value = ComputeFunction(slot, operand_index);
                 
                 if (condition_value != 0)
                     return new GoToCommand(slot, dna_slot, step_codon_index, goto_location as string, condition_value);
                 else
-                    return new NullCommand(slot, dna_slot, step_codon_index);
+                    return null_command;
 
             case "CCG":
                 object else_location = CodonToLocation(slot, operand_index, out operand_index);
                 if (!(else_location is string))
-                    return new NullCommand(slot, dna_slot, step_codon_index);
+                    return null_command;
 
                 return new TryCommand(slot, 
                                       dna_slot, 
@@ -101,11 +103,11 @@ public class Interpretase : ProgressiveCatalyst
             case "CAT":
                 object cut_location = CodonToLocation(slot, operand_index, out operand_index);
                 if (!(cut_location is string))
-                    return new NullCommand(slot, dna_slot, step_codon_index);
+                    return null_command;
 
                 object paste_location = CodonToLocation(slot, operand_index, out operand_index);
                 if (!(paste_location is Cell.Slot))
-                    return new NullCommand(slot, dna_slot, step_codon_index);
+                    return null_command;
 
                 return new CutCommand(slot,
                                       dna_slot,
@@ -400,6 +402,12 @@ public class Interpretase : ProgressiveCatalyst
 
         return ComputeFunction(catalyst_slot, function_codon_index, out next_codon_index);
     }
+
+    public override Catalyst Copy()
+    {
+        return new Interpretase().CopyStateFrom(this);
+    }
+
 
     public class Command : Action
     {

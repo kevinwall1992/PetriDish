@@ -4,26 +4,14 @@
 public class Enzyme : Polymer, Catalyst
 {
     static Dictionary<string, Enzyme> enzymes = new Dictionary<string, Enzyme>();
-    static Dictionary<string, List<Enzyme>> enzyme_families = new Dictionary<string, List<Enzyme>>();
 
     static Dictionary<string, AminoAcid> amino_acid_codon_map = new Dictionary<string, AminoAcid>();
-
-    public static IEnumerable<string> FamilyNames { get { return enzyme_families.Keys; } }
 
     static Enzyme()
     {
         amino_acid_codon_map["AGC"] = AminoAcid.Alanine;
         amino_acid_codon_map["ATC"] = AminoAcid.Histidine;
         amino_acid_codon_map["GCT"] = AminoAcid.Serine;
-    }
-
-    public static void RegisterNamedEnzyme(Enzyme enzyme, string name)
-    {
-        enzymes[AminoAcidSequenceToString(enzyme.AminoAcidSequence)] = enzyme;
-
-        if (!enzyme_families.ContainsKey(name))
-            enzyme_families[name] = new List<Enzyme>();
-        enzyme_families[name].Add(enzyme);
     }
 
     static string AminoAcidSequenceToString(List<AminoAcid> amino_acid_sequence)
@@ -67,18 +55,13 @@ public class Enzyme : Polymer, Catalyst
         return null;
     }
 
-    public static Enzyme GetEnzyme(Catalyst catalyst, int length)
+    public static Enzyme GetEnzyme(Catalyst catalyst, int length = -1)
     {
         foreach (Enzyme enzyme in enzymes.Values)
-            if (enzyme.AminoAcidSequence.Count == length && enzyme.Catalyst.Equals(catalyst))
+            if (length < 0 || enzyme.AminoAcidSequence.Count == length && enzyme.Catalyst.Equals(catalyst))
                 return enzyme;
 
         return null;
-    }
-
-    public static List<Enzyme> GetFamily(string name)
-    {
-        return enzyme_families[name];
     }
 
     public static AminoAcid CodonToAminoAcid(string codon)
@@ -128,21 +111,14 @@ public class Enzyme : Polymer, Catalyst
 
     protected Catalyst Catalyst { get; private set; }
 
-    public override string Name
-    {
-        get
-        {
-            foreach (string name in enzyme_families.Keys)
-                if (enzyme_families[name].Contains(this))
-                    return name;
-
-            return "Unnamed";
-        }
-    }
+    public override string Name { get { return Catalyst.Name; } }
 
     public string Description { get { return Catalyst.Description; } }
     public int Price { get { return Catalyst.Price; } }
     public Example Example { get { return Catalyst.Example; } }
+
+    public CatalystOrientation Orientation { get { return Catalyst.Orientation; } }
+    public IEnumerable<Compound> Cofactors { get { return Catalyst.Cofactors; } }
 
     public List<AminoAcid> AminoAcidSequence
     {
@@ -163,10 +139,24 @@ public class Enzyme : Polymer, Catalyst
     {
         Catalyst = catalyst_;
 
-        foreach (AminoAcid amino_acid in GenerateAminoAcidSequence(length))
+        List<AminoAcid> amino_acid_sequence = GenerateAminoAcidSequence(length);
+        Enzyme enzyme = GetEnzyme(Catalyst, length);
+        if (enzyme != null)
+            amino_acid_sequence = enzyme.AminoAcidSequence;
+
+        foreach (AminoAcid amino_acid in amino_acid_sequence)
             AddMonomer(amino_acid);
 
-        RegisterNamedEnzyme(this, Catalyst.Name);
+        if (!enzymes.ContainsKey(DNASequence))
+            enzymes[DNASequence] = this;
+    }
+
+    private Enzyme(Catalyst catalyst_, string dna_sequence)
+    {
+        Catalyst = catalyst_;
+
+        foreach (AminoAcid amino_acid in DNASequenceToAminoAcidSequence(dna_sequence))
+            AddMonomer(amino_acid);
     }
 
     public override void AddMonomer(Monomer monomer)
@@ -203,6 +193,19 @@ public class Enzyme : Polymer, Catalyst
 
             return ribozyme;
         }
+    }
+
+    public void RotateLeft() { Catalyst.RotateLeft(); }
+    public void RotateRight() { Catalyst.RotateLeft(); }
+
+    public bool CanAddCofactor(Compound cofactor) { return Catalyst.CanAddCofactor(cofactor); }
+    public void AddCofactor(Compound cofactor) { Catalyst.AddCofactor(cofactor); }
+
+    Catalyst Copiable<Catalyst>.Copy() { return Copy() as Ribozyme; }
+
+    public override Molecule Copy()
+    {
+        return new Enzyme(Catalyst.Copy(), DNASequence);
     }
 }
 

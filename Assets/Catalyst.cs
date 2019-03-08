@@ -1,13 +1,25 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public interface Catalyst
+public enum CatalystOrientation { Rest, Left, Right };
+public interface Catalyst : Copiable<Catalyst>
 {
+    //Same across all instances
     string Name { get; }
     string Description { get; }
     int Price { get; }
 
     Example Example { get; }
+
+    //State
+    CatalystOrientation Orientation { get; }
+    IEnumerable<Compound> Cofactors { get; }
+
+    void RotateLeft();
+    void RotateRight();
+
+    bool CanAddCofactor(Compound cofactor);
+    void AddCofactor(Compound cofactor);
 
     Action Catalyze(Cell.Slot slot);
 
@@ -19,13 +31,18 @@ public interface Catalyst
 //turns building up to it. 
 public abstract class ProgressiveCatalyst : Catalyst
 {
-    static Dictionary<Cell.Slot, Action> actions_in_progress = new Dictionary<Cell.Slot, Action>();
+    float progress = 0;
+
+    List<Compound> cofactors = new List<Compound>();
 
     public string Name { get; private set; }
     public string Description { get; private set; }
     public int Price { get; private set; }
 
     public virtual Example Example { get { return null; } }
+
+    public CatalystOrientation Orientation { get; private set; }
+    public IEnumerable<Compound> Cofactors { get { return cofactors; } }
 
     public ProgressiveCatalyst(string name, int price, string description = "")
     {
@@ -36,35 +53,22 @@ public abstract class ProgressiveCatalyst : Catalyst
 
     protected abstract Action GetAction(Cell.Slot slot);
 
-    protected Action GetActionInProgress(Cell.Slot slot)
-    {
-        if (!actions_in_progress.ContainsKey(slot))
-            actions_in_progress[slot] = null;
-
-        Action action = actions_in_progress[slot];
-
-        if (action == null || action.HasFailed || action.IsPaidFor)
-            actions_in_progress[slot] = GetAction(slot);
-
-        action = actions_in_progress[slot];
-        if (action != null && action.Prepare())
-            return action;
-        else
-            return null;
-    }
-
     public virtual Action Catalyze(Cell.Slot slot)
     {
-        Action action = GetActionInProgress(slot);
-        if (action == null)
+        progress += slot.Compound.Quantity;
+
+        Action action = GetAction(slot);
+
+        if(action == null || !action.Prepare())
+        {
+            progress = 0;
+            return null;
+        }
+
+        if (action.Cost > progress)
             return null;
 
-        action.Pay(slot.Compound.Quantity);
-
-        if (action.IsPaidFor)
-            return action;
-        else
-            return null;
+        return action;
     }
 
     protected static T GetMoleculeInSlotAs<T>(Cell.Slot slot) where T : Molecule
@@ -84,10 +88,46 @@ public abstract class ProgressiveCatalyst : Catalyst
                 new Interpretase(),
                 new Rotase(),
                 new Constructase(),
-                new Pipase(Pipase.Location.Five, Pipase.Location.Across),
+                new Pipase(Cell.Slot.Relation.Five, Cell.Slot.Relation.Across),
                 new Transcriptase(),
                 new Actuase(),
                 new Sporulase()));
+    }
+
+    public void RotateLeft()
+    {
+        Orientation = (CatalystOrientation)(((int)Orientation + 2) % 3);
+    }
+
+    public void RotateRight()
+    {
+        Orientation = (CatalystOrientation)(((int)Orientation + 1) % 3);
+    }
+
+    public virtual bool CanAddCofactor(Compound cofactor)
+    {
+        return false;
+    }
+
+    public void AddCofactor(Compound cofactor)
+    {
+        foreach (Compound compound in cofactors)
+            if (compound.Molecule.Equals(cofactor.Molecule))
+            {
+                compound.Quantity += cofactor.Quantity;
+                return;
+            }
+    }
+
+
+    public abstract Catalyst Copy();
+
+    protected virtual ProgressiveCatalyst CopyStateFrom(ProgressiveCatalyst other)
+    {
+        Orientation = other.Orientation;
+        cofactors = new List<Compound>(other.Cofactors);
+
+        return this;
     }
 }
 
@@ -103,19 +143,17 @@ public abstract class InstantCatalyst : ProgressiveCatalyst
 
     //Enforce productivity from above?
     public override Action Catalyze(Cell.Slot slot)
-    { 
-        Action action = GetActionInProgress(slot);
-        if (action == null)
+    {
+        Action action = GetAction(slot);
+
+        if (action == null || !action.Prepare())
             return null;
 
-        action.Pay(slot.Compound.Quantity);
-        action.Cost = action.AmountPaid;
+        action.Cost = slot.Compound.Quantity;
 
         return action;
     }
 }
-
-
 
 
 public class Rotase : ProgressiveCatalyst
@@ -127,7 +165,7 @@ public class Rotase : ProgressiveCatalyst
             Organism organism = new Organism();
             Cell cell = organism.GetCell(new Vector2Int(0, 0));
 
-            cell.Slots[0].AddCompound(new Compound(Ribozyme.GetFamily(Name)[0], 1));
+            cell.Slots[0].AddCompound(new Compound(Ribozyme.GetRibozyme(this), 1));
             cell.Slots[5].AddCompound(new Compound(Molecule.ATP, 1));
 
             return new Example(organism, 1);
@@ -142,6 +180,11 @@ public class Rotase : ProgressiveCatalyst
     protected override Action GetAction(Cell.Slot slot)
     {
         return new PoweredAction(slot, slot.PreviousSlot, 1, new RotateAction(slot));
+    }
+
+    public override Catalyst Copy()
+    {
+        return new Rotase().CopyStateFrom(this);
     }
 
 
@@ -180,13 +223,17 @@ public class Constructase : ProgressiveCatalyst
         return new ConstructCell(slot);
     }
 
+    public override Catalyst Copy()
+    {
+        return new Constructase().CopyStateFrom(this);
+    }
+
 
     public class ConstructCell : PoweredAction
     {
         public ConstructCell(Cell.Slot slot)
             : base(slot, slot.PreviousSlot, 5,
-                   new ReactionAction(slot,
-                                      null, null,
+                   new ReactionAction(slot, null, null,
                                       Utility.CreateList<Compound>(new Compound(Molecule.Glucose, 7), 
                                                                    new Compound(Molecule.Phosphate, 1)), null))
         {
@@ -209,37 +256,32 @@ public class Constructase : ProgressiveCatalyst
 
 public class Pipase : InstantCatalyst
 {
-    public enum Location { One, Two, Three, Four, Five, Across }
+    Cell.Slot.Relation source_relation, destination_relation;
 
-    Location source, destination;
-
-    public Pipase(Location source_, Location destination_) : base("Pipase", 1, "Moves compounds from a specific slot to another")
+    public Pipase(Cell.Slot.Relation source_, Cell.Slot.Relation destination_) : base("Pipase", 1, "Moves compounds from a specific slot to another")
     {
-        source = source_;
-        destination = destination_;
-        
-        if(destination == source)
+        source_relation = source_;
+        destination_relation = destination_;
+
+        if (source_relation == Cell.Slot.Relation.This)
+            source_relation = Cell.Slot.Relation.One;
+        if (destination_relation == Cell.Slot.Relation.This)
+            destination_relation = Cell.Slot.Relation.One;
+
+        if(destination_relation == source_relation)
         {
-            if (source != Location.Across)
-                destination = Location.Across;
+            if (source_relation != Cell.Slot.Relation.Across)
+                destination_relation = Cell.Slot.Relation.Across;
             else
-                destination = Location.One;
+                destination_relation = Cell.Slot.Relation.One;
         }
-    }
-
-    Cell.Slot LocationToSlot(Cell.Slot slot, Location location)
-    {
-        if (location == Location.Across)
-            return slot.AcrossSlot;
-        else
-            return slot.Cell.Slots[slot.Index + (int)location];
     }
 
     protected override Action GetAction(Cell.Slot slot)
     {
-        return new MoveToSlotAction(slot, 
-                                    LocationToSlot(slot, source), 
-                                    LocationToSlot(slot, destination), 
+        return new MoveToSlotAction(slot,
+                                    slot.GetSlot(source_relation),
+                                    slot.GetSlot(destination_relation), 
                                     1);
     }
 
@@ -248,7 +290,8 @@ public class Pipase : InstantCatalyst
         if (MathUtility.Roll(0.1f))
             return base.Mutate();
         else
-            return new Pipase((Location)MathUtility.RandomIndex(6), (Location)MathUtility.RandomIndex(6));
+            return new Pipase((Cell.Slot.Relation)MathUtility.RandomIndex(6) + 1, 
+                              (Cell.Slot.Relation)MathUtility.RandomIndex(6) + 1);
     }
 
     public override bool Equals(object obj)
@@ -260,7 +303,12 @@ public class Pipase : InstantCatalyst
         if (other == null)
             return false;
 
-        return other.source == source && other.destination == destination;
+        return other.source_relation == source_relation && other.destination_relation == destination_relation;
+    }
+
+    public override Catalyst Copy()
+    {
+        return new Pipase(source_relation, destination_relation).CopyStateFrom(this);
     }
 }
 
@@ -294,8 +342,7 @@ public class Pumpase : InstantCatalyst
         if (molecule == null && slot.Compound == null)
             return null;
 
-        return new PoweredAction(slot, 
-                                 slot.PreviousSlot, 
+        return new PoweredAction(slot, slot.PreviousSlot, 
                                  0.1f, 
                                  new PumpAction(slot, pump_out, GetMolecule(slot), 1));
     }
@@ -355,6 +402,11 @@ public class Pumpase : InstantCatalyst
                 weighted_molecules[molecule] = 1;
 
         return MathUtility.RandomElement(weighted_molecules);
+    }
+
+    public override Catalyst Copy()
+    {
+        return new Pumpase(pump_out, molecule).CopyStateFrom(this);
     }
 }
 
@@ -494,6 +546,11 @@ public class Transcriptase : InstantCatalyst
                 (amp_count + cmp_count + gmp_count + tmp_count) / (6.0f / 4.0f)),
             new ATPConsumptionAction(slot, 1));
     }
+
+    public override Catalyst Copy()
+    {
+        return new Transcriptase().CopyStateFrom(this);
+    }
 }
 
 public class Actuase : InstantCatalyst
@@ -528,6 +585,11 @@ public class Actuase : InstantCatalyst
                                             location0 as Cell.Slot, 
                                             1);
     }
+
+    public override Catalyst Copy()
+    {
+        return new Actuase().CopyStateFrom(this);
+    }
 }
 
 public class Sporulase : ProgressiveCatalyst
@@ -544,6 +606,12 @@ public class Sporulase : ProgressiveCatalyst
 
         return new PoweredAction(slot, slot.PreviousSlot, 4, new SporulateAction(slot));
     }
+
+    public override Catalyst Copy()
+    {
+        return new Sporulase().CopyStateFrom(this);
+    }
+
 
     public class SporulateAction : Action
     {

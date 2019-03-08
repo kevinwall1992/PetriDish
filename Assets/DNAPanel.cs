@@ -131,13 +131,6 @@ public class DNAPanel : DetailPanel
         AddDNASequenceElement("AAA", "Slot 1");
 
         AddDNASequenceElement("AAA", "0");
-
-        foreach (string name in Ribozyme.FamilyNames)
-            AddDNASequenceElement("TAA" + Ribozyme.GetFamily(name)[0].Sequence + "TTT", name);
-
-        foreach (Reaction reaction in Reaction.Reactions)
-            if (reaction.Catalyst is Ribozyme)
-                AddDNASequenceElement("TAA" + (reaction.Catalyst as Ribozyme).Sequence + "TTT", (reaction.Catalyst as Ribozyme).Name);
     }
 
     void FormatCodons()

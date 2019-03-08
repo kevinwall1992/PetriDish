@@ -42,27 +42,12 @@ public abstract class Action
         }
     }
 
-    public float AmountPaid { get; private set; }
-
-    public bool IsPaidFor
-    {
-        get
-        {
-            return AmountPaid >= Cost;
-        }
-    }
-
     public bool HasFailed { get; private set; }
 
     public Action(Cell.Slot slot, float cost)
     {
         Slot = slot;
         BaseCost = cost;
-    }
-
-    public void Pay(float payment)
-    {
-        AmountPaid += payment;
     }
 
     public abstract bool Prepare();
@@ -227,6 +212,9 @@ public class ReactionAction : Action
                                               slot_products = new Dictionary<Cell.Slot, Compound>();
     protected List<Compound> cytozol_reactants = new List<Compound>(),
                              cytozol_products = new List<Compound>();
+
+    public IEnumerable<Cell.Slot> ReactantSlots { get { return slot_reactants.Keys; } }
+    public IEnumerable<Cell.Slot> ProductSlots { get { return slot_products.Keys; } }
 
     public ReactionAction(Cell.Slot slot,
                     Dictionary<Cell.Slot, Compound> slot_reactants_, 

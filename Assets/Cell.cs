@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class Cell
 {
@@ -157,6 +158,27 @@ public class Cell
         public Compound RemoveCompound()
         {
             return Compound.Split(Compound.Quantity);
+        }
+
+
+        public enum Relation { This, One, Two, Three, Four, Five, Across }
+
+        public Slot GetSlot(Relation relation)
+        {
+            if (relation == Relation.Across)
+                return AcrossSlot;
+
+            return Cell.Slots[Index + (int)relation];
+        }
+
+        public Relation GetRelation(Slot other)
+        {
+            if (other == AcrossSlot)
+                return Relation.Across;
+
+            Debug.Assert(other.Cell == Cell);
+
+            return (Relation)(other.Index - Index);
         }
     }
 

@@ -3,30 +3,6 @@
 public class Ribozyme : DNA, Catalyst
 {
     static Dictionary<string, Ribozyme> ribozymes = new Dictionary<string, Ribozyme>();
-    static Dictionary<string, List<Ribozyme>> ribozyme_families = new Dictionary<string, List<Ribozyme>>();
-
-    public static IEnumerable<string> FamilyNames { get { return ribozyme_families.Keys; } }
-
-    static Ribozyme()
-    {
-        new Ribozyme(new Interpretase(), 10);
-        new Ribozyme(new Rotase(), 6);
-        new Ribozyme(new Constructase(), 6);
-        new Ribozyme(new Pipase(Pipase.Location.Five, Pipase.Location.Across), 4);
-        new Ribozyme(Pumpase.Endo(Hydrogen), 6);
-        new Ribozyme(new Transcriptase(), 8);
-        new Ribozyme(new Actuase(), 6);
-        new Ribozyme(new Sporulase(), 10);
-    }
-
-    public static void RegisterNamedRibozyme(Ribozyme ribozyme, string name)
-    {
-        ribozymes[ribozyme.Sequence] = ribozyme;
-
-        if (!ribozyme_families.ContainsKey(name))
-            ribozyme_families[name] = new List<Ribozyme>();
-        ribozyme_families[name].Add(ribozyme);
-    }
 
     public static Ribozyme GetRibozyme(string dna_sequence)
     {
@@ -36,21 +12,16 @@ public class Ribozyme : DNA, Catalyst
         return null;
     }
 
-    public static Ribozyme GetRibozyme(Catalyst catalyst, int codon_count)
+    public static Ribozyme GetRibozyme(Catalyst catalyst, int codon_count = -1)
     {
         foreach (Ribozyme ribozyme in ribozymes.Values)
-            if (ribozyme.CodonCount == codon_count && ribozyme.Catalyst.Equals(catalyst))
+            if (codon_count < 0 || ribozyme.CodonCount == codon_count && ribozyme.Catalyst.Equals(catalyst))
                 return ribozyme;
 
         return null;
     }
 
-    public static List<Ribozyme> GetFamily(string name)
-    {
-        return ribozyme_families[name];
-    }
-
-    static string GenerateUniqueDNASequence(int codon_count)
+    static string GenerateDNASequence(int codon_count)
     {
         List<string> starting_codon = new List<string> { "A", "G" };
         List<string> other_codons = new List<string> { "A", "C", "C", "C", "G", "T", "T", "T" };
@@ -73,30 +44,38 @@ public class Ribozyme : DNA, Catalyst
         return dna_sequence;
     }
 
+    static string GetDNASequence(Catalyst catalyst, int codon_count)
+    {
+        Ribozyme ribozyme = GetRibozyme(catalyst, codon_count);
+        if (ribozyme != null)
+            return ribozyme.Sequence;
+
+        return GenerateDNASequence(codon_count);
+    }
+
 
     protected Catalyst Catalyst { get; private set; }
 
-    public override string Name
-    {
-        get
-        {
-            foreach (string name in ribozyme_families.Keys)
-                if (ribozyme_families[name].Contains(this))
-                    return name;
-
-            return "Unnamed";
-        }
-    }
+    public override string Name { get { return Catalyst.Name; } }
 
     public string Description { get { return Catalyst.Description; } }
     public int Price { get { return Catalyst.Price; } }
     public Example Example { get { return Catalyst.Example; } }
 
-    public Ribozyme(Catalyst catalyst_, int codon_count) : base(GenerateUniqueDNASequence(codon_count))
+    public CatalystOrientation Orientation { get { return Catalyst.Orientation; } }
+    public IEnumerable<Compound> Cofactors { get { return Catalyst.Cofactors; } }
+
+    public Ribozyme(Catalyst catalyst_, int codon_count) : base(GetDNASequence(catalyst_, codon_count))
     {
         Catalyst = catalyst_;
 
-        RegisterNamedRibozyme(this, Catalyst.Name);
+        if (!ribozymes.ContainsKey(Sequence))
+            ribozymes[Sequence] = this;
+    }
+
+    private Ribozyme(Catalyst catalyst_, string sequence) : base(sequence)
+    {
+        Catalyst = catalyst_;
     }
 
     public Action Catalyze(Cell.Slot slot)
@@ -127,5 +106,18 @@ public class Ribozyme : DNA, Catalyst
 
             return enzyme;
         }
+    }
+
+    public void RotateLeft() { Catalyst.RotateLeft(); }
+    public void RotateRight() { Catalyst.RotateLeft(); }
+
+    public bool CanAddCofactor(Compound cofactor) { return Catalyst.CanAddCofactor(cofactor); }
+    public void AddCofactor(Compound cofactor) { Catalyst.AddCofactor(cofactor); }
+
+    Catalyst Copiable<Catalyst>.Copy() { return Copy() as Ribozyme; }
+
+    public override Molecule Copy()
+    {
+        return new Ribozyme(Catalyst.Copy(), Sequence);
     }
 }

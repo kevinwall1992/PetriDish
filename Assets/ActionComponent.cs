@@ -23,7 +23,7 @@ public class ActionComponent : MonoBehaviour
 
     SlotComponent SlotComponent
     {
-        get { return OrganismComponent.GetSlotComponent(action.Slot); }
+        get { return OrganismComponent.GetSlotComponent(action.CatalystSlot); }
     }
 
     public void SetAction(Action action_, float length_)
@@ -74,7 +74,7 @@ public class ActionComponent : MonoBehaviour
 
                     compound_component.gameObject.AddComponent<MoveAnimation>()
                         .SetParameters(CellComponent.GetSlotComponent(reactant_slot).CompoundComponent.gameObject, 
-                                       CellComponent.GetSlotComponent(action.Slot).CompoundComponent.gameObject)
+                                       CellComponent.GetSlotComponent(action.CatalystSlot).CompoundComponent.gameObject)
                         .SetLength(0.5f * length);
 
                     compound_component.gameObject.AddComponent<FadeAnimation>()
@@ -90,7 +90,7 @@ public class ActionComponent : MonoBehaviour
                     compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
                     compound_component.gameObject.AddComponent<MoveAnimation>()
-                        .SetParameters(CellComponent.GetSlotComponent(action.Slot).CompoundComponent.gameObject, CellComponent.GetSlotComponent(product_slot).CompoundComponent.gameObject)
+                        .SetParameters(CellComponent.GetSlotComponent(action.CatalystSlot).CompoundComponent.gameObject, CellComponent.GetSlotComponent(product_slot).CompoundComponent.gameObject)
                                                                 .SetLength(0.5f * length, 0.5f * length);
 
                     compound_component.gameObject.AddComponent<FadeAnimation>()
@@ -173,7 +173,7 @@ public class ActionComponent : MonoBehaviour
                 SlotComponent output_slot_component = CellComponent.OrganismComponent.GetCellComponent(cut_command.OutputSlot.Cell).GetSlotComponent(cut_command.OutputSlot);
 
                 compound_component.gameObject.AddComponent<MoveAnimation>()
-                    .SetParameters(CellComponent.GetSlotComponent(cut_command.Slot).CompoundComponent.gameObject, 
+                    .SetParameters(CellComponent.GetSlotComponent(cut_command.CatalystSlot).CompoundComponent.gameObject, 
                                    output_slot_component.CompoundComponent.gameObject)
                     .SetLength(1.0f * length);
 

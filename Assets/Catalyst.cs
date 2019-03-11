@@ -214,7 +214,7 @@ public class Rotase : ProgressiveCatalyst
     //Powered action?
     public class RotateAction : Action
     {
-        public RotateAction(Cell.Slot slot) : base(slot, 1)
+        public RotateAction(Cell.Slot catalyst_slot) : base(catalyst_slot, 1)
         {
 
         }
@@ -256,9 +256,9 @@ public class Constructase : ProgressiveCatalyst
 
     public class ConstructCell : PoweredAction
     {
-        public ConstructCell(Cell.Slot slot)
-            : base(slot, slot.PreviousSlot, 5,
-                   new ReactionAction(slot, null, null,
+        public ConstructCell(Cell.Slot catalyst_slot)
+            : base(catalyst_slot, catalyst_slot.PreviousSlot, 5,
+                   new ReactionAction(catalyst_slot, null, null,
                                       Utility.CreateList<Compound>(new Compound(Molecule.Glucose, 7), 
                                                                    new Compound(Molecule.Phosphate, 1)), null))
         {
@@ -274,7 +274,7 @@ public class Constructase : ProgressiveCatalyst
         {
             base.End();
 
-            Organism.AddCell(Cell, Slot.Direction);
+            Organism.AddCell(Cell, CatalystSlot.Direction);
         }
     }
 }
@@ -483,7 +483,7 @@ public class PumpAction : Action
 
     public Compound PumpedCompound { get; private set; }
 
-    public PumpAction(Cell.Slot slot, bool pump_out_, Molecule molecule_, float rate_) : base(slot, 1)
+    public PumpAction(Cell.Slot catalyst_slot, bool pump_out_, Molecule molecule_, float rate_) : base(catalyst_slot, 1)
     {
         pump_out = pump_out_;
         molecule = molecule_;
@@ -492,7 +492,7 @@ public class PumpAction : Action
 
     public override bool Prepare()
     {
-        if (!Slot.IsExposed)
+        if (!CatalystSlot.IsExposed)
             Fail();
 
         return !HasFailed;
@@ -650,7 +650,7 @@ public class Sporulase : ProgressiveCatalyst
 
     public class SporulateAction : Action
     {
-        public SporulateAction(Cell.Slot slot) : base(slot, 2)
+        public SporulateAction(Cell.Slot catalyst_slot) : base(catalyst_slot, 2)
         {
 
         }

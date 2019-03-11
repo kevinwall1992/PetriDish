@@ -17,11 +17,11 @@ public abstract class Action
         }
     }
 
-    public Cell.Slot Slot { get; private set; }
+    public Cell.Slot CatalystSlot { get; private set; }
 
     public Cell Cell
     {
-        get { return Slot.Cell; }
+        get { return CatalystSlot.Cell; }
     }
 
     public Organism Organism
@@ -44,9 +44,9 @@ public abstract class Action
 
     public bool HasFailed { get; private set; }
 
-    public Action(Cell.Slot slot, float cost)
+    public Action(Cell.Slot catalyst_slot, float cost)
     {
-        Slot = slot;
+        CatalystSlot = catalyst_slot;
         BaseCost = cost;
     }
 
@@ -80,13 +80,13 @@ public class CompositeAction : Action
 
     public List<Action> Actions { get { return actions; } }
 
-    public CompositeAction(Cell.Slot slot, params Action[] actions_)
-        : base(slot, MathUtility.Sum(actions_, (action) => (action.Cost)))
+    public CompositeAction(Cell.Slot catalyst_slot, params Action[] actions_)
+        : base(catalyst_slot, MathUtility.Sum(actions_, (action) => (action.Cost)))
     {
         actions.AddRange(actions_);
     }
 
-    public CompositeAction(Cell.Slot slot, float cost, params Action[] actions_) : base(slot, cost)
+    public CompositeAction(Cell.Slot catalyst_slot, float cost, params Action[] actions_) : base(catalyst_slot, cost)
     {
         actions.AddRange(actions_);
     }
@@ -115,7 +115,7 @@ public class CompositeAction : Action
 
 public class WrapperAction : CompositeAction
 {
-    public WrapperAction(Cell.Slot slot, Action action, float cost) : base(slot, cost, action)
+    public WrapperAction(Cell.Slot catalyst_slot, Action action, float cost) : base(catalyst_slot, cost, action)
     {
 
     }
@@ -129,7 +129,7 @@ public abstract class MoveAction<T> : Action
 
     public Compound MovedCompound { get; private set; }
 
-    public MoveAction(Cell.Slot slot, Cell.Slot source, T destination, float quantity) : base(slot, 1)
+    public MoveAction(Cell.Slot catalyst_slot, Cell.Slot source, T destination, float quantity) : base(catalyst_slot, 1)
     {
         Source = source;
         Destination = destination;
@@ -153,8 +153,8 @@ public abstract class MoveAction<T> : Action
 
 public class MoveToSlotAction : MoveAction<Cell.Slot>
 {
-    public MoveToSlotAction(Cell.Slot slot, Cell.Slot source, Cell.Slot destination, float quantity)
-        : base(slot, source, destination, quantity)
+    public MoveToSlotAction(Cell.Slot catalyst_slot, Cell.Slot source, Cell.Slot destination, float quantity)
+        : base(catalyst_slot, source, destination, quantity)
     {
 
     }
@@ -176,8 +176,8 @@ public class MoveToSlotAction : MoveAction<Cell.Slot>
 
 public class MoveToCytozolAction : MoveAction<Cytozol>
 {
-    public MoveToCytozolAction(Cell.Slot slot, Cell.Slot source, Cytozol destination, float quantity)
-        : base(slot, source, destination, quantity)
+    public MoveToCytozolAction(Cell.Slot catalyst_slot, Cell.Slot source, Cytozol destination, float quantity)
+        : base(catalyst_slot, source, destination, quantity)
     {
 
     }
@@ -190,8 +190,8 @@ public class MoveToCytozolAction : MoveAction<Cytozol>
 
 public class MoveToLocaleAction : MoveAction<Locale>
 {
-    public MoveToLocaleAction(Cell.Slot slot, Cell.Slot source, Locale destination, float quantity)
-        : base(slot, source, destination, quantity)
+    public MoveToLocaleAction(Cell.Slot catalyst_slot, Cell.Slot source, Locale destination, float quantity)
+        : base(catalyst_slot, source, destination, quantity)
     {
 
     }
@@ -216,12 +216,12 @@ public class ReactionAction : Action
     public IEnumerable<Cell.Slot> ReactantSlots { get { return slot_reactants.Keys; } }
     public IEnumerable<Cell.Slot> ProductSlots { get { return slot_products.Keys; } }
 
-    public ReactionAction(Cell.Slot slot,
+    public ReactionAction(Cell.Slot catalyst_slot,
                     Dictionary<Cell.Slot, Compound> slot_reactants_, 
                     Dictionary<Cell.Slot, Compound> slot_products_, 
                     List<Compound> cytosol_reactants_, 
                     List<Compound> cytosol_products_,
-                    float cost = 1) : base(slot, cost)
+                    float cost = 1) : base(catalyst_slot, cost)
     {
         if(slot_reactants_ != null)
             slot_reactants = slot_reactants_;
@@ -236,7 +236,7 @@ public class ReactionAction : Action
             cytosol_products = cytosol_products_;
     }
 
-    protected ReactionAction(Cell.Slot slot) : base(slot, 1)
+    protected ReactionAction(Cell.Slot catalyst_slot) : base(catalyst_slot, 1)
     {
 
     }
@@ -289,14 +289,14 @@ public class ReactionAction : Action
         return slot_products.Keys.ToList();
     }
 
-    public Compound GetReactant(Cell.Slot slot)
+    public Compound GetReactant(Cell.Slot catalyst_slot)
     {
-        return slot_reactants[slot];
+        return slot_reactants[catalyst_slot];
     }
 
-    public Compound GetProduct(Cell.Slot slot)
+    public Compound GetProduct(Cell.Slot catalyst_slot)
     {
-        return slot_products[slot];
+        return slot_products[catalyst_slot];
     }
 
     //Want to make these two immutable/readonly lists somehow
@@ -313,11 +313,11 @@ public class ReactionAction : Action
 
 public class EnergeticReactionAction : CompositeAction
 {
-    public EnergeticReactionAction(Cell.Slot slot, ReactionAction reaction_action, float atp_balance)
-        : base(slot,
+    public EnergeticReactionAction(Cell.Slot catalyst_slot, ReactionAction reaction_action, float atp_balance)
+        : base(catalyst_slot,
               reaction_action,
-              atp_balance > 0 ? (Action)new ATPProductionAction(slot, atp_balance) :
-                                (Action)new ATPConsumptionAction(slot, -atp_balance))
+              atp_balance > 0 ? (Action)new ATPProductionAction(catalyst_slot, atp_balance) :
+                                (Action)new ATPConsumptionAction(catalyst_slot, -atp_balance))
     {
 
     }
@@ -326,8 +326,8 @@ public class EnergeticReactionAction : CompositeAction
 
 public class ATPConsumptionAction : ReactionAction
 {
-    public ATPConsumptionAction(Cell.Slot slot, float quantity)
-        : base(slot,
+    public ATPConsumptionAction(Cell.Slot catalyst_slot, float quantity)
+        : base(catalyst_slot,
                 null, null,
                 Utility.CreateList<Compound>(new Compound(Molecule.ATP, quantity),
                                              new Compound(Molecule.Water, quantity)),
@@ -337,8 +337,8 @@ public class ATPConsumptionAction : ReactionAction
         BaseCost = 0;
     }
 
-    public ATPConsumptionAction(Cell.Slot slot, float quantity, Cell.Slot atp_slot)
-        : base(slot, 
+    public ATPConsumptionAction(Cell.Slot catalyst_slot, float quantity, Cell.Slot atp_slot)
+        : base(catalyst_slot, 
                 Utility.CreateDictionary<Cell.Slot, Compound>(atp_slot, new Compound(Molecule.ATP, quantity)), null,
                 Utility.CreateList<Compound>(new Compound(Molecule.Water, quantity)),
                 Utility.CreateList<Compound>(new Compound(Molecule.ADP, quantity),
@@ -351,8 +351,8 @@ public class ATPConsumptionAction : ReactionAction
 
 public class ATPProductionAction : ReactionAction
 {
-    public ATPProductionAction(Cell.Slot slot, float quantity)
-        : base(slot, 
+    public ATPProductionAction(Cell.Slot catalyst_slot, float quantity)
+        : base(catalyst_slot, 
                 null, null,
                 Utility.CreateList<Compound>(new Compound(Molecule.ADP, quantity),
                                              new Compound(Molecule.Phosphate, quantity)),
@@ -366,8 +366,8 @@ public class ATPProductionAction : ReactionAction
 
 public class PoweredAction : CompositeAction
 {
-    public PoweredAction(Cell.Slot slot, Cell.Slot atp_slot, float atp_cost, Action action) 
-        : base(slot, action, new ATPConsumptionAction(slot, atp_cost, atp_slot))
+    public PoweredAction(Cell.Slot catalyst_slot, Cell.Slot atp_slot, float atp_cost, Action action) 
+        : base(catalyst_slot, action, new ATPConsumptionAction(catalyst_slot, atp_cost, atp_slot))
     {
         
     }

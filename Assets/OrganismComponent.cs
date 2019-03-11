@@ -231,8 +231,10 @@ public class OrganismComponent : GoodBehavior
 
         if (dna_sequence != "")
         {
-            cell.Slots[0].AddCompound(new Compound(new Ribozyme(new Interpretase()), 1));
-            cell.Slots[5].AddCompound(new Compound(new DNA(dna_sequence), 1));
+            Ribozyme interpretase = new Ribozyme(new Interpretase());
+            interpretase.AddCofactor(new Compound(new DNA(dna_sequence), 1));
+            cell.Slots[0].AddCompound(new Compound(interpretase, 1));
+
             Organism.Cytozol.AddCompound(new Compound(Molecule.ATP, 10));
             Organism.Cytozol.AddCompound(new Compound(Molecule.Glucose, 10));
             Organism.Cytozol.AddCompound(new Compound(Molecule.Phosphate, 10));

@@ -3,7 +3,7 @@
 
 //Quantities are in "Smoles"
 //See Measures.cs for conversion to Moles
-public class Compound
+public class Compound : Copiable<Compound>
 {
     Molecule molecule;
     float quantity;
@@ -36,5 +36,10 @@ public class Compound
         Quantity -= quantity;
 
         return new Compound(Molecule, quantity);
+    }
+
+    public Compound Copy()
+    {
+        return new Compound(Molecule.Copy(), Quantity);
     }
 }

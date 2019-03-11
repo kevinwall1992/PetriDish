@@ -335,7 +335,7 @@ public class Organism : Chronal, Versionable<Organism>
                     Cell.Slot slot = cell.Slots[slot_index];
 
                     if (slot.Compound != null)
-                        cell_copy.Slots[slot_index].AddCompound(new Compound(slot.Compound.Molecule.Copy(), slot.Compound.Quantity));
+                        cell_copy.Slots[slot_index].AddCompound(slot.Compound.Copy());
                 }
 
                 organism.cells[row].Add(cell_copy);
@@ -366,7 +366,7 @@ public class Organism : Chronal, Versionable<Organism>
                     Cell.Slot slot = other_cell.Slots[slot_index];
 
                     if (slot.Compound != null)
-                        cell_copy.Slots[slot_index].AddCompound(new Compound(slot.Compound.Molecule.Copy(), slot.Compound.Quantity));
+                        cell_copy.Slots[slot_index].AddCompound(slot.Compound.Copy());
                 }
 
                 cells[row].Add(cell_copy);

@@ -38,10 +38,15 @@ public class SlotComponent : GoodBehavior, Spawner
         {
             if (detail_panel == null && CompoundComponent.Compound != null)
             {
-                if (CompoundComponent.Compound.Molecule is Catalyst)
-                    detail_panel = CatalystPanel.Create(CompoundComponent.Compound.Molecule as Catalyst);
-                else if (CompoundComponent.Compound.Molecule is DNA)
-                    detail_panel = DNAPanel.Create(Slot);
+                Molecule molecule = CompoundComponent.Compound.Molecule;
+
+                if (molecule is Catalyst)
+                {
+                    if((molecule as Catalyst).GetCofactor<DNA>() != null)
+                        detail_panel = DNAPanel.Create(Slot);
+                    else
+                        detail_panel = CatalystPanel.Create(CompoundComponent.Compound.Molecule as Catalyst);
+                }  
             }
 
             return detail_panel;

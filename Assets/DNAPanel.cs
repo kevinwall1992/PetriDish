@@ -18,7 +18,29 @@ public class DNAPanel : DetailPanel
     Image arrow;
 
 
-    public DNA DNA { get { return Data as DNA; } }
+    public DNA DNA
+    {
+        get
+        {
+            Molecule molecule = Data as Molecule;
+            if (molecule == null)
+                return null;
+
+            if (molecule is Catalyst)
+            {
+                Compound cofactor = (molecule as Catalyst).GetCofactor<DNA>();
+                if (cofactor == null)
+                    return null;
+
+                return cofactor.Molecule as DNA;
+            }
+
+            if (molecule is DNA)
+                return molecule as DNA;
+
+            return null;
+        }
+    }
 
     [SerializeField]
     CodonElementLayout codon_layout;

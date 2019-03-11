@@ -22,6 +22,7 @@ public interface Catalyst : Copiable<Catalyst>
 
     bool CanAddCofactor(Compound cofactor);
     void AddCofactor(Compound cofactor);
+    Compound GetCofactor<T>();
 
     Action Catalyze(Cell.Slot slot);
 
@@ -115,12 +116,26 @@ public abstract class ProgressiveCatalyst : Catalyst
 
     public void AddCofactor(Compound cofactor)
     {
+        if (!CanAddCofactor(cofactor))
+            return;
+
         foreach (Compound compound in cofactors)
             if (compound.Molecule.Equals(cofactor.Molecule))
             {
                 compound.Quantity += cofactor.Quantity;
                 return;
             }
+
+        cofactors.Add(cofactor);
+    }
+
+    public Compound GetCofactor<T>()
+    {
+        foreach (Compound compound in Cofactors)
+            if (compound.Molecule is T)
+                return compound;
+
+        return null;
     }
 
 
@@ -129,7 +144,9 @@ public abstract class ProgressiveCatalyst : Catalyst
     protected virtual ProgressiveCatalyst CopyStateFrom(ProgressiveCatalyst other)
     {
         Orientation = other.Orientation;
-        cofactors = new List<Compound>(other.Cofactors);
+
+        foreach (Compound cofactor in other.cofactors)
+            cofactors.Add(cofactor.Copy());
 
         return this;
     }
@@ -588,14 +605,14 @@ public class Actuase : InstantCatalyst
 
         int codon_index = dna.ActiveCodonIndex;
 
-        object location0 = Interpretase.CodonToLocation(dna_slot, codon_index, out codon_index);
-        object location1 = Interpretase.CodonToLocation(dna_slot, codon_index, out codon_index);
+        object location0 = Interpretase.CodonToLocation(slot, dna, codon_index, out codon_index);
+        object location1 = Interpretase.CodonToLocation(slot, dna, codon_index, out codon_index);
 
         if (!(location0 is Cell.Slot) || !(location1 is Cell.Slot))
             return null;
 
         return new Interpretase.MoveCommand(slot,
-                                            dna_slot,
+                                            dna,
                                             dna.ActiveCodonIndex + 2, 
                                             location1 as Cell.Slot, 
                                             location0 as Cell.Slot, 

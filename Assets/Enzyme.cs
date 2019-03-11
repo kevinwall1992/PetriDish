@@ -179,6 +179,7 @@ public class Enzyme : Polymer, Catalyst
 
     public bool CanAddCofactor(Compound cofactor) { return Catalyst.CanAddCofactor(cofactor); }
     public void AddCofactor(Compound cofactor) { Catalyst.AddCofactor(cofactor); }
+    public Compound GetCofactor<T>() { return Catalyst.GetCofactor<T>(); }
 
     Catalyst Copiable<Catalyst>.Copy() { return Copy() as Ribozyme; }
 

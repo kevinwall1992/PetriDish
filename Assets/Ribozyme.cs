@@ -65,7 +65,12 @@ public class Ribozyme : DNA, Catalyst
     public Example Example { get { return Catalyst.Example; } }
     public int Power { get { return Catalyst.Power; } }
 
-    public CatalystOrientation Orientation { get { return Catalyst.Orientation; } }
+    public Cell.Slot.Relation Orientation
+    {
+        get { return Catalyst.Orientation; }
+        set { Catalyst.Orientation = value; }
+    }
+
     public IEnumerable<Compound> Cofactors { get { return Catalyst.Cofactors; } }
 
     public Ribozyme(Catalyst catalyst_) : base(GetDNASequence(catalyst_))
@@ -76,9 +81,9 @@ public class Ribozyme : DNA, Catalyst
             ribozymes[Sequence] = this;
     }
 
-    public Action Catalyze(Cell.Slot slot)
+    public Action Catalyze(Cell.Slot slot, Action.Stage stage)
     {
-        return Catalyst.Catalyze(slot);
+        return Catalyst.Catalyze(slot, stage);
     }
 
     public virtual Catalyst Mutate()
@@ -91,12 +96,19 @@ public class Ribozyme : DNA, Catalyst
             return new Enzyme(mutant_catalyst);
     }
 
+    public T GetFacet<T>() where T : class, Catalyst
+    {
+        if (typeof(T) == typeof(Ribozyme))
+            return this as T;
+
+        return Catalyst.GetFacet<T>();
+    }
+
     public void RotateLeft() { Catalyst.RotateLeft(); }
     public void RotateRight() { Catalyst.RotateLeft(); }
 
     public bool CanAddCofactor(Compound cofactor) { return Catalyst.CanAddCofactor(cofactor); }
     public void AddCofactor(Compound cofactor) { Catalyst.AddCofactor(cofactor); }
-    public Compound GetCofactor<T>() { return Catalyst.GetCofactor<T>(); }
 
     Catalyst Copiable<Catalyst>.Copy() { return Copy() as Ribozyme; }
 

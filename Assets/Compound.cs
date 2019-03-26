@@ -38,6 +38,17 @@ public class Compound : Copiable<Compound>
         return new Compound(Molecule, quantity);
     }
 
+    public override bool Equals(object obj)
+    {
+        if (!(obj is Compound))
+            return false;
+
+        Compound other = obj as Compound;
+
+        return other.Molecule.Equals(Molecule) && 
+               other.Quantity == Quantity;
+    }
+
     public Compound Copy()
     {
         return new Compound(Molecule.Copy(), Quantity);

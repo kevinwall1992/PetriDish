@@ -96,7 +96,7 @@ public class CompoundComponent : GoodBehavior
             {
                 resource_name = "ribozyme";
 
-                if ((molecule as Ribozyme).GetCofactor<DNA>() != null)
+                if (Interpretase.GetGeneticCofactor(molecule as Ribozyme) != null)
                     resource_name = "ribozyme_with_genetic_cofactor";
             }
             else if (molecule is Enzyme)

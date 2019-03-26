@@ -36,6 +36,8 @@ public class Organism : Chronal, Versionable<Organism>
             cells[0].Add(new Cell(this));
     }
 
+    //Would like to make this private, 
+    //and instead add a method tailored for use by visual layer
     public Vector2Int GetCellPosition(Cell cell)
     {
         foreach (List<Cell> column in cells)
@@ -46,34 +48,35 @@ public class Organism : Chronal, Versionable<Organism>
         return new Vector2Int(-1, -1);
     }
 
-    public Vector2Int GetNeighborPosition(Cell cell, HexagonalDirection direction)
-    {
-        Vector2Int cell_position = GetCellPosition(cell);
-
-        return cell_position + GetDisplacement(cell_position.x % 2 == 0, direction);
-    }
-
     public Cell GetCell(Vector2Int position)
     {
+        if (!IsPositionWithinBounds(position))
+            return null;
+
         return cells[position.x][position.y];
     }
 
-
-    public enum HexagonalDirection { Up, UpRight, DownRight, Down, DownLeft, UpLeft };
-
-    Vector2Int GetDisplacement(bool even_column, HexagonalDirection direction)
+    Vector2Int GetNeighborPosition(Cell cell, Cell.Relation direction)
     {
+        Vector2Int position = GetCellPosition(cell);
+        bool even_column = position.x % 2 == 0;
+
         switch (direction)
         {
-            case HexagonalDirection.Up: return new Vector2Int(0, 1);
-            case HexagonalDirection.UpRight: return new Vector2Int(1, even_column ? 0 : 1);
-            case HexagonalDirection.DownRight: return new Vector2Int(1, even_column ? -1 : 0);
-            case HexagonalDirection.Down: return new Vector2Int(0, -1);
-            case HexagonalDirection.DownLeft: return new Vector2Int(-1, even_column ? -1 : 0);
-            case HexagonalDirection.UpLeft: return new Vector2Int(-1, even_column ? 0 : 1);
+            case Cell.Relation.Up: return position + new Vector2Int(0, 1); break;
+            case Cell.Relation.UpRight: return position + new Vector2Int(1, even_column ? 0 : 1); break;
+            case Cell.Relation.DownRight: return position + new Vector2Int(1, even_column ? -1 : 0); break;
+            case Cell.Relation.Down: return position + new Vector2Int(0, -1); break;
+            case Cell.Relation.DownLeft: return position + new Vector2Int(-1, even_column ? -1 : 0); break;
+            case Cell.Relation.UpLeft: return position + new Vector2Int(-1, even_column ? 0 : 1); break;
         }
 
-        return Vector2Int.zero;
+        return new Vector2Int();
+    }
+
+    public Cell GetNeighbor(Cell cell, Cell.Relation direction)
+    {
+        return GetCell(GetNeighborPosition(cell, direction));
     }
 
     void CheckForBreaks()
@@ -105,7 +108,7 @@ public class Organism : Chronal, Versionable<Organism>
                     continue;
                 cell_set.Add(cell);
 
-                foreach (HexagonalDirection direction in Enum.GetValues(typeof(HexagonalDirection)))
+                foreach (Cell.Relation direction in Enum.GetValues(typeof(Cell.Relation)))
                 {
                     Cell neighbor = GetNeighbor(cell, direction);
                     if (neighbor != null)
@@ -122,7 +125,7 @@ public class Organism : Chronal, Versionable<Organism>
                 keep_set = cell_set;
             else
                 foreach (Cell cell in cell_set)
-                    RemoveCell_NoSideEffects(cell);
+                    RemoveCell(cell);
         }
     }
 
@@ -194,7 +197,7 @@ public class Organism : Chronal, Versionable<Organism>
                         while (codon_index < dna.CodonCount && 
                                (codon_index = Interpretase.FindMarkerCodon(dna, marker, codon_index, false, false)) >= 0)
                         {
-                            string dna_sequence = dna.GetSubsequence(codon_index + 1, Interpretase.GetSegmentLength(dna, marker, codon_index));
+                            string dna_sequence = Interpretase.GetBlockSequence(dna, marker, codon_index);
 
                             Ribozyme ribozyme = Ribozyme.GetRibozyme(dna_sequence);
                             if (ribozyme != null)
@@ -214,17 +217,7 @@ public class Organism : Chronal, Versionable<Organism>
         return deck;
     }
 
-    public Cell GetNeighbor(Cell cell, HexagonalDirection direction)
-    {
-        Vector2Int position = GetNeighborPosition(cell, direction);
-
-        if (IsPositionWithinBounds(position))
-            return cells[position.x][position.y];
-
-        return null;
-    }
-
-    public Cell AddCell(Cell host_cell, HexagonalDirection direction, Cell new_cell = null)
+    public Cell AddCell(Cell host_cell, Cell.Relation direction, Cell new_cell = null)
     {
         if (new_cell == null)
             new_cell = new Cell(this);
@@ -241,7 +234,7 @@ public class Organism : Chronal, Versionable<Organism>
         return GetCell(position);
     }
 
-    Cell RemoveCell_NoSideEffects(Cell cell)
+    Cell RemoveCell(Cell cell)
     {
         Vector2Int position = GetCellPosition(cell);
 
@@ -250,9 +243,9 @@ public class Organism : Chronal, Versionable<Organism>
         return cell;
     }
 
-    public Cell RemoveCell(Cell cell)
+    public Cell SeparateCell(Cell cell)
     {
-        RemoveCell_NoSideEffects(cell);
+        RemoveCell(cell);
 
         if (GetCellCount() == 0)
             cells[0][0] = new Cell(this);
@@ -279,41 +272,34 @@ public class Organism : Chronal, Versionable<Organism>
         return GetCells().Count;
     }
 
-    static void ExecuteActions<T>(List<T> actions) where T : Action
+    public List<Action> GetActions(Action.Stage stage)
     {
-        foreach (Action action in actions) action.Prepare();
-        foreach (Action action in actions) if (!action.HasFailed) action.Begin();
-        foreach (Action action in actions) if (!action.HasFailed) action.End();
+        List<Action> actions = new List<Action>();
+
+        foreach (Cell cell in GetCells())
+            actions.AddRange(cell.GetActions(stage));
+
+        return actions;
     }
 
     public void Step()
     {
         Membrane.Step();
 
-        List<Action> commands = new List<Action>(),
-                     reactions = new List<Action>(),
-                     move_actions = new List<Action>(),
-                     powered_actions = new List<Action>();
+        Queue<Action.Stage> stage_queue = new Queue<Action.Stage>(Action.Stages);
 
-        foreach (List<Cell> column in cells)
-            foreach (Cell cell in column)
-                if (cell != null)
-                    foreach (Action action in cell.GetActions())
-                    {
-                        if (action is Interpretase.Command)
-                            commands.Add(action);
-                        else if (action is ReactionAction || action is EnergeticReactionAction)
-                            reactions.Add(action);
-                        else if (action is MoveToSlotAction)
-                            move_actions.Add(action);
-                        else if (action is PoweredAction)
-                            powered_actions.Add(action);
-                    }
+        while(stage_queue.Count > 0)
+        {
+            List<Action> actions = GetActions(stage_queue.Dequeue());
 
-        ExecuteActions(commands);
-        ExecuteActions(reactions);
-        ExecuteActions(move_actions);
-        ExecuteActions(powered_actions);
+            //Resolve inter-stage conflicts by not executing, otherwise begin
+            //(Pre-stage conflicts are resolved in Catalyst.Catalyze())
+            foreach (Action action in actions) action.Begin();
+
+            //End(). Any sequence conflicts at this point must be 
+            //resolved through gameplay mechanics
+            foreach (Action action in actions) action.End();
+        }
     }
 
     public Organism Copy()

@@ -18,6 +18,7 @@ public abstract class Action
     }
 
     public Cell.Slot CatalystSlot { get; private set; }
+    public Catalyst Catalyst { get; private set; }
 
     public Cell Cell
     {
@@ -42,21 +43,77 @@ public abstract class Action
         }
     }
 
-    public bool HasFailed { get; private set; }
+    //An "Illegal" action is one for which it is _known_
+    //that it cannot execute or cannot execute in an 
+    //order agnostic way. 
+    //Be careful however - the opposite does not imply it 
+    //is known that it CAN execute. 
+    //Actions can still run into trouble, and if they do, 
+    //are expected to resolve it in the End() function. 
+    public virtual bool IsLegal { get { return true; } }
+
+    public bool HasBegun { get; private set; }
 
     public Action(Cell.Slot catalyst_slot, float cost)
     {
         CatalystSlot = catalyst_slot;
+        Catalyst = (CatalystSlot.Compound.Molecule as Catalyst);
+
         BaseCost = cost;
     }
 
-    public abstract bool Prepare();
-    public abstract void Begin();
-    public abstract void End();
+    public virtual void Begin() { HasBegun = true; }
+    public virtual void End() { }
 
-    protected void Fail()
+
+    public static List<Stage> Stages
     {
-        HasFailed = true;
+        get
+        {
+            return Utility.CreateList(
+                new Stage(typeof(Interpretase.GoToCommand)),
+
+                new Stage(typeof(ReactionAction),
+                            typeof(Pumpase),
+                            typeof(Interpretase.GrabCommand),
+                            typeof(Interpretase.ReleaseCommand),
+                            typeof(Interpretase.ExciseCommand)),
+
+                new Stage(typeof(Constructase)),
+
+                //new Stage(typeof(Separatase)), 
+
+                new Stage(typeof(Interpretase.MoveCommand)), 
+                new Stage(typeof(Interpretase.SpinCommand)));
+        }
+    }
+
+    public class Stage
+    {
+        System.Predicate<Action> predicate;
+
+        public Stage(params System.Type[] action_types)
+        {
+            predicate = delegate (Action action)
+            {
+                if (action is Interpretase.TryCommand)
+                    action = (action as Interpretase.TryCommand).Command;
+
+                if (action == null)
+                    return false;
+
+                foreach (System.Type type in action_types)
+                    if (type.IsAssignableFrom(action.GetType()))
+                        return true;
+
+                return false;
+            };
+        }
+
+        public bool Includes(Action action)
+        {
+            return predicate(action);
+        }
     }
 }
 
@@ -80,28 +137,44 @@ public class CompositeAction : Action
 
     public List<Action> Actions { get { return actions; } }
 
+    public override bool IsLegal
+    {
+        get
+        {
+            foreach (Action action in actions)
+                if (!action.IsLegal)
+                    return false;
+
+            return base.IsLegal;
+        }
+    }
+
+    public CompositeAction(Cell.Slot catalyst_slot, float additional_cost, params Action[] actions_)
+        : base(catalyst_slot, additional_cost)
+    {
+        SetActions(actions_);
+    }
+
     public CompositeAction(Cell.Slot catalyst_slot, params Action[] actions_)
-        : base(catalyst_slot, MathUtility.Sum(actions_, (action) => (action.Cost)))
+        : base(catalyst_slot, 0)
     {
-        actions.AddRange(actions_);
+        SetActions(actions_);
     }
 
-    public CompositeAction(Cell.Slot catalyst_slot, float cost, params Action[] actions_) : base(catalyst_slot, cost)
+    protected void SetActions(IEnumerable<Action> actions)
     {
-        actions.AddRange(actions_);
-    }
+        Debug.Assert(this.actions.Count == 0, "CompositeAction : Attempted to set actions more than once.");
 
-    public override bool Prepare()
-    {
-        foreach (Action action in actions)
-            if (!action.Prepare())
-                Fail();
+        this.actions.AddRange(actions);
+        this.actions.RemoveAll(action => action == null);
 
-        return !HasFailed;
+        BaseCost += MathUtility.Sum(this.actions, (action) => (action.Cost));
     }
 
     public override void Begin()
     {
+        base.Begin();
+
         foreach (Action action in actions)
             action.Begin();
     }
@@ -113,71 +186,116 @@ public class CompositeAction : Action
     }
 }
 
-public class WrapperAction : CompositeAction
-{
-    public WrapperAction(Cell.Slot catalyst_slot, Action action, float cost) : base(catalyst_slot, cost, action)
-    {
-
-    }
-}
-
-
 public abstract class MoveAction<T> : Action
 {
+    Compound source_compound_copy;
+
     public Cell.Slot Source { get; private set; }
     public T Destination { get; private set; }
 
     public Compound MovedCompound { get; private set; }
 
-    public MoveAction(Cell.Slot catalyst_slot, Cell.Slot source, T destination, float quantity) : base(catalyst_slot, 1)
+    public virtual bool IsInvalidated
     {
-        Source = source;
-        Destination = destination;
-
-        Cost = source.Compound == null ? 0 : Mathf.Min(quantity, source.Compound.Quantity);
+        get
+        {
+            return !source_compound_copy.Equals(Source.Compound);
+        }
     }
 
-    public override bool Prepare()
+    public override bool IsLegal
     {
-        if (Source.Compound == null)
-            Fail();
+        get
+        {
+            if (Source.Compound == null)
+                return false;
 
-        return !HasFailed;
+            if (IsInvalidated)
+                return false;
+
+            return base.IsLegal;
+        }
+    }
+
+    protected MoveAction(Cell.Slot catalyst_slot, Cell.Slot source, T destination, float quantity)
+        : base(catalyst_slot, 1)
+    {
+        Source = source;
+        source_compound_copy = source.Compound.Copy();
+
+        Destination = destination;
+
+        if (quantity < 0)
+            quantity = source.Compound.Quantity;
+        Cost = source.Compound == null ? 0 : Mathf.Min(quantity, source.Compound.Quantity);
     }
 
     public override void Begin()
     {
+        base.Begin();
+
         MovedCompound = Source.Compound.Split(Scale);
     }
 }
 
 public class MoveToSlotAction : MoveAction<Cell.Slot>
 {
-    public MoveToSlotAction(Cell.Slot catalyst_slot, Cell.Slot source, Cell.Slot destination, float quantity)
-        : base(catalyst_slot, source, destination, quantity)
-    {
+    Compound destination_compound_copy = null;
 
+    public override bool IsInvalidated
+    {
+        get
+        {
+            if (destination_compound_copy == null)
+            {
+                if (Destination.Compound != null)
+                    return true;
+            }
+            else if (Destination.Compound == null)
+                return true;
+            else if (!destination_compound_copy.Equals(Destination.Compound))
+                return true;
+                
+            return base.IsInvalidated;
+        }
     }
 
-    public override bool Prepare()
+    public MoveToSlotAction(Cell.Slot catalyst_slot, 
+                            Cell.Slot source, Cell.Slot destination, float quantity = -1)
+        : base(catalyst_slot, source, destination, quantity)
     {
-        if (Source.Compound == null ||
-            (Destination.Compound != null && Destination.Compound.Molecule != Source.Compound.Molecule))
-            Fail();
+        if (Destination.Compound != null)
+            destination_compound_copy = Destination.Compound.Copy();
+    }
 
-        return base.Prepare();
+    public MoveToSlotAction(Cell.Slot catalyst_slot, 
+                            Cell.Slot source, Cell.Slot.Relation direction, float quantity = -1)
+        : base(catalyst_slot, source, source.GetAdjacentSlot(direction), quantity)
+    {
+        if (Destination.Compound != null)
+            destination_compound_copy = Destination.Compound.Copy();
     }
 
     public override void End()
     {
-        Destination.AddCompound(MovedCompound);
+        if (Destination.Compound == null || Destination.Compound.Molecule.Equals(MovedCompound.Molecule))
+            Destination.AddCompound(MovedCompound);
+
+        //Collision
+        else
+        {
+            Mess mess = new Mess(Destination.RemoveCompound(), MovedCompound);
+
+            Destination.AddCompound(new Compound(mess, 1));
+        }
     }
 }
 
 public class MoveToCytozolAction : MoveAction<Cytozol>
 {
-    public MoveToCytozolAction(Cell.Slot catalyst_slot, Cell.Slot source, Cytozol destination, float quantity)
-        : base(catalyst_slot, source, destination, quantity)
+    public MoveToCytozolAction(Cell.Slot catalyst_slot, 
+                               Cell.Slot source, float quantity = -1)
+        : base(catalyst_slot, source, source.Cell.Organism.Cytozol, quantity)
     {
 
     }
@@ -190,18 +308,83 @@ public class MoveToCytozolAction : MoveAction<Cytozol>
 
 public class MoveToLocaleAction : MoveAction<Locale>
 {
-    public MoveToLocaleAction(Cell.Slot catalyst_slot, Cell.Slot source, Locale destination, float quantity)
-        : base(catalyst_slot, source, destination, quantity)
+    public MoveToLocaleAction(Cell.Slot catalyst_slot, 
+                              Cell.Slot source, float quantity = -1)
+        : base(catalyst_slot, source, source.Cell.Organism.Locale, quantity)
     {
 
     }
 
     public override void End()
     {
-        if (!(Organism.Locale is WaterLocale))
+        if (!(Destination is WaterLocale))
             throw new System.NotImplementedException();
 
         (Destination as WaterLocale).Solution.AddCompound(MovedCompound);
+    }
+}
+
+public class PushAction : CompositeAction
+{
+    public bool IsFullPush { get; private set; }
+
+    public override bool IsLegal
+    {
+        get
+        {
+            foreach (Action action in Actions)
+                if (action is MoveToSlotAction)
+                    if ((action as MoveToSlotAction).IsInvalidated)
+                        return false;
+
+            return true;
+        }
+    }
+
+    public PushAction(Cell.Slot catalyst_slot, Cell.Slot source, Cell.Slot.Relation direction)
+        : base(catalyst_slot)
+    {
+        List<Action> actions = new List<Action>();
+
+        if (direction == Cell.Slot.Relation.Across)
+        {
+            if (source.AcrossSlot == null)
+                actions.Add(new MoveToLocaleAction(catalyst_slot, source));
+            else
+            {
+                actions.Add(new MoveToSlotAction(catalyst_slot, source, direction));
+
+                Cell.Slot destination = source.AcrossSlot;
+                if (destination.Compound != null && !destination.Compound.Molecule.Equals(source.Compound.Molecule))
+                    actions.Add(new MoveToCytozolAction(catalyst_slot, destination));
+            }
+        }
+        else
+        {
+            Cell.Slot current_source = source;
+
+            while (true)
+            {
+                MoveToSlotAction move_action = new MoveToSlotAction(catalyst_slot, current_source, direction);
+                actions.Add(move_action);
+
+                Cell.Slot destination = move_action.Destination;
+                if (destination.Compound == null)
+                    break;
+                if (destination.Compound.Molecule.Equals(current_source.Compound.Molecule))
+                    break;
+
+                current_source = (direction == Cell.Slot.Relation.Right) ? current_source.NextSlot : 
+                                                                           current_source.PreviousSlot;
+                if (current_source == source)
+                {
+                    IsFullPush = true;
+                    break;
+                }
+            }
+        }
+
+        SetActions(actions);
     }
 }
 
@@ -215,6 +398,29 @@ public class ReactionAction : Action
 
     public IEnumerable<Cell.Slot> ReactantSlots { get { return slot_reactants.Keys; } }
     public IEnumerable<Cell.Slot> ProductSlots { get { return slot_products.Keys; } }
+
+    public override bool IsLegal
+    {
+        get
+        {
+            foreach (Cell.Slot destination in slot_products.Keys)
+                if (destination.Compound != null &&
+                    destination.Compound.Molecule != slot_products[destination].Molecule)
+                    return false;
+
+            foreach (Cell.Slot source in slot_reactants.Keys)
+                if (source.Compound == null ||
+                    source.Compound.Molecule != slot_reactants[source].Molecule ||
+                    source.Compound.Quantity < slot_reactants[source].Quantity)
+                    return false;
+
+            foreach (Compound reactant in cytosol_reactants)
+                if (Organism.Cytozol.GetQuantity(reactant.Molecule) < reactant.Quantity)
+                    return false;
+
+            return base.IsLegal;
+        }
+    }
 
     public ReactionAction(Cell.Slot catalyst_slot,
                     Dictionary<Cell.Slot, Compound> slot_reactants_, 
@@ -236,33 +442,16 @@ public class ReactionAction : Action
             cytosol_products = cytosol_products_;
     }
 
-    protected ReactionAction(Cell.Slot catalyst_slot) : base(catalyst_slot, 1)
+    protected ReactionAction(Cell.Slot catalyst_slot) 
+        : base(catalyst_slot, 1)
     {
 
-    }
-
-    public override bool Prepare()
-    {
-        foreach (Cell.Slot destination in slot_products.Keys)
-            if (destination.Compound != null &&
-                destination.Compound.Molecule != slot_products[destination].Molecule)
-                Fail();
-
-        foreach (Cell.Slot source in slot_reactants.Keys)
-            if (source.Compound == null ||
-                source.Compound.Molecule != slot_reactants[source].Molecule ||
-                source.Compound.Quantity < slot_reactants[source].Quantity)
-                Fail();
-
-        foreach (Compound reactant in cytosol_reactants)
-            if (Organism.Cytozol.GetQuantity(reactant.Molecule) < reactant.Quantity)
-                Fail();
-
-        return !HasFailed;
     }
 
     public override void Begin()
     {
+        base.Begin();
+
         foreach (Cell.Slot source in slot_reactants.Keys)
             source.Compound.Split(slot_reactants[source].Quantity);
 
@@ -315,9 +504,9 @@ public class EnergeticReactionAction : CompositeAction
 {
     public EnergeticReactionAction(Cell.Slot catalyst_slot, ReactionAction reaction_action, float atp_balance)
         : base(catalyst_slot,
-              reaction_action,
-              atp_balance > 0 ? (Action)new ATPProductionAction(catalyst_slot, atp_balance) :
-                                (Action)new ATPConsumptionAction(catalyst_slot, -atp_balance))
+               reaction_action,
+               atp_balance > 0 ? (Action)new ATPProductionAction(catalyst_slot, atp_balance) :
+                                 (Action)new ATPConsumptionAction(catalyst_slot, -atp_balance))
     {
 
     }
@@ -360,38 +549,5 @@ public class ATPProductionAction : ReactionAction
                                              new Compound(Molecule.Water, quantity)))
     {
         BaseCost = 0;
-    }
-}
-
-
-public class PoweredAction : CompositeAction
-{
-    public PoweredAction(Cell.Slot catalyst_slot, Cell.Slot atp_slot, float atp_cost, Action action) 
-        : base(catalyst_slot, action, new ATPConsumptionAction(catalyst_slot, atp_cost, atp_slot))
-    {
-        
-    }
-}
-
-public class NullAction : Action
-{
-    public NullAction() : base(null, 0)
-    {
-
-    }
-
-    public override bool Prepare()
-    {
-        return true;
-    }
-
-    public override void Begin()
-    {
-        
-    }
-
-    public override void End()
-    {
-        
     }
 }

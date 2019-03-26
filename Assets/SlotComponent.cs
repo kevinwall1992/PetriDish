@@ -42,7 +42,7 @@ public class SlotComponent : GoodBehavior, Spawner
 
                 if (molecule is Catalyst)
                 {
-                    if((molecule as Catalyst).GetCofactor<DNA>() != null)
+                    if(Interpretase.GetGeneticCofactor(molecule as Catalyst) != null)
                         detail_panel = DNAPanel.Create(Slot);
                     else
                         detail_panel = CatalystPanel.Create(CompoundComponent.Compound.Molecule as Catalyst);

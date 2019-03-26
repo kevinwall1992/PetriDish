@@ -31,9 +31,6 @@ public class ActionComponent : MonoBehaviour
         action = action_;
         length = length_;
 
-        if (!action.Prepare())
-            return;
-
         action.Begin();
 
         Queue<Action> actions = new Queue<Action>();
@@ -54,12 +51,6 @@ public class ActionComponent : MonoBehaviour
                     actions.Enqueue(component_action);
             else if (action is Interpretase.ActionCommand)
                 actions.Enqueue((action as Interpretase.ActionCommand).Action);
-
-            if (action is Rotase.RotateAction)
-                gameObject.AddComponent<RotationAnimation>()
-                    .SetParameters(CellComponent, 1)
-                    .SetLength(length)
-                    .Smooth();
 
             if (action is ReactionAction)
             {
@@ -141,39 +132,19 @@ public class ActionComponent : MonoBehaviour
                 }
             }
 
-            if (action is Interpretase.ActivateCommand)
+            if (action is Interpretase.ExciseCommand)
             {
-                Interpretase.ActivateCommand activate_command = action as Interpretase.ActivateCommand;
-
-                CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
-                compound_component.SetCompound(activate_command.OutputtedCompound);
-                compound_component.transform.SetParent(CellComponent.transform);
-                compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
-
-                SlotComponent output_slot_component = CellComponent.OrganismComponent.GetCellComponent(activate_command.OutputSlot.Cell).GetSlotComponent(activate_command.OutputSlot);
-
-                compound_component.gameObject.AddComponent<MoveAnimation>()
-                    .SetParameters(CellComponent.gameObject, output_slot_component.CompoundComponent.gameObject)
-                    .SetLength(1.0f * length);
-
-                compound_component.gameObject.AddComponent<FadeAnimation>()
-                    .SetParameters(true, false)
-                    .SetLength(0.5f);
-            }
-
-            if (action is Interpretase.CutCommand)
-            {
-                Interpretase.CutCommand cut_command = action as Interpretase.CutCommand;
+                Interpretase.ExciseCommand excise_command = action as Interpretase.ExciseCommand;
 
                 CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                 compound_component.SetCompound(new Compound(new DNA(), 1));
                 compound_component.transform.SetParent(CellComponent.transform);
                 compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
-                SlotComponent output_slot_component = CellComponent.OrganismComponent.GetCellComponent(cut_command.OutputSlot.Cell).GetSlotComponent(cut_command.OutputSlot);
+                SlotComponent output_slot_component = CellComponent.OrganismComponent.GetCellComponent(excise_command.Destination.Cell).GetSlotComponent(excise_command.Destination);
 
                 compound_component.gameObject.AddComponent<MoveAnimation>()
-                    .SetParameters(CellComponent.GetSlotComponent(cut_command.CatalystSlot).CompoundComponent.gameObject, 
+                    .SetParameters(CellComponent.GetSlotComponent(excise_command.CatalystSlot).CompoundComponent.gameObject, 
                                    output_slot_component.CompoundComponent.gameObject)
                     .SetLength(1.0f * length);
 
@@ -231,54 +202,6 @@ public class ActionComponent : MonoBehaviour
 
             }
 
-            if (action is Interpretase.SwapCommand)
-            {
-                Interpretase.SwapCommand swap_command = action as Interpretase.SwapCommand;
-
-                CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
-                compound_component.SetCompound(swap_command.CompoundA);
-                compound_component.transform.SetParent(CellComponent.transform);
-                compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
-
-                compound_component.gameObject.AddComponent<MoveAnimation>()
-                    .SetParameters(CellComponent.GetSlotComponent(swap_command.SlotA).CompoundComponent.gameObject, 
-                                   CellComponent.GetSlotComponent(swap_command.SlotB).CompoundComponent.gameObject)
-                    .SetLength(1.0f * length);
-
-                compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
-                compound_component.SetCompound(swap_command.CompoundB);
-
-                compound_component.gameObject.AddComponent<MoveAnimation>()
-                    .SetParameters(CellComponent.GetSlotComponent(swap_command.SlotB).CompoundComponent.gameObject, 
-                                   CellComponent.GetSlotComponent(swap_command.SlotA).CompoundComponent.gameObject)
-                    .SetLength(1.0f * length);
-            }
-
-            if (action is Sporulase.SporulateAction)
-            {
-                Animator spore_animator = Instantiate(Scene.Micro.Prefabs.SporeAnimator);
-                spore_animator.transform.SetParent(Scene.Micro.Visualization.transform);
-
-                spore_animator.gameObject.AddComponent<AnimatorAnimation>()
-                    .SetLength(0.2f * length)
-                    .Smooth();
-
-                CellComponent.gameObject.AddComponent<FadeAnimation>()
-                    .SetParameters(false, true)
-                    .SetLength(0.2f * length);
-                CellComponent.gameObject.AddComponent<ScalingAnimation>()
-                    .SetParameters(true)
-                    .SetLength(0.2f * length);
-
-                spore_animator.gameObject.AddComponent<MoveAnimation>()
-                    .SetParameters(CellComponent.gameObject, OrganismComponent.North)
-                    .SetLength(25, 0.3f * length);
-
-                spore_animator.gameObject.AddComponent<FadeAnimation>()
-                    .SetParameters(false, true)
-                    .SetLength(0.7f * length, 0.3f * length);
-            }
-
             if (action is Constructase.ConstructCell)
             {
                 Transform adjustment = new GameObject("adjustment").GetComponent<Transform>();
@@ -288,10 +211,10 @@ public class ActionComponent : MonoBehaviour
                 construction_animator.transform.SetParent(adjustment);
                 construction_animator.transform.Translate(-0.150f, -0.04f, 0);
 
-                Organism.HexagonalDirection direction = SlotComponent.Slot.Direction;
+                Cell.Relation direction = SlotComponent.Slot.Direction;
                 adjustment.Rotate(0, 0, (((int)direction + 5) % 6) * -60);
 
-                Vector2Int cell_position = OrganismComponent.Organism.GetNeighborPosition(CellComponent.Cell, direction);
+                Vector2Int cell_position = OrganismComponent.Organism.GetCellPosition(CellComponent.Cell.GetAdjacentCell(direction));
                 adjustment.position = OrganismComponent.CellPositionToWorldPosition(cell_position);
 
                 construction_animator.gameObject.AddComponent<AnimatorAnimation>()
@@ -316,7 +239,7 @@ public class ActionComponent : MonoBehaviour
 
         if (GetMoment() > 1)
         {
-            if (!action.HasFailed)
+            if (action.HasBegun)
                 action.End();
 
             GameObject.Destroy(this);
@@ -387,36 +310,6 @@ public class ActionAnimation : MonoBehaviour
             if (GetComponents<ActionAnimation>().Length == 0)
                 Destroy(gameObject);
         }
-    }
-}
-
-public class RotationAnimation : ActionAnimation
-{
-    CellComponent cell_component;
-    int rotation_count;
-
-    float starting_rotation;
-
-    protected override void Update()
-    {
-        base.Update();
-
-        if (cell_component == null)
-            return;
-
-        if (GetMoment() < 1)
-            cell_component.transform.localEulerAngles = 
-                new Vector3(0, 0, starting_rotation + rotation_count * -60 * GetMoment());
-    }
-
-    public RotationAnimation SetParameters(CellComponent cell_component_, int rotation_count_)
-    {
-        cell_component = cell_component_;
-        rotation_count = rotation_count_;
-
-        starting_rotation = cell_component.transform.eulerAngles.z;
-
-        return this;
     }
 }
 

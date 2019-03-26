@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class Cell
 {
+    //The relationship between adjacent Cells
+    //Can also be thought of as a direction
+    public enum Relation { None = -1, Up, UpRight, DownRight, Down, DownLeft, UpLeft }
+
     Organism organism;
 
     SlotList slots = new SlotList();
@@ -25,6 +30,11 @@ public class Cell
 
         for (int i = 0; i < 6; i++)
             slots.Add(new Slot(this));
+    }
+
+    public Cell GetAdjacentCell(Relation relation)
+    {
+        return Organism.GetNeighbor(this, relation);
     }
 
     public int GetSlotIndex(Slot slot)
@@ -50,20 +60,19 @@ public class Cell
 
     public void Detatch()
     {
-        Organism.Locale.AddOrganism(new Organism(Organism.RemoveCell(this)));
+        Organism.Locale.AddOrganism(new Organism(Organism.SeparateCell(this)));
     }
 
-    public List<Action> GetActions()
+    public List<Action> GetActions(Action.Stage stage)
     {
         List<Action> actions = new List<Action>();
 
         foreach (Slot slot in slots)
             if (slot.Compound != null && slot.Compound.Molecule is Catalyst)
-                actions.Add((slot.Compound.Molecule as Catalyst).Catalyze(slot));
+                actions.Add((slot.Compound.Molecule as Catalyst).Catalyze(slot, stage));
 
-        return actions;
+        return actions.Where(action => action != null).ToList();
     }
-
 
     public class Slot
     {
@@ -119,21 +128,21 @@ public class Cell
             get { return AdjacentCell == null; }
         }
 
-        public Organism.HexagonalDirection Direction
+        public Cell.Relation Direction
         {
             get
             {
                 switch (Index)
                 {
-                    case 0: return Organism.HexagonalDirection.Up;
-                    case 1: return Organism.HexagonalDirection.UpRight;
-                    case 2: return Organism.HexagonalDirection.DownRight;
-                    case 3: return Organism.HexagonalDirection.Down;
-                    case 4: return Organism.HexagonalDirection.DownLeft;
-                    case 5: return Organism.HexagonalDirection.UpLeft;
+                    case 0: return Cell.Relation.Up;
+                    case 1: return Cell.Relation.UpRight;
+                    case 2: return Cell.Relation.DownRight;
+                    case 3: return Cell.Relation.Down;
+                    case 4: return Cell.Relation.DownLeft;
+                    case 5: return Cell.Relation.UpLeft;
                 }
 
-                return Organism.HexagonalDirection.Up;
+                return Cell.Relation.Up;
             }
         }
 
@@ -161,24 +170,38 @@ public class Cell
         }
 
 
-        public enum Relation { This, One, Two, Three, Four, Five, Across }
+        //The relationship between adjacent Slots.
+        //Right means clockwise, Left counter clockwise
+        //(Righty tight lefty loosey)
+        public enum Relation { None = -1, Right, Left, Across }
 
-        public Slot GetSlot(Relation relation)
+        public Slot GetAdjacentSlot(Relation relation)
         {
-            if (relation == Relation.Across)
-                return AcrossSlot;
+            switch(relation)
+            {
+                case Relation.Across: return AcrossSlot;
+                case Relation.Right: return NextSlot;
+                case Relation.Left: return PreviousSlot;
 
-            return Cell.Slots[Index + (int)relation];
+                default: return null;
+            }
         }
 
         public Relation GetRelation(Slot other)
         {
             if (other == AcrossSlot)
                 return Relation.Across;
+            else if (other == NextSlot)
+                return Relation.Right;
+            else if (other == PreviousSlot)
+                return Relation.Left;
 
-            Debug.Assert(other.Cell == Cell);
+            return Relation.None;
+        }
 
-            return (Relation)(other.Index - Index);
+        public static Relation RotateRelation(Relation relation, bool rotate_right)
+        {
+            return (Relation)((int)(relation + (rotate_right ? 1 : 2)) % 3);
         }
     }
 

@@ -8,7 +8,7 @@ using System;
 
 public class OrganismComponent : GoodBehavior
 {
-    Queue<List<Action>> actions= new Queue<List<Action>>();
+    Queue<Action.Stage> stage_queue = new Queue<Action.Stage>();
 
     IEnumerable<CellComponent> CellComponents { get { return GetComponentsInChildren<CellComponent>(); } }
 
@@ -43,7 +43,7 @@ public class OrganismComponent : GoodBehavior
     {
         get
         {
-            return actions.Count > 0 || 
+            return stage_queue.Count > 0 || 
                    GetComponents<ActionComponent>().Length > 0;
         }
     }
@@ -103,13 +103,11 @@ public class OrganismComponent : GoodBehavior
         if (GetComponents<ActionComponent>().Length > 0)
             return;
 
-        if (actions.Count > 0)
-            foreach (Action action in actions.Dequeue())
+        if (stage_queue.Count > 0)
+            foreach (Action action in Organism.GetActions(stage_queue.Dequeue()))
             {
                 float length = 1.5f;
-                if (action is PoweredAction)
-                    length = 3;
-                else if(action is ReactionAction || action is EnergeticReactionAction)
+                if(action is ReactionAction || action is EnergeticReactionAction)
                     length = 3;
 
                 gameObject.AddComponent<ActionComponent>().SetAction(action, length);
@@ -195,35 +193,14 @@ public class OrganismComponent : GoodBehavior
     {
         Organism.Membrane.Step();
 
-        List<Action> commands = new List<Action>(),
-                     reactions = new List<Action>(),
-                     move_actions = new List<Action>(),
-                     powered_actions = new List<Action>();
-
-        foreach (CellComponent cell_component in CellComponents)
-            foreach (Action action in cell_component.Cell.GetActions())
-            {
-                if (action is Interpretase.Command)
-                    commands.Add(action);
-                else if (action is ReactionAction || action is EnergeticReactionAction)
-                    reactions.Add(action);
-                else if (action is MoveToSlotAction)
-                    move_actions.Add(action);
-                else if (action is PoweredAction)
-                    powered_actions.Add(action);
-            }
-
-        actions.Enqueue(commands);
-        actions.Enqueue(reactions);
-        actions.Enqueue(move_actions);
-        actions.Enqueue(powered_actions);
+        stage_queue = new Queue<Action.Stage>(Action.Stages);
     }
 
     public void ResetExperiment(string dna_sequence= "")
     {
         foreach (CellComponent cell_component in CellComponents)
         {
-            Organism.RemoveCell(cell_component.Cell);
+            Organism.SeparateCell(cell_component.Cell);
             GameObject.Destroy(cell_component.gameObject);
         }
 
@@ -231,12 +208,17 @@ public class OrganismComponent : GoodBehavior
 
         if (dna_sequence != "")
         {
+            Organism.AddCell(cell, Cell.Relation.Up);
+
             Ribozyme interpretase = new Ribozyme(new Interpretase());
             interpretase.AddCofactor(new Compound(new DNA(dna_sequence), 1));
             cell.Slots[0].AddCompound(new Compound(interpretase, 1));
 
+            cell.Slots[1].AddCompound(new Compound(Molecule.Glucose, 2));
+            cell.Slots[2].AddCompound(new Compound(Molecule.Glucose, 1));
+            cell.Slots[3].AddCompound(new Compound(Molecule.ATP, 1));
+
             Organism.Cytozol.AddCompound(new Compound(Molecule.ATP, 10));
-            Organism.Cytozol.AddCompound(new Compound(Molecule.Glucose, 10));
             Organism.Cytozol.AddCompound(new Compound(Molecule.Phosphate, 10));
         }
     }

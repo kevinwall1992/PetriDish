@@ -27,13 +27,7 @@ public class DNAPanel : DetailPanel
                 return null;
 
             if (molecule is Catalyst)
-            {
-                Compound cofactor = (molecule as Catalyst).GetCofactor<DNA>();
-                if (cofactor == null)
-                    return null;
-
-                return cofactor.Molecule as DNA;
-            }
+                return Interpretase.GetGeneticCofactor(molecule as Catalyst);
 
             if (molecule is DNA)
                 return molecule as DNA;
@@ -133,24 +127,27 @@ public class DNAPanel : DetailPanel
 
     void InitializeSequenceElements()
     {
-        AddDNASequenceElement("CAAAAAAAC", "Move One Unit");
-        AddDNASequenceElement("CCCAAAAAC", "Move Half Stack");
-        AddDNASequenceElement("CGGAAAAAC", "Move Full Stack");
-        AddDNASequenceElement("CTTAAAAAC", "Move Max");
-        AddDNASequenceElement("CCAAAAAAC", "Swap");
-        AddDNASequenceElement("CATTCTAAA", "Cut and Paste DNA");
-        AddDNASequenceElement("CACAAAAAC", "Activate Slot");
-        AddDNASequenceElement("CAGTCTAAC", "Go To Marker");
-        AddDNASequenceElement("CAGTCTGAGGAAAAAGAAAAC", "Conditionally Go To");
+        AddDNASequenceElement("CAAAAA", "Move");
+        AddDNASequenceElement("CACAAAAAC", "Take");
+        AddDNASequenceElement("CAG", "Grab");
+        AddDNASequenceElement("CAT", "Release");
+        AddDNASequenceElement("CCCAAA", "Spin");
+        AddDNASequenceElement("CGGTAAAAA", "Excise DNA");
+        AddDNASequenceElement("CTG", "If");
+        AddDNASequenceElement("CTT", "Try");
 
         AddDNASequenceElement("TCTTTT", "Marked Group");
 
-        AddDNASequenceElement("GAAAAA", "Get Size of Slot");
+        AddDNASequenceElement("GAAAAA", "Measure");
         AddDNASequenceElement("GAGAAAAAC", "A == B");
         AddDNASequenceElement("GACAAAAAC", "A > B");
         AddDNASequenceElement("GATAAAAAC", "A < B");
 
-        AddDNASequenceElement("AAA", "Slot 1");
+        AddDNASequenceElement("TAA", "Marker");
+
+        AddDNASequenceElement("AAA", "Right");
+        AddDNASequenceElement("AAC", "Left");
+        AddDNASequenceElement("AAG", "Across");
 
         AddDNASequenceElement("AAA", "0");
     }

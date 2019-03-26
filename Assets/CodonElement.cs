@@ -40,7 +40,7 @@ public class CodonElement : DNAPanelElement
 
     List<string> GetCodonOptions(string codon)
     {
-        List<string> command_codons = new List<string> { "CAA", "CCC", "CGG", "CTT", "CAC", "CAG", "CAT", "CCA", "CCG" };
+        List<string> command_codons = new List<string> { "CAA", "CAC", "CAG", "CAT", "CCC", "CGG", "CTG", "CTT" };
         List<string> marker_codons = new List<string> { "TAA", "TAC", "TAG", "TAT", "TCA", "TCC", "TCG", "TCT", "TGA", "TGC", "TGT", "TTA", "TTC", "TTG" };
         List<string> value_codons = new List<string> { "AAA", "AAC", "AAG", "AAT", "ACA", "ACC", "ACG", "ACT", "AGA", "AGC", "AGG", "AGT", "ATA", "ATC", "ATG", "ATT" };
         List<string> function_codons = new List<string> { "GAA", "GAC", "GAG", "GAT", "GCA", "GCC" };
@@ -105,72 +105,55 @@ public class CodonElement : DNAPanelElement
             case 'A':
                 bool is_location = false;
 
-                int this_codon_index;
-                int command_codon_index = this_codon_index = DNAPanel.CodonLayout.GetElementIndex(gameObject);
-                while (--command_codon_index > 0 && DNAPanel.DNA.GetCodon(command_codon_index)[0] != 'C') ;
-                if (command_codon_index < 0)
-                    is_location = true;
+                int this_codon_index = DNAPanel.CodonLayout.GetElementIndex(gameObject);
 
-                int operand_index = this_codon_index - command_codon_index - 1;
-
-                if (is_location) ;
-                else if (DNAPanel.DNA.GetCodon(this_codon_index - 1) == "GAA")
-                    is_location = true;
-                else
-                    switch (DNAPanel.DNA.GetCodon(command_codon_index))
-                    {
-                        case "CAA":
-                        case "CCC":
-                        case "CGG":
-                        case "CTT":
-                        case "CCA":
-                            is_location = true;
-                            break;
-
-                        case "CAC":
-                            is_location = operand_index == 0;
-                            break;
-
-                        case "CAG":
-                        case "CCG":
-                            break;
-
-                        case "CAT":
-                            is_location = operand_index == 1;
-                            break;
-                    }
-
-                int value = Interpretase.CodonToValue(codon);
+                string previous_codon = DNAPanel.CodonLayout.GetCodonElement(this_codon_index - 1).Codon;
+                switch (previous_codon)
+                {
+                    case "CAA":
+                    case "CAC":
+                    case "CCC":
+                    case "GAA":
+                        is_location = true;
+                        break;
+                }
 
                 if (is_location)
                 {
-                    if (value < 6)
-                        Description = "Slot " + value.ToString();
-                    else if (value == 6)
-                        Description = "Across Slot";
-                    else if (value == 7)
-                        Description = "Cytozol";
+                    if(previous_codon == "CCC")
+                        switch(Interpretase.SpinCommand.CodonToDirection(codon))
+                        {
+                            case Interpretase.SpinCommand.Direction.Right: Description = "Right"; break;
+                            case Interpretase.SpinCommand.Direction.Left: Description = "Left"; break;
+                        }
                     else
-                        Description = "";
+                        switch (Interpretase.CodonToDirection(codon))
+                        {
+                            case Cell.Slot.Relation.Right: Description = "Right"; break;
+                            case Cell.Slot.Relation.Left: Description = "Left"; break;
+                            case Cell.Slot.Relation.Across: Description = "Across"; break;
+                        }
                 }
                 else
-                    Description = value.ToString();
-
+                    Description = Interpretase.CodonToValue(codon).ToString();
+               
                 break;
 
             case 'C':
                 switch (codon)
                 {
-                    case "CAA": Description = "Move Single Unit"; break;
-                    case "CCC": Description = "Move Half Stack"; break;
-                    case "CGG": Description = "Move Full Stack"; break;
-                    case "CTT": Description = "Move Max"; break;
-                    case "CAC": Description = "Activate"; break;
-                    case "CAG": Description = "Goto"; break;
-                    case "CCG": Description = "Try"; break;
-                    case "CAT": Description = "Cut"; break;
-                    case "CCA": Description = "Swap"; break;
-                    default: Description = ""; break;
+                    case "CAA": Description = "Move"; break;
+                    case "CAC": Description = "Take"; break;
+                    case "CAG": Description = "Grab"; break;
+                    case "CAT": Description = "Release"; break;
+                    case "CCC": Description = "Spin"; break;
+                    case "CGG": Description = "Excise"; break;
+                    case "CTG": Description = "If"; break;
+                    case "CTT": Description = "Try"; break;
+
+                    default:
+                        Description = "";
+                        break;
                 }
                 break;
 

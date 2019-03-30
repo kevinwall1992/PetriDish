@@ -43,6 +43,10 @@ public class ActionComponent : MonoBehaviour
         Queue<Transform> incoming_compound_positions = new Queue<Transform>(compound_positions),
                          outgoing_compound_positions = new Queue<Transform>(compound_positions);
 
+        Dictionary<Compound, float> compound_rotations = new Dictionary<Compound, float>();
+        bool is_grabbing = false;
+        bool is_releasing = false;
+
         while (actions.Count > 0)
         {
             Action action = actions.Dequeue();
@@ -153,6 +157,57 @@ public class ActionComponent : MonoBehaviour
                     .SetLength(0.5f);
             }
 
+            if (action is Interpretase.GrabCommand)
+            {
+                SlotComponent.CompoundComponent.GetComponentInChildren<GrabberComponent>().gameObject.AddComponent<AnimatorAnimation>()
+                    .SetLength(0.5f * length)
+                    .Smooth();
+
+                is_grabbing = true;
+            }
+
+            if (action is Interpretase.ReleaseCommand)
+            {
+                SlotComponent.CompoundComponent.GetComponentInChildren<GrabberComponent>().gameObject.AddComponent<AnimatorAnimation>()
+                    .SetLength(0.5f * length)
+                    .Smooth()
+                    .Reverse();
+
+                is_releasing = true;
+            }
+
+            if (action is Interpretase.MoveCommand)
+            {
+                Interpretase.MoveCommand move_command = action as Interpretase.MoveCommand;
+                float radians = -(((int)move_command.FinalOrientation + 1) % 3) * 2 * Mathf.PI / 3;
+
+                compound_rotations[move_command.MovingCompound] = radians;
+            }
+
+            if (action is Interpretase.SpinCommand)
+            {
+                Interpretase.SpinCommand spin_command = action as Interpretase.SpinCommand;
+
+                float radians = 2 * Mathf.PI / 3 * (spin_command.IsRightSpin ? -1 : 1);
+
+                SlotComponent.CompoundComponent.MoleculeComponent.gameObject.AddComponent<RotationAnimation>()
+                    .SetParameters(radians)
+                    .SetLength(1.0f * length)
+                    .Smooth();
+
+                foreach (Action component_action in (spin_command.Action as CompositeAction).Actions)
+                {
+                    Compound compound;
+
+                    if (component_action is MoveToSlotAction)
+                        compound = (component_action as MoveToSlotAction).MovedCompound;
+                    else
+                        compound = (component_action as MoveToLocaleAction).MovedCompound;
+
+                    compound_rotations[compound] = radians;
+                }
+            }
+
             if (action is MoveToSlotAction ||
                 action is MoveToCytozolAction ||
                 action is MoveToLocaleAction)
@@ -166,14 +221,36 @@ public class ActionComponent : MonoBehaviour
 
                 Cell.Slot source_slot = null;
 
+                float final_rotation = 0;
+                float destination_rotation = 0;
+
                 if (action is MoveToSlotAction)
                 {
                     MoveToSlotAction move_to_slot_action = action as MoveToSlotAction;
+                    Compound compound = move_to_slot_action.MovedCompound;
+
+                    SlotComponent destination_slot_component = OrganismComponent.GetSlotComponent(move_to_slot_action.Destination);
 
                     compound_component.SetCompound(move_to_slot_action.MovedCompound);
+                    if (move_to_slot_action.Source.Cell != move_to_slot_action.Destination.Cell && 
+                        !compound_rotations.ContainsKey(compound))
+                        compound_component.transform.rotation = Quaternion.identity;
+                    else
+                        compound_component.transform.rotation = OrganismComponent.GetSlotComponent(move_to_slot_action.Source)
+                                                                .CompoundComponent.transform.rotation;
 
                     source_slot = move_to_slot_action.Source;
-                    destination_game_object = OrganismComponent.GetSlotComponent(move_to_slot_action.Destination).CompoundComponent.gameObject;
+                    destination_game_object = destination_slot_component.CompoundComponent.gameObject;
+
+                    destination_rotation = MathUtility.DegreesToRadians(destination_slot_component.transform.rotation.eulerAngles.z);
+                    final_rotation = destination_rotation;
+
+                    if (move_to_slot_action.MovedCompound.Molecule is Catalyst)
+                        switch ((compound.Molecule as Catalyst).Orientation)
+                        {
+                            case Cell.Slot.Relation.Right: final_rotation += -2 * Mathf.PI / 3; break;
+                            case Cell.Slot.Relation.Left: final_rotation += 2 * Mathf.PI / 3; break;
+                        }
                 }
                 else if (action is MoveToCytozolAction)
                 {
@@ -196,10 +273,25 @@ public class ActionComponent : MonoBehaviour
 
                 source_game_object = OrganismComponent.GetSlotComponent(source_slot).CompoundComponent.gameObject;
 
+                float relative_move_length = is_grabbing ? 0.7f : 1.0f;
+                float relative_move_delay = is_grabbing ? 0.3f : 0.0f;
+
                 compound_component.gameObject.AddComponent<MoveAnimation>()
                     .SetParameters(source_game_object, destination_game_object)
-                    .SetLength(1.0f * length);
+                    .SetLength(relative_move_length * length, relative_move_delay * length)
+                    .Smooth();
 
+                if (compound_rotations.ContainsKey(compound_component.Compound))
+                    final_rotation = destination_rotation + compound_rotations[compound_component.Compound];
+                compound_component.MoleculeComponent.gameObject.AddComponent<RotationAnimation>()
+                    .SetParameters(final_rotation)
+                    .SetLength(1.0f * length)
+                    .Smooth();
+
+                if(is_grabbing && compound_component.Compound.Molecule.Equals(action.Catalyst))
+                    compound_component.GetComponentInChildren<GrabberComponent>().gameObject.AddComponent<AnimatorAnimation>()
+                    .SetLength(0.2f * length)
+                    .Smooth();
             }
 
             if (action is Constructase.ConstructCell)
@@ -258,6 +350,8 @@ public class ActionAnimation : MonoBehaviour
     float smooth_moment = 0;
     float velocity;
 
+    bool reverse = false;
+
     protected virtual void Update()
     {
         elapsed_time += Time.deltaTime * Scene.Micro.Visualization.Speed;
@@ -277,10 +371,13 @@ public class ActionAnimation : MonoBehaviour
             if (elapsed_time >= delay)
                 smooth_moment = Mathf.SmoothDamp(smooth_moment, 1, ref velocity, length);
 
+            float moment;
             if (linear_moment >= 1)
-                return linear_moment;
+                moment = linear_moment;
             else
-                return Mathf.Min(smooth_moment / 0.975f, 1);
+                moment = Mathf.Min(smooth_moment / 0.915f, 1);
+
+            return reverse ? 1 - moment : moment;
         }
     }
 
@@ -299,6 +396,13 @@ public class ActionAnimation : MonoBehaviour
             throw new System.NotSupportedException();
 
         is_smooth = true;
+
+        return this;
+    }
+
+    public ActionAnimation Reverse()
+    {
+        reverse = !reverse;
 
         return this;
     }
@@ -420,6 +524,36 @@ public class ScalingAnimation : ActionAnimation
     public ScalingAnimation SetParameters(bool shrink_)
     {
         shrink = shrink_;
+
+        return this;
+    }
+}
+
+public class RotationAnimation : ActionAnimation
+{
+    float start_radians = 0;
+    float end_radians = 0;
+
+    protected override void Update()
+    {
+        base.Update();
+
+        transform.rotation = Quaternion.Euler(0, 0, Mathf.Lerp(MathUtility.RadiansToDegrees(start_radians), 
+                                                               MathUtility.RadiansToDegrees(end_radians), 
+                                                               GetMoment()));
+    }
+
+    public RotationAnimation SetParameters(float radians_)
+    {
+        start_radians = MathUtility.DegreesToRadians(transform.rotation.eulerAngles.z);
+        end_radians = radians_;
+
+        float distance = Mathf.Abs(end_radians - start_radians);
+
+        if (Mathf.Abs(end_radians + 2 * Mathf.PI - start_radians) + 0.001f < distance)
+            end_radians += 2 * Mathf.PI;
+        else if (Mathf.Abs(end_radians - 2 * Mathf.PI - start_radians) + 0.001f < distance)
+            end_radians -= 2 * Mathf.PI;
 
         return this;
     }

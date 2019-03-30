@@ -53,4 +53,16 @@ public class MicroPrefabs : MonoBehaviour
     [SerializeField]
     Animator construction_animator;
     public Animator ConstructionAnimator { get { return construction_animator; } }
+
+    [SerializeField]
+    AttachmentComponent input_attachment_component;
+    public AttachmentComponent InputAttachmentComponent { get { return input_attachment_component; } }
+
+    [SerializeField]
+    AttachmentComponent output_attachment_component;
+    public AttachmentComponent OutputAttachmentComponent { get { return output_attachment_component; } }
+
+    [SerializeField]
+    GrabberComponent grabber_component;
+    public GrabberComponent GrabberComponent { get { return grabber_component; } }
 }

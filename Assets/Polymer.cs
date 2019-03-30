@@ -68,9 +68,9 @@ public class Polymer : Molecule
         return monomer;
     }
 
-    public override bool Equals(object obj)
+    public override bool IsStackable(object obj)
     {
-        if (obj == this)
+        if (this == obj)
             return true;
 
         if (!(obj is Polymer))

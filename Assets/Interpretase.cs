@@ -5,17 +5,15 @@ using UnityEngine;
 
 public class Interpretase : ProgressiveCatalyst
 {
-    public bool IsGrabbing { get; private set; }
-    public void Grab() { IsGrabbing = true; }
-    public void Release() { IsGrabbing = false; }
-
     public override int Power { get { return 10; } }
+
+    public Grabber Grabber { get; private set; }
 
     public DNA DNA { get { return GetGeneticCofactor(this); } }
 
     public Interpretase() : base("Interpretase", 3, "Interprets DNA programs")
     {
-
+        Attachments[Cell.Slot.Relation.Across] = Grabber = new Grabber();
     }
 
     public override bool CanAddCofactor(Compound cofactor)
@@ -25,6 +23,9 @@ public class Interpretase : ProgressiveCatalyst
 
     protected override Action GetAction(Cell.Slot slot)
     {
+        if (DNA == null)
+            return null;
+
         return Interpret(slot, FindCommandCodon(DNA));
     }
 
@@ -411,10 +412,18 @@ public class Interpretase : ProgressiveCatalyst
     }
 
 
+    public override bool Equals(object obj)
+    {
+        if (!base.Equals(obj))
+            return false;
+
+        return Grabber.IsGrabbing == (obj as Interpretase).Grabber.IsGrabbing;
+    }
+
     public override Catalyst Copy()
     {
         Interpretase other = new Interpretase();
-        other.IsGrabbing = IsGrabbing;
+        other.Grabber.IsGrabbing = Grabber.IsGrabbing;
 
         return other.CopyStateFrom(this);
     }
@@ -513,7 +522,7 @@ public class Interpretase : ProgressiveCatalyst
 
         public override void End()
         {
-            Catalyst.GetFacet<Interpretase>().Grab();
+            Catalyst.GetFacet<Interpretase>().Grabber.Grab();
 
             base.End();
         }
@@ -529,7 +538,7 @@ public class Interpretase : ProgressiveCatalyst
 
         public override void End()
         {
-            Catalyst.GetFacet<Interpretase>().Release();
+            Catalyst.GetFacet<Interpretase>().Grabber.Release();
 
             base.End();
         }
@@ -641,8 +650,23 @@ public class Interpretase : ProgressiveCatalyst
     //While also moving. This begins a grab
     public class MoveCommand : ActionCommand
     {
+        PushAction push_action;
+
         public bool IsTake { get; private set; }
         public Cell.Slot.Relation Direction { get; private set; }
+
+        public Compound MovingCompound { get { return push_action.PushingCompound; } }
+
+        public Cell.Slot.Relation FinalOrientation
+        {
+            get
+            {
+                if (Direction == Catalyst.Orientation)
+                    return Catalyst.Orientation;
+
+                return CatalystSlot.GetAdjacentSlot(Direction).GetRelation(CatalystSlot);
+            }
+        }
 
         public override bool IsLegal
         {
@@ -672,12 +696,12 @@ public class Interpretase : ProgressiveCatalyst
             GrabCommand grab_command = IsTake ? new GrabCommand(catalyst_slot, command_codon_index) : null;
 
             //Pushing Compounds out of the way
-            PushAction push_action = new PushAction(catalyst_slot, catalyst_slot, direction);
+            push_action = new PushAction(catalyst_slot, catalyst_slot, direction);
 
             //Dragging grabbed compound behind us
             MoveToSlotAction move_action = null;
             Cell.Slot grab_slot = catalyst_slot.GetAdjacentSlot(Catalyst.Orientation);
-            if ((Catalyst.GetFacet<Interpretase>().IsGrabbing || IsTake) &&
+            if ((Catalyst.GetFacet<Interpretase>().Grabber.IsGrabbing || IsTake) &&
                 grab_slot != null &&
                 grab_slot.Compound != null &&
                 Catalyst.Orientation != direction &&
@@ -690,8 +714,7 @@ public class Interpretase : ProgressiveCatalyst
 
         public override void End()
         {
-            if (Direction != Catalyst.Orientation)
-                Catalyst.Orientation = CatalystSlot.GetAdjacentSlot(Direction).GetRelation(CatalystSlot);
+            Catalyst.Orientation = FinalOrientation;
 
             base.End();
         }
@@ -705,7 +728,7 @@ public class Interpretase : ProgressiveCatalyst
 
         Direction direction;
 
-        bool IsRightSpin { get { return direction == Direction.Right; } }
+        public bool IsRightSpin { get { return direction == Direction.Right; } }
 
         public override bool IsLegal
         {
@@ -725,7 +748,7 @@ public class Interpretase : ProgressiveCatalyst
             direction = direction_;
 
             Cell.Slot grab_slot = catalyst_slot.GetAdjacentSlot(Catalyst.Orientation);
-            if (Catalyst.GetFacet<Interpretase>().IsGrabbing)
+            if (Catalyst.GetFacet<Interpretase>().Grabber.IsGrabbing)
             {
                 List<Action> actions = new List<Action>();
 
@@ -779,4 +802,13 @@ public class Interpretase : ProgressiveCatalyst
             return ValueToDirection(CodonToValue(codon));
         }
     }
+}
+
+
+public class Grabber : Attachment
+{
+    public bool IsGrabbing { get; set; }
+
+    public void Grab() { IsGrabbing = true; }
+    public void Release() { IsGrabbing = false; }
 }

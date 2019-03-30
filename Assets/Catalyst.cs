@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 
-public interface Catalyst : Copiable<Catalyst>
+public interface Catalyst : Copiable<Catalyst>, Stackable
 {
     //Same across all instances
     string Name { get; }
@@ -13,9 +14,12 @@ public interface Catalyst : Copiable<Catalyst>
 
     int Power { get; }
 
+    Dictionary<Cell.Slot.Relation, Attachment> Attachments { get; }
+
     //State
     Cell.Slot.Relation Orientation { get; set; }
     IEnumerable<Compound> Cofactors { get; }
+
 
     T GetFacet<T>() where T : class, Catalyst;
 
@@ -28,6 +32,28 @@ public interface Catalyst : Copiable<Catalyst>
     Action Catalyze(Cell.Slot slot, Action.Stage stage);
 
     Catalyst Mutate();
+}
+
+public abstract class Attachment { }
+
+public class InputAttachment : Attachment
+{
+    public Molecule Molecule { get; private set; }
+
+    public InputAttachment(Molecule molecule)
+    {
+        Molecule = molecule;
+    }
+}
+
+public class OutputAttachment : Attachment
+{
+    public Molecule Molecule { get; private set; }
+
+    public OutputAttachment(Molecule molecule)
+    {
+        Molecule = molecule;
+    }
 }
 
 //This Catalyst executes the action in its entirety 
@@ -46,6 +72,8 @@ public abstract class ProgressiveCatalyst : Catalyst
 
     public abstract int Power { get; }
 
+    public Dictionary<Cell.Slot.Relation, Attachment> Attachments { get; private set; }
+
     //Orientation describes the direction the 
     //"front" of the Catalyst is pointing
     public Cell.Slot.Relation Orientation { get; set; }
@@ -58,6 +86,8 @@ public abstract class ProgressiveCatalyst : Catalyst
         Name = name;
         Description = description;
         Price = price;
+
+        Attachments = new Dictionary<Cell.Slot.Relation, Attachment>();
 
         Orientation = Cell.Slot.Relation.Across;
     }
@@ -145,9 +175,41 @@ public abstract class ProgressiveCatalyst : Catalyst
     }
 
 
+    public virtual bool IsStackable(object obj)
+    {
+        if (this == obj)
+            return true;
+
+        if (GetType() != obj.GetType())
+            return false;
+
+        Catalyst other = obj as Catalyst;
+
+        foreach (Compound compound in cofactors)
+            if (!other.Cofactors.Contains(compound))
+                return false;
+
+        foreach (Compound compound in other.Cofactors)
+            if (!Cofactors.Contains(compound))
+                return false;
+
+        return true;
+    }
+
     public override bool Equals(object obj)
     {
-        return GetType() == obj.GetType();
+        if (!IsStackable(obj))
+            return false;
+
+        Catalyst other = obj as Catalyst;
+
+        if (Orientation != other.Orientation)
+            return false;
+
+        if (Progress != (other as ProgressiveCatalyst).Progress)
+            return false;
+
+        return true;
     }
 
     public abstract Catalyst Copy();
@@ -158,6 +220,8 @@ public abstract class ProgressiveCatalyst : Catalyst
 
         foreach (Compound cofactor in other.cofactors)
             cofactors.Add(cofactor.Copy());
+
+        Progress = other.Progress;
 
         return this;
     }
@@ -298,16 +362,14 @@ public class Pumpase : InstantCatalyst
         }
     }
 
-    public override bool Equals(object obj)
+    public override bool IsStackable(object obj)
     {
-        if (obj == this)
-            return true;
-
-        Pumpase other = obj as Pumpase;
-        if (other == null)
+        if (!base.IsStackable(obj))
             return false;
 
-        return other.pump_out == pump_out && 
+        Pumpase other = obj as Pumpase;
+
+        return other.pump_out == pump_out &&
                other.molecule.Equals(molecule);
     }
 

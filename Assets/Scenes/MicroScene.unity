@@ -1735,6 +1735,12 @@ MonoBehaviour:
     type: 3}
   construction_animator: {fileID: 7411722687679354255, guid: 24eeda9a42eeeb34294e0640492658c3,
     type: 3}
+  input_attachment_component: {fileID: 56433724241185244, guid: 28748679e2f013148b3d63df236caa8a,
+    type: 3}
+  output_attachment_component: {fileID: 3509214899810873523, guid: 492712418b8ff644ba49076462e74250,
+    type: 3}
+  grabber_component: {fileID: 8933109633735206647, guid: 750d597d126d3cc48bd6469ae5f73255,
+    type: 3}
 --- !u!4 &1816827943
 Transform:
   m_ObjectHideFlags: 0

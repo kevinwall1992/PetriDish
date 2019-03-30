@@ -53,7 +53,7 @@ public class Card : GoodBehavior, IPointerClickHandler, Spawner
             description_small.text = description.text = catalyst.Description;
             price_text.text = catalyst.Price.ToString();
 
-            compound_image.sprite = CompoundComponent.GetSprite(catalyst as Molecule);
+            compound_image.sprite = MoleculeComponent.GetSprite(catalyst as Molecule);
 
             Color dark_gray = Color.Lerp(Color.black, Color.gray, 0.2f);
 

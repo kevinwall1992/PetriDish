@@ -4,7 +4,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
-public abstract class Molecule : Copiable<Molecule>
+public abstract class Molecule : Copiable<Molecule>, Stackable
 {
     static Dictionary<string, Molecule> molecules = new Dictionary<string, Molecule>();
 
@@ -144,9 +144,9 @@ public abstract class Molecule : Copiable<Molecule>
 
     }
 
-    public override bool Equals(object obj)
+    public virtual bool IsStackable(object obj)
     {
-        if (obj == this)
+        if (this == obj)
             return true;
 
         if (!(obj is Molecule))
@@ -157,8 +157,8 @@ public abstract class Molecule : Copiable<Molecule>
 
         Molecule other = obj as Molecule;
 
-        if (Name != "Unnamed" || other.Name != "Unnamed")
-            return Name == other.Name;
+        if (this.Name != "Unnamed" || other.Name != "Unnamed")
+            return this.Name == other.Name;
 
         foreach (Element element in this.Elements.Keys)
             if (!other.Elements.ContainsKey(element) ||
@@ -166,6 +166,11 @@ public abstract class Molecule : Copiable<Molecule>
                 return false;
 
         return true;
+    }
+
+    public override bool Equals(object obj)
+    {
+        return IsStackable(obj);
     }
 
     public override int GetHashCode()

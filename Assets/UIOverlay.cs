@@ -49,7 +49,7 @@ public class UIOverlay : GoodBehavior
                 Scene.Micro.Camera.WorldToScreenPoint(compound_component.transform.position) + new Vector3(20, -10);
 
             Color text_color = compound_quantity_texts[compound_component].color;
-            text_color.a = compound_component.GetComponent<SpriteRenderer>().color.a;
+            text_color.a = compound_component.MoleculeComponent.GetComponent<SpriteRenderer>().color.a;
             compound_quantity_texts[compound_component].color = text_color;
         }
     }

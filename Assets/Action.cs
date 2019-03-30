@@ -326,6 +326,18 @@ public class MoveToLocaleAction : MoveAction<Locale>
 
 public class PushAction : CompositeAction
 {
+    MoveToSlotAction pushing_move_action = null;
+    public Compound PushingCompound
+    {
+        get
+        {
+            if (pushing_move_action == null)
+                return null;
+
+            return pushing_move_action.MovedCompound;
+        }
+    }
+
     public bool IsFullPush { get; private set; }
 
     public override bool IsLegal
@@ -352,7 +364,9 @@ public class PushAction : CompositeAction
                 actions.Add(new MoveToLocaleAction(catalyst_slot, source));
             else
             {
-                actions.Add(new MoveToSlotAction(catalyst_slot, source, direction));
+                MoveToSlotAction move_action = new MoveToSlotAction(catalyst_slot, source, direction);
+                actions.Add(move_action);
+                pushing_move_action = move_action;
 
                 Cell.Slot destination = source.AcrossSlot;
                 if (destination.Compound != null && !destination.Compound.Molecule.Equals(source.Compound.Molecule))
@@ -367,6 +381,8 @@ public class PushAction : CompositeAction
             {
                 MoveToSlotAction move_action = new MoveToSlotAction(catalyst_slot, current_source, direction);
                 actions.Add(move_action);
+                if (pushing_move_action == null)
+                    pushing_move_action = move_action;
 
                 Cell.Slot destination = move_action.Destination;
                 if (destination.Compound == null)

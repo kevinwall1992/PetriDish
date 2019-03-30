@@ -12,12 +12,13 @@ public class Mess : Molecule, Catalyst
     public override Dictionary<Element, int> Elements { get { return new Dictionary<Element, int>(); } }
 
     public string Description { get { return "A pile of mixed molecules"; } }
-
     public int Price { get { return 0; } }
-
     public Example Example { get { return null; } }
-
     public int Power { get { return 0; } }
+    public Dictionary<Cell.Slot.Relation, Attachment> Attachments
+    {
+        get { return new Dictionary<Cell.Slot.Relation, Attachment>(); }
+    }
 
     public Cell.Slot.Relation Orientation { get { return Cell.Slot.Relation.Across; } set { } }
 

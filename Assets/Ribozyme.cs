@@ -64,6 +64,7 @@ public class Ribozyme : DNA, Catalyst
     public int Price { get { return Catalyst.Price; } }
     public Example Example { get { return Catalyst.Example; } }
     public int Power { get { return Catalyst.Power; } }
+    public Dictionary<Cell.Slot.Relation, Attachment> Attachments { get { return Catalyst.Attachments; } }
 
     public Cell.Slot.Relation Orientation
     {

@@ -193,6 +193,9 @@ public class OrganismComponent : GoodBehavior
     {
         Organism.Membrane.Step();
 
+        foreach (Cell cell in Organism.GetCells())
+            cell.Step();
+
         stage_queue = new Queue<Action.Stage>(Action.Stages);
     }
 
@@ -216,7 +219,7 @@ public class OrganismComponent : GoodBehavior
 
             cell.Slots[1].AddCompound(new Compound(Molecule.Glucose, 2));
             cell.Slots[2].AddCompound(new Compound(Molecule.Glucose, 1));
-            cell.Slots[3].AddCompound(new Compound(new Enzyme(new Interpretase()), 1));
+            cell.Slots[3].AddCompound(new Compound(Molecule.ATP, 1));
 
             Organism.Cytozol.AddCompound(new Compound(Molecule.ATP, 10));
             Organism.Cytozol.AddCompound(new Compound(Molecule.Phosphate, 10));

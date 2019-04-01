@@ -63,6 +63,12 @@ public class Cell
         Organism.Locale.AddOrganism(new Organism(Organism.SeparateCell(this)));
     }
 
+    public void Step()
+    {
+        foreach (Slot slot in slots)
+            slot.Step();
+    }
+
     public List<Action> GetActions(Action.Stage stage)
     {
         List<Action> actions = new List<Action>();
@@ -167,6 +173,12 @@ public class Cell
         public Compound RemoveCompound()
         {
             return Compound.Split(Compound.Quantity);
+        }
+
+        public void Step()
+        {
+            if (Compound != null && Compound.Molecule is Catalyst)
+                (Compound.Molecule as Catalyst).Step(this);
         }
 
 

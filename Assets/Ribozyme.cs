@@ -82,6 +82,11 @@ public class Ribozyme : DNA, Catalyst
             ribozymes[Sequence] = this;
     }
 
+    public void Step(Cell.Slot slot)
+    {
+        Catalyst.Step(slot);
+    }
+
     public Action Catalyze(Cell.Slot slot, Action.Stage stage)
     {
         return Catalyst.Catalyze(slot, stage);

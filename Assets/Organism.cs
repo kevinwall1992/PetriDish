@@ -286,6 +286,9 @@ public class Organism : Chronal, Versionable<Organism>
     {
         Membrane.Step();
 
+        foreach (Cell cell in GetCells())
+            cell.Step();
+
         Queue<Action.Stage> stage_queue = new Queue<Action.Stage>(Action.Stages);
 
         while(stage_queue.Count > 0)

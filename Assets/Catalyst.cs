@@ -29,6 +29,7 @@ public interface Catalyst : Copiable<Catalyst>, Stackable
     bool CanAddCofactor(Compound cofactor);
     void AddCofactor(Compound cofactor);
 
+    void Step(Cell.Slot slot);
     Action Catalyze(Cell.Slot slot, Action.Stage stage);
 
     Catalyst Mutate();
@@ -94,10 +95,18 @@ public abstract class ProgressiveCatalyst : Catalyst
 
     protected abstract Action GetAction(Cell.Slot slot);
 
+    public virtual void Step(Cell.Slot slot)
+    {
+        Progress += slot.Compound.Quantity;
+    }
+
     public virtual Action Catalyze(Cell.Slot slot, Action.Stage stage)
     {
         Action action = GetAction(slot);
         if (action == null)
+            return null;
+
+        if (!stage.Includes(action))
             return null;
 
         if (!action.IsLegal)
@@ -105,11 +114,6 @@ public abstract class ProgressiveCatalyst : Catalyst
             Progress = 0;
             return null;
         }
-
-        if (!stage.Includes(action))
-            return null;
-
-        Progress += slot.Compound.Quantity;
 
         if(Progress>= action.Cost)
         {

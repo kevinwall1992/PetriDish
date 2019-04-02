@@ -319,6 +319,33 @@ public class ActionComponent : MonoBehaviour
                     .SetParameters(false, true)
                     .SetLength(0.1f * length, 0.9f * length);
             }
+
+            if (action is Separatase.SeparateCell)
+            {
+                CellComponent spore_cell_component = OrganismComponent.GetCellComponent(SlotComponent.Slot.AdjacentCell);
+
+                Animator spore_animator = Instantiate(Scene.Micro.Prefabs.SporeAnimator);
+                spore_animator.transform.SetParent(Scene.Micro.Visualization.transform);
+
+                spore_animator.gameObject.AddComponent<AnimatorAnimation>()
+                    .SetLength(0.2f * length)
+                    .Smooth();
+
+                spore_cell_component.gameObject.AddComponent<FadeAnimation>()
+                    .SetParameters(false, true)
+                    .SetLength(0.2f * length);
+                spore_cell_component.gameObject.AddComponent<ScalingAnimation>()
+                    .SetParameters(true)
+                    .SetLength(0.2f * length);
+
+                spore_animator.gameObject.AddComponent<MoveAnimation>()
+                    .SetParameters(spore_cell_component.gameObject, OrganismComponent.North)
+                    .SetLength(25, 0.3f * length);
+
+                spore_animator.gameObject.AddComponent<FadeAnimation>()
+                    .SetParameters(false, true)
+                    .SetLength(0.7f * length, 0.3f * length);
+            }
         }
     }
 

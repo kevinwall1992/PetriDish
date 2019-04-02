@@ -76,57 +76,50 @@ public class Organism : Chronal, Versionable<Organism>
 
     public Cell GetNeighbor(Cell cell, Cell.Relation direction)
     {
+        if (direction == Cell.Relation.None)
+            return null;
+
         return GetCell(GetNeighborPosition(cell, direction));
     }
 
-    void CheckForBreaks()
+    IEnumerable<IEnumerable<Cell>> GetCellSets()
     {
-        HashSet<Cell> keep_set = null;
-        while (true)
+        List<IEnumerable<Cell>> cell_sets = new List<IEnumerable<Cell>>();
+
+        List<Cell> available_cells = new List<Cell>();
+        foreach (Cell cell in GetCells())
+            available_cells.Add(cell);
+
+        while (available_cells.Count > 0)
         {
             HashSet<Cell> cell_set = new HashSet<Cell>();
 
-            Stack<Cell> cell_stack = new Stack<Cell>();
-            foreach (Cell cell in GetCells())
-                if (keep_set== null || !keep_set.Contains(cell))
-                {
-                    cell_stack.Push(cell);
-                    break;
-                }
-            if (cell_stack.Count == 0)
-                break;
+            Queue <Cell> cell_queue = new Queue<Cell>();
+            cell_queue.Enqueue(available_cells[0]);
 
-            Organism organism = null;
-            if (keep_set != null)
-                Locale.AddOrganism(organism = new Organism(cell_stack.First()));
-
-            while (cell_stack.Count > 0)
+            while (cell_queue.Count > 0)
             {
-                Cell cell = cell_stack.Pop();
-
-                if (cell_set.Contains(cell))
+                Cell cell = cell_queue.Dequeue();
+                if (available_cells.Contains(cell))
+                    available_cells.Remove(cell);
+                else
                     continue;
-                cell_set.Add(cell);
 
-                foreach (Cell.Relation direction in Enum.GetValues(typeof(Cell.Relation)))
+                foreach (Cell.Relation direction in System.Enum.GetValues(typeof(Cell.Relation)))
                 {
-                    Cell neighbor = GetNeighbor(cell, direction);
-                    if (neighbor != null)
-                    {
-                        cell_stack.Push(neighbor);
+                    Cell neighbor = cell.GetAdjacentCell(direction);
 
-                        if (keep_set != null)
-                            organism.AddCell(cell, direction, neighbor);
-                    }
+                    if(neighbor != null)
+                        cell_queue.Enqueue(neighbor);
                 }
+
+                cell_set.Add(cell);
             }
 
-            if (keep_set == null)
-                keep_set = cell_set;
-            else
-                foreach (Cell cell in cell_set)
-                    RemoveCell(cell);
+            cell_sets.Add(cell_set);
         }
+
+        return cell_sets;
     }
 
     bool IsPositionWithinBounds(Vector2Int position)
@@ -136,7 +129,7 @@ public class Organism : Chronal, Versionable<Organism>
     }
 
     //Position is not guaranteed to be within bounds after
-    //this call, it only expands towards is once.
+    //this call, it only expands towards it once.
     //(except in the case of -x positions, which 
     //require expanding an even number of times)
     void ExpandTowardsPosition(Vector2Int position)
@@ -243,16 +236,74 @@ public class Organism : Chronal, Versionable<Organism>
         return cell;
     }
 
-    public Cell SeparateCell(Cell cell)
+    public Organism Separate(Cell loyal_cell, Cell rebel_cell)
     {
-        RemoveCell(cell);
+        //Collect neighbors before removing rebel cell
+        Dictionary<Cell, Cell> host_cells = new Dictionary<Cell, Cell>();
+        Dictionary<Cell, Cell.Relation> directions = new Dictionary<Cell, Cell.Relation>();
 
-        if (GetCellCount() == 0)
-            cells[0][0] = new Cell(this);
+        Queue<Cell> cell_queue = new Queue<Cell>();
+        foreach (Cell.Relation direction in System.Enum.GetValues(typeof(Cell.Relation)))
+        {
+            Cell neighbor = rebel_cell.GetAdjacentCell(direction);
+            if (neighbor == null)
+                continue;
 
-        CheckForBreaks();
+            cell_queue.Enqueue(neighbor);
+            host_cells[neighbor] = rebel_cell;
+            directions[neighbor] = direction;
+        }
 
-        return cell;
+
+        //Remove rebel cell, 
+        //form sets from remaining cells,
+        //remove the loyal set, 
+        //and use remaining sets to form rebel cell list
+        RemoveCell(rebel_cell);
+
+        IEnumerable<IEnumerable<Cell>> factions = GetCellSets();
+
+        List<Cell> rebel_cells = new List<Cell>();
+        rebel_cells.Add(rebel_cell);
+
+        foreach(IEnumerable<Cell> faction in factions)
+        {
+            bool is_rebel_faction = true;
+
+            foreach (Cell cell in faction)
+                if (cell == loyal_cell)
+                    is_rebel_faction = false;
+
+            if (is_rebel_faction)
+                rebel_cells.AddRange(faction);
+        }
+
+
+        //Create rebel organism,
+        //Add rebel cells one by one via their relationship
+        //to existing rebel cells.
+        Organism rebel_organism = new Organism(rebel_cell);
+
+        while(cell_queue.Count > 0)
+        {
+            Cell cell = cell_queue.Dequeue();
+            if (!rebel_cells.Contains(cell) || rebel_organism.GetCells().Contains(cell))
+                continue;
+
+            foreach (Cell.Relation direction in System.Enum.GetValues(typeof(Cell.Relation)))
+            {
+                Cell neighbor = cell.GetAdjacentCell(direction);
+
+                cell_queue.Enqueue(cell.GetAdjacentCell(direction));
+                host_cells[neighbor] = cell;
+                directions[neighbor] = direction;
+            }
+
+            rebel_organism.AddCell(host_cells[cell], directions[cell], cell);
+        }
+
+        Locale.AddOrganism(rebel_organism);
+        return rebel_organism;
     }
 
     public List<Cell> GetCells()
@@ -317,17 +368,20 @@ public class Organism : Chronal, Versionable<Organism>
             for (int column = 0; column < cells[row].Count; column++)
             {
                 Cell cell = cells[row][column];
-                Cell cell_copy = new Cell(organism);
-
-                for (int slot_index = 0; slot_index < 6; slot_index++)
+                if (cell != null)
                 {
-                    Cell.Slot slot = cell.Slots[slot_index];
+                    Cell cell_copy = new Cell(organism);
 
-                    if (slot.Compound != null)
-                        cell_copy.Slots[slot_index].AddCompound(slot.Compound.Copy());
+                    for (int slot_index = 0; slot_index < 6; slot_index++)
+                    {
+                        Cell.Slot slot = cell.Slots[slot_index];
+
+                        if (slot.Compound != null)
+                            cell_copy.Slots[slot_index].AddCompound(slot.Compound.Copy());
+                    }
+
+                    organism.cells[row].Add(cell_copy);
                 }
-
-                organism.cells[row].Add(cell_copy);
             }
         }
 
@@ -380,6 +434,15 @@ public class Organism : Chronal, Versionable<Organism>
             for (int column = 0; column < cells[row].Count; column++)
                 for (int slot_index = 0; slot_index < 6; slot_index++)
                 {
+                    Cell this_cell = cells[row][column];
+                    Cell other_cell = other.cells[row][column];
+
+                    if ((this_cell == null) != (other_cell == null))
+                        return false;
+
+                    if (this_cell == null)
+                        continue;
+
                     Compound this_compound = cells[row][column].Slots[slot_index].Compound;
                     Compound other_compound = other.cells[row][column].Slots[slot_index].Compound;
 

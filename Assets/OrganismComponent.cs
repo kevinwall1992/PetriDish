@@ -201,11 +201,9 @@ public class OrganismComponent : GoodBehavior
 
     public void ResetExperiment(string dna_sequence= "")
     {
-        foreach (CellComponent cell_component in CellComponents)
-        {
-            Organism.SeparateCell(cell_component.Cell);
-            GameObject.Destroy(cell_component.gameObject);
-        }
+        Locale locale = Organism.Locale;
+        locale.RemoveOrganism(Organism);
+        locale.AddOrganism(Organism = new Organism());
 
         Cell cell = Organism.GetCell(new Vector2Int(0, 0));
 

@@ -58,11 +58,6 @@ public class Cell
         }
     }
 
-    public void Detatch()
-    {
-        Organism.Locale.AddOrganism(new Organism(Organism.SeparateCell(this)));
-    }
-
     public void Step()
     {
         foreach (Slot slot in slots)

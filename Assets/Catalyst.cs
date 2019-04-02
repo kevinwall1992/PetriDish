@@ -256,7 +256,7 @@ public abstract class InstantCatalyst : ProgressiveCatalyst
 
 public class Constructase : ProgressiveCatalyst
 {
-    public override int Power { get { return 8; } }
+    public override int Power { get { return 7; } }
 
     public Constructase() : base("Constructase", 1, "Makes new cells")
     {
@@ -288,7 +288,7 @@ public class Constructase : ProgressiveCatalyst
         }
 
         public ConstructCell(Cell.Slot catalyst_slot)
-            : base(catalyst_slot, 1, -2.0f)
+            : base(catalyst_slot, 2, -2.0f)
         {
 
         }
@@ -304,6 +304,71 @@ public class Constructase : ProgressiveCatalyst
 
             //A cell is unexpectedly in the way
             else;
+        }
+    }
+}
+
+public class Separatase : ProgressiveCatalyst
+{
+    public override int Power { get { return 10; } }
+
+    public Separatase() : base("Separatase", 1, "Separates cells from one another")
+    {
+
+    }
+
+    protected override Action GetAction(Cell.Slot slot)
+    {
+        return new SeparateCell(slot);
+    }
+
+    public override Catalyst Copy()
+    {
+        return new Separatase().CopyStateFrom(this);
+    }
+
+
+    public class SeparateCell : EnergeticAction
+    {
+        public Compound SeedCompound { get; private set; }
+
+        public override bool IsLegal
+        {
+            get
+            {
+                if (CatalystSlot.AdjacentCell == null)
+                    return false;
+
+                if (Cytozol.GetQuantity(Molecule.ATP) < (EnergyBalance + 10))
+                    return false;
+
+                return base.IsLegal;
+            }
+        }
+
+        public SeparateCell(Cell.Slot catalyst_slot)
+            : base(catalyst_slot, 4, -4)
+        {
+
+        }
+
+        public override void Begin()
+        {
+            if (!IsLegal)
+                return;
+
+            base.Begin();
+
+            SeedCompound = Cytozol.RemoveCompound(Molecule.ATP, 10);
+        }
+
+        public override void End()
+        {
+            base.End();
+
+            Organism.Separate(Cell, CatalystSlot.AdjacentCell);
+
+            Organism.Cytozol.AddCompound(SeedCompound);
         }
     }
 }

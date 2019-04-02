@@ -649,13 +649,12 @@ public class Reaction
             foreach (Compound compound in this.cytosol_products)
                 cytosol_products.Add(new Compound(compound.Molecule, compound.Quantity * activity));
 
-            return new EnergeticReactionAction(slot, 
-                                               new ReactionAction(slot,
-                                                                  slot_reactants,
-                                                                  slot_products,
-                                                                  cytosol_reactants,
-                                                                  cytosol_products), 
-                                               ATP_balance * activity);
+            return new ReactionAction(slot, 
+                                      slot_reactants,
+                                      slot_products,
+                                      cytosol_reactants,
+                                      cytosol_products, 
+                                      ATP_balance * activity);
         }
 
         public override Catalyst Mutate()

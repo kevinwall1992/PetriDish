@@ -107,7 +107,7 @@ public class OrganismComponent : GoodBehavior
             foreach (Action action in Organism.GetActions(stage_queue.Dequeue()))
             {
                 float length = 1.5f;
-                if(action is ReactionAction || action is EnergeticReactionAction)
+                if(action is ReactionAction)
                     length = 3;
 
                 gameObject.AddComponent<ActionComponent>().SetAction(action, length);

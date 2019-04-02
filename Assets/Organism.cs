@@ -301,7 +301,7 @@ public class Organism : Chronal, Versionable<Organism>
 
             //End(). Any sequence conflicts at this point must be 
             //resolved through gameplay mechanics
-            foreach (Action action in actions) action.End();
+            foreach (Action action in actions) if(action.HasBegun) action.End();
         }
     }
 

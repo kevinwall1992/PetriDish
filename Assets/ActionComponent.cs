@@ -32,6 +32,8 @@ public class ActionComponent : MonoBehaviour
         length = length_;
 
         action.Begin();
+        if (!action.HasBegun)
+            return;
 
         Queue<Action> actions = new Queue<Action>();
         actions.Enqueue(action);

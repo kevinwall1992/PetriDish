@@ -274,7 +274,7 @@ public class Constructase : ProgressiveCatalyst
     }
 
 
-    public class ConstructCell : Action
+    public class ConstructCell : EnergeticAction
     {
         public override bool IsLegal
         {
@@ -288,7 +288,7 @@ public class Constructase : ProgressiveCatalyst
         }
 
         public ConstructCell(Cell.Slot catalyst_slot)
-            : base(catalyst_slot, 1)
+            : base(catalyst_slot, 1, -2.0f)
         {
 
         }
@@ -404,7 +404,7 @@ public class Pumpase : InstantCatalyst
     }
 }
 
-public class PumpAction : Action
+public class PumpAction : EnergeticAction
 {
     bool pump_out;
     Molecule molecule;
@@ -461,7 +461,7 @@ public class PumpAction : Action
 
     public PumpAction(Cell.Slot catalyst_slot, 
                       bool pump_out_, Molecule molecule_, float rate_) 
-        : base(catalyst_slot, 1)
+        : base(catalyst_slot, 1, 0.1f)
     {
         pump_out = pump_out_;
         molecule = molecule_;
@@ -533,9 +533,9 @@ public class Transcriptase : InstantCatalyst
             if (other_slot == null)
                 return null;
 
-        return new CompositeAction(
-            slot,
-            new ReactionAction(
+        float cost= (amp_count + cmp_count + gmp_count + tmp_count) / (1.0f / 4.0f);
+
+        return new ReactionAction(
                 slot,
                 Utility.CreateDictionary<Cell.Slot, Compound>(
                     amp_slot, new Compound(Nucleotide.AMP, amp_count),
@@ -545,9 +545,9 @@ public class Transcriptase : InstantCatalyst
                 Utility.CreateDictionary<Cell.Slot, Compound>(
                     slot.AcrossSlot, new Compound(dna_slot.Compound.Molecule, 1)),
                 null,
-                Utility.CreateList(new Compound(Molecule.Water, dna.Monomers.Count - 1)),
-                (amp_count + cmp_count + gmp_count + tmp_count) / (6.0f / 4.0f)),
-            new ATPConsumptionAction(slot, 1));
+                Utility.CreateList(new Compound(Molecule.Water, dna.Monomers.Count - 1)), 
+                cost / 4, 
+                cost);
     }
 
     public override Catalyst Copy()

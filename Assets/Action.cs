@@ -20,15 +20,9 @@ public abstract class Action
     public Cell.Slot CatalystSlot { get; private set; }
     public Catalyst Catalyst { get; private set; }
 
-    public Cell Cell
-    {
-        get { return CatalystSlot.Cell; }
-    }
-
-    public Organism Organism
-    {
-        get { return Cell.Organism; }
-    }
+    public Cell Cell { get { return CatalystSlot.Cell; } }
+    public Organism Organism { get { return Cell.Organism; } }
+    public Cytozol Cytozol { get { return Organism.Cytozol; } }
 
     public virtual float Scale { get; set; }
 
@@ -186,7 +180,72 @@ public class CompositeAction : Action
     }
 }
 
-public abstract class MoveAction<T> : Action
+public class EnergeticAction : Action
+{
+    float atp_balance_per_cost;
+
+    public float EnergyBalance
+    {
+        get { return atp_balance_per_cost * Cost; }
+        protected set
+        {
+            if (value == 0 || Cost == 0)
+                atp_balance_per_cost = value;
+            else
+                atp_balance_per_cost = value / Cost;
+        }
+    }
+
+    bool IsExergonic { get { return EnergyBalance > 0; } }
+
+    public EnergeticAction(Cell.Slot catalyst_slot, float cost, float energy_balance)
+        : base(catalyst_slot, cost)
+    {
+        EnergyBalance = energy_balance;
+    }
+
+    public override void Begin()
+    {
+        if (IsExergonic)
+        {
+            if (Cytozol.GetQuantity(Molecule.ADP) < EnergyBalance &&
+                Cytozol.GetQuantity(Molecule.Phosphate) < EnergyBalance)
+                return;
+
+            Cytozol.RemoveCompound(Molecule.ADP, EnergyBalance);
+            Cytozol.RemoveCompound(Molecule.Phosphate, EnergyBalance);
+        }
+        else
+        {
+            if (Cytozol.GetQuantity(Molecule.ATP) < -EnergyBalance &&
+                Cytozol.GetQuantity(Molecule.Water) < -EnergyBalance)
+                return;
+
+            Cytozol.RemoveCompound(Molecule.ATP, -EnergyBalance);
+            Cytozol.RemoveCompound(Molecule.Water, -EnergyBalance);
+        }
+
+        base.Begin();
+    }
+
+    public override void End()
+    {
+        if (IsExergonic)
+        {
+            Cytozol.AddCompound(Molecule.ATP, EnergyBalance);
+            Cytozol.AddCompound(Molecule.Water, EnergyBalance);
+        }
+        else
+        {
+            Cytozol.AddCompound(Molecule.ADP, -EnergyBalance);
+            Cytozol.AddCompound(Molecule.Phosphate, -EnergyBalance);
+        }
+
+        base.End();
+    }
+}
+
+public abstract class MoveAction<T> : EnergeticAction
 {
     Compound source_compound_copy;
 
@@ -218,7 +277,7 @@ public abstract class MoveAction<T> : Action
     }
 
     protected MoveAction(Cell.Slot catalyst_slot, Cell.Slot source, T destination, float quantity)
-        : base(catalyst_slot, 1)
+        : base(catalyst_slot, 1, -0.5f)
     {
         Source = source;
         source_compound_copy = source.Compound.Copy();
@@ -405,7 +464,7 @@ public class PushAction : CompositeAction
 }
 
 
-public class ReactionAction : Action
+public class ReactionAction : EnergeticAction
 {
     protected Dictionary<Cell.Slot, Compound> slot_reactants = new Dictionary<Cell.Slot, Compound>(),
                                               slot_products = new Dictionary<Cell.Slot, Compound>();
@@ -442,8 +501,9 @@ public class ReactionAction : Action
                     Dictionary<Cell.Slot, Compound> slot_reactants_, 
                     Dictionary<Cell.Slot, Compound> slot_products_, 
                     List<Compound> cytosol_reactants_, 
-                    List<Compound> cytosol_products_,
-                    float cost = 1) : base(catalyst_slot, cost)
+                    List<Compound> cytosol_products_, 
+                    float atp_balance,
+                    float cost = 1) : base(catalyst_slot, cost, atp_balance)
     {
         if(slot_reactants_ != null)
             slot_reactants = slot_reactants_;
@@ -456,12 +516,6 @@ public class ReactionAction : Action
 
         if (cytosol_products_ != null)
             cytosol_products = cytosol_products_;
-    }
-
-    protected ReactionAction(Cell.Slot catalyst_slot) 
-        : base(catalyst_slot, 1)
-    {
-
     }
 
     public override void Begin()
@@ -513,57 +567,5 @@ public class ReactionAction : Action
     public List<Compound> GetCytozolProducts()
     {
         return cytosol_products;
-    }
-}
-
-public class EnergeticReactionAction : CompositeAction
-{
-    public EnergeticReactionAction(Cell.Slot catalyst_slot, ReactionAction reaction_action, float atp_balance)
-        : base(catalyst_slot,
-               reaction_action,
-               atp_balance > 0 ? (Action)new ATPProductionAction(catalyst_slot, atp_balance) :
-                                 (Action)new ATPConsumptionAction(catalyst_slot, -atp_balance))
-    {
-
-    }
-}
-
-
-public class ATPConsumptionAction : ReactionAction
-{
-    public ATPConsumptionAction(Cell.Slot catalyst_slot, float quantity)
-        : base(catalyst_slot,
-                null, null,
-                Utility.CreateList<Compound>(new Compound(Molecule.ATP, quantity),
-                                             new Compound(Molecule.Water, quantity)),
-                Utility.CreateList<Compound>(new Compound(Molecule.ADP, quantity),
-                                             new Compound(Molecule.Phosphate, quantity)))
-    {
-        BaseCost = 0;
-    }
-
-    public ATPConsumptionAction(Cell.Slot catalyst_slot, float quantity, Cell.Slot atp_slot)
-        : base(catalyst_slot, 
-                Utility.CreateDictionary<Cell.Slot, Compound>(atp_slot, new Compound(Molecule.ATP, quantity)), null,
-                Utility.CreateList<Compound>(new Compound(Molecule.Water, quantity)),
-                Utility.CreateList<Compound>(new Compound(Molecule.ADP, quantity),
-                                             new Compound(Molecule.Phosphate, quantity)))
-    {
-        BaseCost = 0;
-    }
-}
-
-
-public class ATPProductionAction : ReactionAction
-{
-    public ATPProductionAction(Cell.Slot catalyst_slot, float quantity)
-        : base(catalyst_slot, 
-                null, null,
-                Utility.CreateList<Compound>(new Compound(Molecule.ADP, quantity),
-                                             new Compound(Molecule.Phosphate, quantity)),
-                Utility.CreateList<Compound>(new Compound(Molecule.ATP, quantity),
-                                             new Compound(Molecule.Water, quantity)))
-    {
-        BaseCost = 0;
     }
 }

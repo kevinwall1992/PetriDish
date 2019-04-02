@@ -429,15 +429,15 @@ public class Interpretase : ProgressiveCatalyst
     }
 
 
-    public class Command : Action
+    public class Command : EnergeticAction
     {
         protected int CommandCodonIndex { get; set; }
         protected int NextCodonIndex { get { return CommandCodonIndex + GetCommandLength(DNA, CommandCodonIndex); } }
 
         public DNA DNA { get { return GetGeneticCofactor(Catalyst); } }
 
-        public Command(Cell.Slot catalyst_slot, int command_codon_index, float cost) 
-            : base(catalyst_slot, cost)
+        public Command(Cell.Slot catalyst_slot, int command_codon_index, float cost, float energy_balance = -0.1f) 
+            : base(catalyst_slot, cost, energy_balance)
         {
             CommandCodonIndex = command_codon_index;
         }
@@ -615,7 +615,7 @@ public class Interpretase : ProgressiveCatalyst
         }
 
         public ActionCommand(Cell.Slot catalyst_slot, int command_codon_index, Action action = null, float command_cost = 0) 
-            : base(catalyst_slot, command_codon_index, command_cost)
+            : base(catalyst_slot, command_codon_index, command_cost, command_cost * 0.1f)
         {
             SetAction(action);
         }
@@ -634,7 +634,8 @@ public class Interpretase : ProgressiveCatalyst
         {
             base.Begin();
 
-            Action.Begin();
+            if(HasBegun)
+                Action.Begin();
         }
 
         public override void End()

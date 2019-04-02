@@ -95,7 +95,7 @@ public class ActionComponent : MonoBehaviour
                         .SetLength(0.25f * length, 0.75f * length);
                 }
 
-                foreach (Compound compound in reaction.GetCytozolReactants())
+                foreach (Compound compound in reaction.GetCytosolReactants())
                 {
                     CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                     compound_component.SetCompound(compound);
@@ -114,7 +114,7 @@ public class ActionComponent : MonoBehaviour
                         .SetLength(0.2f * length, 0.4f * length);
                 }
 
-                foreach (Compound compound in reaction.GetCytozolProducts())
+                foreach (Compound compound in reaction.GetCytosolProducts())
                 {
                     CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                     compound_component.SetCompound(compound);
@@ -211,7 +211,7 @@ public class ActionComponent : MonoBehaviour
             }
 
             if (action is MoveToSlotAction ||
-                action is MoveToCytozolAction ||
+                action is MoveToCytosolAction ||
                 action is MoveToLocaleAction)
             {
                 CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
@@ -254,9 +254,9 @@ public class ActionComponent : MonoBehaviour
                             case Cell.Slot.Relation.Left: final_rotation += 2 * Mathf.PI / 3; break;
                         }
                 }
-                else if (action is MoveToCytozolAction)
+                else if (action is MoveToCytosolAction)
                 {
-                    MoveToCytozolAction move_to_cytosol_action = action as MoveToCytozolAction;
+                    MoveToCytosolAction move_to_cytosol_action = action as MoveToCytosolAction;
 
                     compound_component.SetCompound(move_to_cytosol_action.MovedCompound);
 
@@ -578,7 +578,7 @@ public class AnimatorAnimation : ActionAnimation
     }
 }
 
-public class CytozolAnimation : ActionAnimation
+public class CytosolAnimation : ActionAnimation
 {
 
 }

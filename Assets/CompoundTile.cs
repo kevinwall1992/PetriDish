@@ -182,8 +182,8 @@ public class CompoundTile : GoodBehavior
 
             CellComponent cell_component = organism_component.CellComponentPointedAt;
 
-            if (cell_component.IsCytozolTouched)
-                organism_component.Organism.Cytozol.AddCompound(Compound);
+            if (cell_component.IsCytosolTouched)
+                organism_component.Organism.Cytosol.AddCompound(Compound);
             else if(cell_component.SlotComponentTouched != null)
             {
                 Cell.Slot slot = cell_component.SlotComponentTouched.Slot;

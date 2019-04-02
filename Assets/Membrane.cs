@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class Membrane : Interface<Cytozol, Locale>
+public class Membrane : Interface<Cytosol, Locale>
 {
     static float base_diffusion_rate = 1.0f;
 
@@ -10,10 +10,10 @@ public class Membrane : Interface<Cytozol, Locale>
 
     Dictionary<Molecule, float> permeability = Utility.CreateDictionary<Molecule, float>(Molecule.ATP, 0.1f, Molecule.ADP, 0.1f);
 
-    public override Cytozol A { get { return organism.Cytozol; } }
+    public override Cytosol A { get { return organism.Cytosol; } }
     public override Locale B { get { return organism.Locale; } }
 
-    public Cytozol Inside { get { return A; } }
+    public Cytosol Inside { get { return A; } }
     public Locale Outside { get { return B; } }
 
     public override float SurfaceArea{ get{ return organism.SurfaceArea; } }

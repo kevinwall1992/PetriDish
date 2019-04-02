@@ -45,12 +45,12 @@ public class CellComponent : GoodBehavior, IPointerClickHandler
         }
     }
 
-    public bool IsCytozolPointedAt
+    public bool IsCytosolPointedAt
     {
         get { return cytosol_collider.GetComponent<GoodBehavior>().IsPointedAt; }
     }
 
-    public bool IsCytozolTouched
+    public bool IsCytosolTouched
     {
         get { return cytosol_collider.GetComponent<GoodBehavior>().IsTouched; }
     }
@@ -67,7 +67,7 @@ public class CellComponent : GoodBehavior, IPointerClickHandler
 
     void Update()
     {
-        cytosol_highlight.gameObject.SetActive(IsCytozolTouched);
+        cytosol_highlight.gameObject.SetActive(IsCytosolTouched);
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -75,8 +75,8 @@ public class CellComponent : GoodBehavior, IPointerClickHandler
         if (gameObject.layer == LayerMask.NameToLayer("Example"))
             return;
 
-        if (IsCytozolTouched)
-            OrganismComponent.CytozolDetailPanel.Open();
+        if (IsCytosolTouched)
+            OrganismComponent.CytosolDetailPanel.Open();
         else if(SlotComponentPointedAt.DetailPanel != null)
             SlotComponentPointedAt.DetailPanel.Open();
        

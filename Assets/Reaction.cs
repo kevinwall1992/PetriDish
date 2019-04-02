@@ -536,14 +536,14 @@ public class Reaction
 
                 if (ATP_balance > 0)
                 {
-                    organism.Cytozol.AddCompound(Molecule.ADP, ATP_balance * 10);
-                    organism.Cytozol.AddCompound(Molecule.Phosphate, ATP_balance * 10);
+                    organism.Cytosol.AddCompound(Molecule.ADP, ATP_balance * 10);
+                    organism.Cytosol.AddCompound(Molecule.Phosphate, ATP_balance * 10);
                 }
                 else
-                    organism.Cytozol.AddCompound(Molecule.ATP, -ATP_balance * 10);
+                    organism.Cytosol.AddCompound(Molecule.ATP, -ATP_balance * 10);
 
                 foreach (Compound compound in cytosol_reactants)
-                    organism.Cytozol.AddCompound(compound.Molecule, compound.Quantity * 10);
+                    organism.Cytosol.AddCompound(compound.Molecule, compound.Quantity * 10);
 
                 //Need to determine type of catalyst
                 //Assuming ribozyme for now
@@ -631,7 +631,7 @@ public class Reaction
 
         protected override Action GetAction(Cell.Slot slot)
         {
-            float activity = activity_function.Compute(slot.Cell.Organism.Cytozol);
+            float activity = activity_function.Compute(slot.Cell.Organism.Cytosol);
 
             Dictionary<Cell.Slot, Compound> slot_reactants = new Dictionary<Cell.Slot, Compound>();
             foreach (Compound compound in this.slot_reactants.Keys)

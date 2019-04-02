@@ -60,12 +60,12 @@ public class OrganismComponent : GoodBehavior
     public GameObject West { get { return west; } }
 
     DetailPanel cytosol_detail_panel;
-    public DetailPanel CytozolDetailPanel
+    public DetailPanel CytosolDetailPanel
     {
         get
         {
             if (cytosol_detail_panel == null)
-                cytosol_detail_panel = CompoundGridPanel.Create(Organism.Cytozol);
+                cytosol_detail_panel = CompoundGridPanel.Create(Organism.Cytosol);
 
             return cytosol_detail_panel;
         }
@@ -219,8 +219,8 @@ public class OrganismComponent : GoodBehavior
             cell.Slots[2].AddCompound(new Compound(Molecule.Glucose, 1));
             cell.Slots[3].AddCompound(new Compound(Molecule.ATP, 1));
 
-            Organism.Cytozol.AddCompound(new Compound(Molecule.ATP, 10));
-            Organism.Cytozol.AddCompound(new Compound(Molecule.Phosphate, 10));
+            Organism.Cytosol.AddCompound(new Compound(Molecule.ATP, 10));
+            Organism.Cytosol.AddCompound(new Compound(Molecule.Phosphate, 10));
         }
     }
 }

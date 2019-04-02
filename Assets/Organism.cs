@@ -9,11 +9,11 @@ public class Organism : Chronal, Versionable<Organism>
     List<List<Cell>> cells= new List<List<Cell>>();
 
     //3.3e-11 moles is based on model cell with volume of 0.6 cubic micrometers
-    Cytozol cytosol= new Cytozol(Measures.MolesToSmoles(3.3e-14f));
+    Cytosol cytosol= new Cytosol(Measures.MolesToSmoles(3.3e-14f));
 
     Membrane membrane;
 
-    public Cytozol Cytozol{ get { return cytosol; } }
+    public Cytosol Cytosol{ get { return cytosol; } }
     public Membrane Membrane { get { return membrane; } }
     public Locale Locale { get; set; }
 
@@ -385,7 +385,7 @@ public class Organism : Chronal, Versionable<Organism>
             }
         }
 
-        organism.cytosol = new Cytozol(0);
+        organism.cytosol = new Cytosol(0);
         foreach (Molecule molecule in cytosol.Molecules)
             organism.cytosol.AddCompound(new Compound(molecule.Copy(), cytosol.GetQuantity(molecule)));
 
@@ -468,9 +468,9 @@ public class Organism : Chronal, Versionable<Organism>
 }
 
 
-public class Cytozol : Solution
+public class Cytosol : Solution
 {
-    public Cytozol(float water_quantity) : base(water_quantity)
+    public Cytosol(float water_quantity) : base(water_quantity)
     {
 
     }

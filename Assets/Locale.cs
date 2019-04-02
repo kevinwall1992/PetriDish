@@ -39,7 +39,7 @@ public class WaterLocale : Locale
     //This number selected so that roughly 25 organisms with 
     //an average of 10 cells each could live in a WaterLocale 
     //while only making up 5% of total volume
-    //(See Organism.cs Cytozol volume)
+    //(See Organism.cs Cytosol volume)
     static float resting_water_quantity = Measures.MolesToSmoles(1.7e-10f);
 
     public Solution Solution

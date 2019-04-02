@@ -22,7 +22,7 @@ public abstract class Action
 
     public Cell Cell { get { return CatalystSlot.Cell; } }
     public Organism Organism { get { return Cell.Organism; } }
-    public Cytozol Cytozol { get { return Organism.Cytozol; } }
+    public Cytosol Cytosol { get { return Organism.Cytosol; } }
 
     public virtual float Scale { get; set; }
 
@@ -73,9 +73,9 @@ public abstract class Action
                             typeof(Interpretase.ReleaseCommand),
                             typeof(Interpretase.ExciseCommand)),
 
-                new Stage(typeof(Constructase)),
+                new Stage(typeof(Constructase.ConstructCell)),
 
-                //new Stage(typeof(Separatase)), 
+                new Stage(typeof(Separatase.SeparateCell)), 
 
                 new Stage(typeof(Interpretase.MoveCommand)), 
                 new Stage(typeof(Interpretase.SpinCommand)));
@@ -208,21 +208,21 @@ public class EnergeticAction : Action
     {
         if (IsExergonic)
         {
-            if (Cytozol.GetQuantity(Molecule.ADP) < EnergyBalance &&
-                Cytozol.GetQuantity(Molecule.Phosphate) < EnergyBalance)
+            if (Cytosol.GetQuantity(Molecule.ADP) < EnergyBalance &&
+                Cytosol.GetQuantity(Molecule.Phosphate) < EnergyBalance)
                 return;
 
-            Cytozol.RemoveCompound(Molecule.ADP, EnergyBalance);
-            Cytozol.RemoveCompound(Molecule.Phosphate, EnergyBalance);
+            Cytosol.RemoveCompound(Molecule.ADP, EnergyBalance);
+            Cytosol.RemoveCompound(Molecule.Phosphate, EnergyBalance);
         }
         else
         {
-            if (Cytozol.GetQuantity(Molecule.ATP) < -EnergyBalance &&
-                Cytozol.GetQuantity(Molecule.Water) < -EnergyBalance)
+            if (Cytosol.GetQuantity(Molecule.ATP) < -EnergyBalance &&
+                Cytosol.GetQuantity(Molecule.Water) < -EnergyBalance)
                 return;
 
-            Cytozol.RemoveCompound(Molecule.ATP, -EnergyBalance);
-            Cytozol.RemoveCompound(Molecule.Water, -EnergyBalance);
+            Cytosol.RemoveCompound(Molecule.ATP, -EnergyBalance);
+            Cytosol.RemoveCompound(Molecule.Water, -EnergyBalance);
         }
 
         base.Begin();
@@ -232,13 +232,13 @@ public class EnergeticAction : Action
     {
         if (IsExergonic)
         {
-            Cytozol.AddCompound(Molecule.ATP, EnergyBalance);
-            Cytozol.AddCompound(Molecule.Water, EnergyBalance);
+            Cytosol.AddCompound(Molecule.ATP, EnergyBalance);
+            Cytosol.AddCompound(Molecule.Water, EnergyBalance);
         }
         else
         {
-            Cytozol.AddCompound(Molecule.ADP, -EnergyBalance);
-            Cytozol.AddCompound(Molecule.Phosphate, -EnergyBalance);
+            Cytosol.AddCompound(Molecule.ADP, -EnergyBalance);
+            Cytosol.AddCompound(Molecule.Phosphate, -EnergyBalance);
         }
 
         base.End();
@@ -350,11 +350,11 @@ public class MoveToSlotAction : MoveAction<Cell.Slot>
     }
 }
 
-public class MoveToCytozolAction : MoveAction<Cytozol>
+public class MoveToCytosolAction : MoveAction<Cytosol>
 {
-    public MoveToCytozolAction(Cell.Slot catalyst_slot, 
+    public MoveToCytosolAction(Cell.Slot catalyst_slot, 
                                Cell.Slot source, float quantity = -1)
-        : base(catalyst_slot, source, source.Cell.Organism.Cytozol, quantity)
+        : base(catalyst_slot, source, source.Cell.Organism.Cytosol, quantity)
     {
 
     }
@@ -429,7 +429,7 @@ public class PushAction : CompositeAction
 
                 Cell.Slot destination = source.AcrossSlot;
                 if (destination.Compound != null && !destination.Compound.Molecule.Equals(source.Compound.Molecule))
-                    actions.Add(new MoveToCytozolAction(catalyst_slot, destination));
+                    actions.Add(new MoveToCytosolAction(catalyst_slot, destination));
             }
         }
         else
@@ -490,7 +490,7 @@ public class ReactionAction : EnergeticAction
                     return false;
 
             foreach (Compound reactant in cytosol_reactants)
-                if (Organism.Cytozol.GetQuantity(reactant.Molecule) < reactant.Quantity)
+                if (Organism.Cytosol.GetQuantity(reactant.Molecule) < reactant.Quantity)
                     return false;
 
             return base.IsLegal;
@@ -526,7 +526,7 @@ public class ReactionAction : EnergeticAction
             source.Compound.Split(slot_reactants[source].Quantity);
 
         foreach (Compound reactant in cytosol_reactants)
-            Organism.Cytozol.RemoveCompound(reactant);
+            Organism.Cytosol.RemoveCompound(reactant);
     }
 
     public override void End()
@@ -535,7 +535,7 @@ public class ReactionAction : EnergeticAction
             destination.AddCompound(slot_products[destination]);
 
         foreach (Compound product in cytosol_products)
-            Organism.Cytozol.AddCompound(product);
+            Organism.Cytosol.AddCompound(product);
     }
 
     public List<Cell.Slot> GetReactantSlots()
@@ -559,12 +559,12 @@ public class ReactionAction : EnergeticAction
     }
 
     //Want to make these two immutable/readonly lists somehow
-    public List<Compound> GetCytozolReactants()
+    public List<Compound> GetCytosolReactants()
     {
         return cytosol_reactants;
     }
 
-    public List<Compound> GetCytozolProducts()
+    public List<Compound> GetCytosolProducts()
     {
         return cytosol_products;
     }

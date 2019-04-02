@@ -339,7 +339,7 @@ public class Separatase : ProgressiveCatalyst
                 if (CatalystSlot.AdjacentCell == null)
                     return false;
 
-                if (Cytozol.GetQuantity(Molecule.ATP) < (EnergyBalance + 10))
+                if (Cytosol.GetQuantity(Molecule.ATP) < (EnergyBalance + 10))
                     return false;
 
                 return base.IsLegal;
@@ -359,7 +359,7 @@ public class Separatase : ProgressiveCatalyst
 
             base.Begin();
 
-            SeedCompound = Cytozol.RemoveCompound(Molecule.ATP, 10);
+            SeedCompound = Cytosol.RemoveCompound(Molecule.ATP, 10);
         }
 
         public override void End()
@@ -368,7 +368,7 @@ public class Separatase : ProgressiveCatalyst
 
             Organism.Separate(Cell, CatalystSlot.AdjacentCell);
 
-            Organism.Cytozol.AddCompound(SeedCompound);
+            Organism.Cytosol.AddCompound(SeedCompound);
         }
     }
 }
@@ -482,7 +482,7 @@ public class PumpAction : EnergeticAction
             if (!(Organism.Locale is WaterLocale))
                 throw new System.NotImplementedException();
 
-            return pump_out ? Organism.Cytozol : (Organism.Locale as WaterLocale).Solution;
+            return pump_out ? Organism.Cytosol : (Organism.Locale as WaterLocale).Solution;
         }
     }
 
@@ -493,7 +493,7 @@ public class PumpAction : EnergeticAction
             if (!(Organism.Locale is WaterLocale))
                 throw new System.NotImplementedException();
 
-            return pump_out ? (Organism.Locale as WaterLocale).Solution : Organism.Cytozol;
+            return pump_out ? (Organism.Locale as WaterLocale).Solution : Organism.Cytosol;
         }
     }
 

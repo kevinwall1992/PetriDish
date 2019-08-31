@@ -26,8 +26,10 @@ public class MoleculeComponent : GoodBehavior
     public AttachmentComponent LeftAttachmentComponent
     { get { return left_transform.GetComponentInChildren<AttachmentComponent>(); } }
 
-    void Update()
+    protected override void Update()
     {
+        base.Update();
+
         Validate();
     }
 
@@ -46,7 +48,7 @@ public class MoleculeComponent : GoodBehavior
             molecule_copy = molecule.Copy();
 
             if (molecule is Catalyst)
-                transform.localRotation = Quaternion.Euler(0, 0, ((int)(molecule as Catalyst).Orientation + 1) * -120);
+                transform.localRotation = Quaternion.Euler(0, 0, ((int)(molecule as Catalyst).Orientation) * -120);
         }
     }
 
@@ -93,6 +95,8 @@ public class MoleculeComponent : GoodBehavior
                         attachment_component = Instantiate(Scene.Micro.Prefabs.OutputAttachmentComponent);
                     else if (attachment is Grabber)
                         attachment_component = Instantiate(Scene.Micro.Prefabs.GrabberComponent);
+                    else if (attachment is Extruder)
+                        attachment_component = Instantiate(Scene.Micro.Prefabs.ExtruderComponent);
 
                     attachment_component.transform.SetParent(attachment_transform, false);
                     attachment_component.SetAttachment(attachment, catalyst is Ribozyme ? ribozyme_color : enzyme_color);
@@ -112,29 +116,16 @@ public class MoleculeComponent : GoodBehavior
         switch (molecule.Name)
         {
             case "Water": name = "water"; break;
-            case "Oxygen": name = "oxygen"; break;
+            case "Structate": name = "sugar"; break;
             case "Nitrogen": name = "nitrogen_gas"; break;
-            case "Hydrogen": name = "hydrogen_gas"; break;
-            case "Carbon Monoxide": name = "carbon_monoxide"; break;
-            case "Carbon Dioxide": name = "carbon_dioxide"; break;
-            case "Hydrogen Sulfide": name = "hydrogen_sulfide"; break;
-            case "Purine": name = "purine"; break;
-            case "Pyrimidine": name = "pyrimidine"; break;
-            case "Imidazole": name = "imidazole"; break;
-            case "ATP": name = "atp"; break;
-            case "ADP": name = "adp"; break;
-            case "Phospholipid": name = "lipid"; break;
-            case "Glucose": name = "sugar"; break;
-            case "Phosphate": name = "phosphate"; break;
-            case "AMP": name = "amp"; break;
-            case "CMP": name = "cmp"; break;
-            case "GMP": name = "gmp"; break;
-            case "TMP": name = "tmp"; break;
-            case "Methane": name = "methane"; break;
-            case "Sulfur": name = "sulfur"; break;
-            case "Ammonia": name = "ammonia"; break;
-            case "Vinegar": name = "vinegar"; break;
-            case "Pyruvate": name = "pyruvate"; break;
+            case "Hindenburgium Gas": name = "hydrogen_gas"; break;
+            case "Carbon Diaeride": name = "carbon_dioxide"; break;
+            case "Umamium Gas": name = "nitrogen_gas"; break;
+            case "Aerogen Gas": name = "carbon_dioxide"; break;
+            case "Phlorate": name = "phosphate"; break;
+            case "Umomia": name = "ammonia"; break;
+            case "Hindenburgium Stankide": name = "hydrogen_sulfide"; break;
+            case "NRG": name = (molecule as ChargeableMolecule).IsCharged ? "battery" : "empty_battery"; break;
         }
 
         if (name == null)

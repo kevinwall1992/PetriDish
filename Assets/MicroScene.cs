@@ -5,6 +5,8 @@ public class MicroScene : Scene
 {
     public Canvas Canvas { get { return canvas; } }
 
+    public RectTransform DetailPanelContainer { get { return detail_panel_container; } }
+
     public MicroVisualization Visualization { get { return visualization; } }
 
     public MicroPrefabs Prefabs { get { return prefabs; } }
@@ -28,6 +30,9 @@ public class MicroScene : Scene
 
     [SerializeField]
     Canvas background;
+
+    [SerializeField]
+    RectTransform detail_panel_container;
 
     [SerializeField]
     MicroVisualization visualization;

@@ -42,11 +42,15 @@ public class SlotComponent : GoodBehavior, Spawner
 
                 if (molecule is Catalyst)
                 {
-                    if(Interpretase.GetGeneticCofactor(molecule as Catalyst) != null)
+                    if (Interpretase.GetGeneticCofactor(molecule as Catalyst) != null)
                         detail_panel = DNAPanel.Create(Slot);
                     else
                         detail_panel = CatalystPanel.Create(CompoundComponent.Compound.Molecule as Catalyst);
-                }  
+                }
+                else if (molecule is DNA)
+                    detail_panel = DNAPanel.Create(Slot);
+                else
+                    detail_panel = null;
             }
 
             return detail_panel;
@@ -58,13 +62,15 @@ public class SlotComponent : GoodBehavior, Spawner
         
     }
 
-    void Start()
+    protected override void Start()
     {
-        
+        base.Start();
     }
 
-    void Update()
+    protected override void Update()
     {
+        base.Update();
+
         if (CompoundComponent.Compound != Slot.Compound)
         {
             CompoundComponent.SetCompound(Slot.Compound);

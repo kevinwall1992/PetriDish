@@ -8,7 +8,7 @@ public class Element
 
     static Element()
     {
-        JObject elements_file = JObject.Parse(Resources.Load<TextAsset>("elements").text);
+        JObject elements_file = JObject.Parse(Resources.Load<TextAsset>("Elements/default").text);
 
         if (elements_file["Elements"] != null)
         {

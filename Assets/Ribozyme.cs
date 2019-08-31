@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 public class Ribozyme : DNA, Catalyst
 {
@@ -23,8 +24,8 @@ public class Ribozyme : DNA, Catalyst
 
     static string GenerateDNASequence(int codon_count)
     {
-        List<string> starting_codon = new List<string> { "A", "G" };
-        List<string> other_codons = new List<string> { "A", "C", "C", "C", "G", "T", "T", "T" };
+        List<string> starting_codon = new List<string> { "V", "F" };
+        List<string> other_codons = new List<string> { "V", "C", "C", "C", "F", "L", "L", "L" };
 
         string dna_sequence;
 
@@ -74,8 +75,13 @@ public class Ribozyme : DNA, Catalyst
 
     public IEnumerable<Compound> Cofactors { get { return Catalyst.Cofactors; } }
 
-    public Ribozyme(Catalyst catalyst_) : base(GetDNASequence(catalyst_))
+    public Ribozyme(Catalyst catalyst_)
     {
+        if (catalyst_ == null)
+            return;
+
+        AppendSequence(GetDNASequence(catalyst_));
+
         Catalyst = catalyst_;
 
         if (!ribozymes.ContainsKey(Sequence))
@@ -85,6 +91,11 @@ public class Ribozyme : DNA, Catalyst
     public void Step(Cell.Slot slot)
     {
         Catalyst.Step(slot);
+    }
+
+    public void Communicate(Cell.Slot slot, Action.Stage stage)
+    {
+        Catalyst.Communicate(slot, stage);
     }
 
     public Action Catalyze(Cell.Slot slot, Action.Stage stage)
@@ -110,6 +121,11 @@ public class Ribozyme : DNA, Catalyst
         return Catalyst.GetFacet<T>();
     }
 
+    public Cell.Slot.Relation GetAttachmentDirection(Attachment attachment)
+    {
+        return Catalyst.GetAttachmentDirection(attachment);
+    }
+
     public void RotateLeft() { Catalyst.RotateLeft(); }
     public void RotateRight() { Catalyst.RotateLeft(); }
 
@@ -121,5 +137,23 @@ public class Ribozyme : DNA, Catalyst
     public override Molecule Copy()
     {
         return new Ribozyme(Catalyst.Copy());
+    }
+
+    public override JObject EncodeJson()
+    {
+        JObject json_ribozyme_object = base.EncodeJson();
+
+        json_ribozyme_object["Type"] = "Ribozyme";
+        json_ribozyme_object["Catalyst"] = Catalyst.EncodeJson();
+
+        return json_ribozyme_object;
+    }
+
+    public override void DecodeJson(JObject json_object)
+    {
+        base.DecodeJson(json_object);
+
+        Catalyst = ProgressiveCatalyst.DecodeCatalyst(json_object["Catalyst"] as JObject);
+        ribozymes[Sequence] = this;
     }
 }

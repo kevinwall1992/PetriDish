@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.Linq;
 
 public class Mess : Molecule, Catalyst
 {
     Dictionary<Molecule, Compound> compounds = new Dictionary<Molecule, Compound>();
-
-    public override int Charge { get { return 0; } }
 
     public override float Enthalpy { get { return 0; } }
 
@@ -38,48 +37,43 @@ public class Mess : Molecule, Catalyst
             compounds[cofactor.Molecule] = cofactor.Copy();
     }
 
-    public bool CanAddCofactor(Compound cofactor)
-    {
-        return true;
-    }
+    public bool CanAddCofactor(Compound cofactor) { return true; }
 
-    public Action Catalyze(Cell.Slot slot, Action.Stage stage)
-    {
-        return null;
-    }
+    public void Communicate(Cell.Slot slot, Action.Stage stage) { }
+    public Action Catalyze(Cell.Slot slot, Action.Stage stage) { return null; }
 
-    public Catalyst Mutate()
-    {
-        return null;
-    }
+    public Catalyst Mutate() { return null; }
 
-    public void Reset()
-    {
-        
-    }
+
+    public void Reset() { }
 
     public T GetFacet<T>() where T : class, Catalyst
     {
         return this as T;
     }
 
-    public void RotateLeft()
+    public Cell.Slot.Relation GetAttachmentDirection(Attachment attachment)
     {
-        
+        return Cell.Slot.Relation.None;
     }
 
-    public void RotateRight()
-    {
-        
-    }
+    public void RotateLeft() { }
+    public void RotateRight() { }
 
-    public void Step(Cell.Slot slot)
-    {
-        
-    }
+    public void Step(Cell.Slot slot) { }
 
     Catalyst Copiable<Catalyst>.Copy()
     {
         return new Mess(compounds.Values.ToArray());
+    }
+
+    public override JObject EncodeJson()
+    {
+        return JObject.FromObject(Utility.CreateDictionary<string, string>("Type", "Mess"));
+    }
+
+    public override void DecodeJson(JObject json_object)
+    {
+
     }
 }

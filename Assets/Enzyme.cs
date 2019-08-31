@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 
 public class Enzyme : Polymer, Catalyst
@@ -9,9 +10,9 @@ public class Enzyme : Polymer, Catalyst
 
     static Enzyme()
     {
-        amino_acid_codon_map["AGC"] = AminoAcid.Alanine;
-        amino_acid_codon_map["ATC"] = AminoAcid.Histidine;
-        amino_acid_codon_map["GCT"] = AminoAcid.Serine;
+        amino_acid_codon_map["VFC"] = AminoAcid.Phlorodine;
+        amino_acid_codon_map["VLC"] = AminoAcid.Umine;
+        amino_acid_codon_map["FCL"] = AminoAcid.Aquine;
     }
 
     static string AminoAcidSequenceToString(List<AminoAcid> amino_acid_sequence)
@@ -28,7 +29,7 @@ public class Enzyme : Polymer, Catalyst
     {
         List<AminoAcid> amino_acid_sequence;
 
-        List<AminoAcid> amino_acids = new List<AminoAcid> { AminoAcid.Histidine, AminoAcid.Alanine, AminoAcid.Serine };
+        List<AminoAcid> amino_acids = new List<AminoAcid> { AminoAcid.Phlorodine, AminoAcid.Umine, AminoAcid.Aquine };
 
         do
         {
@@ -144,6 +145,9 @@ public class Enzyme : Polymer, Catalyst
 
     public Enzyme(Catalyst catalyst_)
     {
+        if (catalyst_ == null)
+            return;
+
         Catalyst = catalyst_;
 
         int length = Catalyst.Power / 2;
@@ -153,21 +157,26 @@ public class Enzyme : Polymer, Catalyst
             amino_acid_sequence = enzyme.AminoAcidSequence;
 
         foreach (AminoAcid amino_acid in amino_acid_sequence)
-            AddMonomer(amino_acid);
+            AppendMonomer(amino_acid);
 
         if (!enzymes.ContainsKey(DNASequence))
             enzymes[DNASequence] = this;
     }
 
-    public override void AddMonomer(Monomer monomer)
+    public override void InsertMonomer(Monomer monomer, int index)
     {
         if (monomer is AminoAcid)
-            base.AddMonomer(monomer);
+            base.InsertMonomer(monomer, index);
     }
 
     public void Step(Cell.Slot slot)
     {
         Catalyst.Step(slot);
+    }
+
+    public void Communicate(Cell.Slot slot, Action.Stage stage)
+    {
+        Catalyst.Communicate(slot, stage);
     }
 
     public Action Catalyze(Cell.Slot slot, Action.Stage stage)
@@ -193,6 +202,11 @@ public class Enzyme : Polymer, Catalyst
         return Catalyst.GetFacet<T>();
     }
 
+    public Cell.Slot.Relation GetAttachmentDirection(Attachment attachment)
+    {
+        return Catalyst.GetAttachmentDirection(attachment);
+    }
+
     public void RotateLeft() { Catalyst.RotateLeft(); }
     public void RotateRight() { Catalyst.RotateLeft(); }
 
@@ -205,29 +219,51 @@ public class Enzyme : Polymer, Catalyst
     {
         return new Enzyme(Catalyst.Copy());
     }
+
+    public override JObject EncodeJson()
+    {
+        JObject json_enzyme_object = new JObject();
+
+        json_enzyme_object["Type"] = "Enzyme";
+        json_enzyme_object["DNA Sequence"] = DNASequence;
+        json_enzyme_object["Catalyst"] = Catalyst.EncodeJson();
+        
+
+        return json_enzyme_object;
+    }
+
+    public override void DecodeJson(JObject json_object)
+    {
+        Monomers.Clear();
+
+        List<AminoAcid> amino_acid_sequence = DNASequenceToAminoAcidSequence(Utility.JTokenToString(json_object["DNA Sequence"]));
+        foreach (AminoAcid amino_acid in amino_acid_sequence)
+            AppendMonomer(amino_acid);
+
+        Catalyst = ProgressiveCatalyst.DecodeCatalyst(json_object["Catalyst"] as JObject);
+
+        enzymes[DNASequence] = this;
+    }
 }
 
 
 public class AminoAcid : Polymer.Monomer
 {
-    static Molecule common_structure = new SimpleMolecule("C3 H7 N O2", -491.6f);
+    static Molecule common_structure = new SimpleMolecule("K3 H7 U A2", -491.6f);
 
-    public static AminoAcid Histidine { get; private set; }
-    public static AminoAcid Alanine { get; private set; }
-    public static AminoAcid Serine { get; private set; }
+    public static AminoAcid Phlorodine { get; private set; }
+    public static AminoAcid Umine { get; private set; }
+    public static AminoAcid Aquine { get; private set; }
 
     static AminoAcid()
     {
-        //These aren't _exactly_ chemically accurate
-        Histidine = new AminoAcid(Imidazole, "His");
-        Alanine = new AminoAcid(Methane, "Ala");
-        Serine = new AminoAcid(Water, "Ser");
+        Phlorodine = new AminoAcid(GetMolecule("Phlorate"), "Phl");
+        Umine = new AminoAcid(GetMolecule("Umamia"), "Umi");
+        Aquine = new AminoAcid(Water, "Aqu");
     }
 
 
     Molecule side_chain;
-
-    public override int Charge { get { return side_chain.Charge; } }
 
     public override float Enthalpy
     {
@@ -259,5 +295,18 @@ public class AminoAcid : Polymer.Monomer
         side_chain = side_chain_;
 
         Abbreviation = abbreviation;
+    }
+
+    public override JObject EncodeJson()
+    {
+        return JObject.FromObject(Utility.CreateDictionary<string, string>("Type", "Amino Acid", "Name", Name));
+    }
+
+    public override void DecodeJson(JObject json_object)
+    {
+        AminoAcid other = Molecule.GetMolecule(Utility.JTokenToString(json_object["Name"])) as AminoAcid;
+
+        side_chain = other.side_chain;
+        Abbreviation = other.Abbreviation;
     }
 }

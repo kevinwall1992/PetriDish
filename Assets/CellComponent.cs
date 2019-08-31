@@ -60,13 +60,15 @@ public class CellComponent : GoodBehavior, IPointerClickHandler
 
     }
 
-    void Start()
+    protected override void Start()
     {
-        
+        base.Start();
     }
 
-    void Update()
+    protected override void Update()
     {
+        base.Update();
+
         cytosol_highlight.gameObject.SetActive(IsCytosolTouched);
     }
 

@@ -39,8 +39,10 @@ public class Floater : GoodBehavior
         gameObject.AddComponent<RectTransform>();
     }
 
-    private void Update()
+    protected override void Update()
     {
+        base.Update();
+
         GoodBehavior good_behavior = Element.GetComponent<GoodBehavior>();
         if (good_behavior!= null && good_behavior.IsBeingDragged)
             return;

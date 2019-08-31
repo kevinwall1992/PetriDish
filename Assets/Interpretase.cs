@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Newtonsoft.Json.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,12 +9,16 @@ public class Interpretase : ProgressiveCatalyst
     public override int Power { get { return 10; } }
 
     public Grabber Grabber { get; private set; }
+    public InputAttachment InputAttachment { get; private set; }
+    public OutputAttachment OutputAttachment { get; private set; }
 
     public DNA DNA { get { return GetGeneticCofactor(this); } }
 
     public Interpretase() : base("Interpretase", 3, "Interprets DNA programs")
     {
         Attachments[Cell.Slot.Relation.Across] = Grabber = new Grabber();
+        Attachments[Cell.Slot.Relation.Left] = InputAttachment = new InputAttachment();
+        Attachments[Cell.Slot.Relation.Right] = OutputAttachment = new OutputAttachment();
     }
 
     public override bool CanAddCofactor(Compound cofactor)
@@ -24,7 +29,13 @@ public class Interpretase : ProgressiveCatalyst
     protected override Action GetAction(Cell.Slot slot)
     {
         if (DNA == null)
+        {
+            Cell.Slot input_slot = InputAttachment.GetSlotPointedAt(slot);
+            if (input_slot.Compound != null && input_slot.Compound.Molecule is DNA)
+                return new LoadProgram(slot);
+
             return null;
+        }
 
         return Interpret(slot, FindCommandCodon(DNA));
     }
@@ -40,20 +51,20 @@ public class Interpretase : ProgressiveCatalyst
 
         Cell.Slot grab_slot = slot.GetAdjacentSlot(Orientation);
 
-        int step_codon_index = command_codon_index + GetCommandLength(DNA, command_codon_index);
+        int step_codon_index = command_codon_index + GetOperandCount(DNA, command_codon_index) + 1;
 
         int operand_index = command_codon_index + 1;
 
         switch (codon)
         {
             //Self movement
-            case "CAA":
+            case "CVV":
 
             //Taking
-            case "CAC":
+            case "CVC":
                 Cell.Slot.Relation direction = CodonToDirection(slot, DNA, operand_index, out operand_index);
 
-                if (codon == "CAA")
+                if (codon == "CVV")
                     return new MoveCommand(slot, command_codon_index, direction);
                 else
                     return new MoveCommand(slot,
@@ -62,11 +73,11 @@ public class Interpretase : ProgressiveCatalyst
                                            ComputeFunction(slot, DNA, operand_index, out operand_index));
 
             //Grab
-            case "CAG":
+            case "CVF":
                 return new GrabCommand(slot, command_codon_index);
 
             //Release
-            case "CAT":
+            case "CVL":
                 return new ReleaseCommand(slot, command_codon_index);
 
             //Spin
@@ -75,28 +86,32 @@ public class Interpretase : ProgressiveCatalyst
 
                 return new SpinCommand(slot, command_codon_index, SpinCommand.ValueToDirection(value));
 
-            //Excise
-            case "CGG":
-                string excise_marker = DNA.GetCodon(operand_index++);
-                if (excise_marker[0] != 'T')
+            //Copy
+            case "CFF":
+                string start_marker = DNA.GetCodon(operand_index++);
+                if (start_marker[0] != 'L')
                     return null;
-                
-                return new ExciseCommand(slot,
+
+                string stop_marker = DNA.GetCodon(operand_index++);
+                if (stop_marker[0] != 'L')
+                    return null;
+
+                return new CopyCommand(slot,
                                          command_codon_index,
                                          slot.GetAdjacentSlot(Orientation),
-                                         excise_marker as string);
-
+                                         start_marker as string, 
+                                         stop_marker as string);
 
             //If
-            case "CTG":
+            case "CLF":
 
             //Try
-            case "CTT":
+            case "CLL":
                 string else_marker = DNA.GetCodon(operand_index++);
-                if (else_marker[0] != 'T')
+                if (else_marker[0] != 'L')
                     return null;
 
-                if (codon == "CTG")
+                if (codon == "CLF")
                 {
                     int condition_value = ComputeFunction(slot, DNA, operand_index, out operand_index);
 
@@ -118,10 +133,11 @@ public class Interpretase : ProgressiveCatalyst
         return null;
     }
 
-    public static int GetCommandLength(DNA dna, int command_codon_index)
+    //Gets the operand count of either a command or function
+    public static int GetOperandCount(DNA dna, int codon_index)
     {
-        string command_codon = dna.GetCodon(command_codon_index);
-        if (command_codon[0] != 'C')
+        string codon = dna.GetCodon(codon_index);
+        if (codon[0] != 'C' && codon[0] != 'F')
             return 0;
 
         int length = 0;
@@ -129,58 +145,59 @@ public class Interpretase : ProgressiveCatalyst
 
         do
         {
-            string codon = dna.GetCodon(command_codon_index + length);
+            string operand_codon = dna.GetCodon(codon_index + length);
 
             if (length > 0)
                 operand_count--;
             length++;
 
-            switch (codon[0])
+            switch (operand_codon[0])
             {
                 case 'A': break;
 
                 case 'C':
-                    switch (codon)
+                    switch (operand_codon)
                     {
-                        case "CAG":
-                        case "CAT":
+                        case "CVF":
+                        case "CVL":
                             operand_count += 0;
                             break;
 
-                        case "CAA":
+                        case "CVV":
                         case "CCC":
-                        case "CGG":
                             operand_count += 1;
                             break;
 
-                        case "CAC":
-                        case "CTG":
-                        case "CTT":
+                        case "CVC":
+                        case "CLF":
+                        case "CLL":
+                        case "CFF":
                             operand_count += 2;
                             break;
                     }
                     break;
 
-                case 'G':
-                    switch (codon)
+                case 'F':
+                    switch (operand_codon)
                     {
-                        case "GAA":
-                            operand_count++;
+                        case "FVV":
                             break;
 
-                        case "GAC":
-                        case "GAG":
-                        case "GAT":
+                        case "FVC":
+                        case "FVG":
+                        case "FVL":
+                        case "FCV":
+                        case "FCC":
                             operand_count += 2;
                             break;
                     }
                     break;
 
-                case 'T': break;
+                case 'L': break;
             }
         } while (operand_count > 0);
 
-        return length;
+        return length - 1;
     }
 
     public static int FindCommandCodon(DNA dna, int starting_codon_index, bool search_backwards = false)
@@ -249,7 +266,7 @@ public class Interpretase : ProgressiveCatalyst
 
             int command_codon_index = FindCommandCodon(dna, codon_index, true);
             if (command_codon_index < 0 ||
-                (command_codon_index + GetCommandLength(dna, command_codon_index) - 1) < codon_index)
+                (command_codon_index + GetOperandCount(dna, command_codon_index)) < codon_index)
                 return codon_index;
 
             is_first_codon = false;
@@ -266,28 +283,64 @@ public class Interpretase : ProgressiveCatalyst
         dna.ActiveCodonIndex = FindMarkerCodon(dna, marker, search_backwards, circular);
     }
 
-    public static string GetBlockSequence(DNA dna, string marker, int local_codon_index)
+    public static string GetMarkedSequence(DNA dna, string start_marker, string stop_marker, int local_codon_index)
     {
-        string segment = "";
+        int start_codon_index = FindMarkerCodon(dna, start_marker, local_codon_index) + 1;
+        int stop_codon_index = FindMarkerCodon(dna, stop_marker, start_codon_index) - 1;
 
-        int codon_index = FindMarkerCodon(dna, marker, local_codon_index) + 1;
-        string codon = dna.GetCodon(codon_index);
-
-        while (codon_index < dna.CodonCount &&
-               (codon = dna.GetCodon(codon_index++)) != "TTT")
-            segment += codon;
-
-        return segment;
+        if (stop_codon_index > start_codon_index)
+            return dna.GetSubsequence(start_codon_index, stop_codon_index - start_codon_index + 1);
+        else
+            return dna.GetSubsequence(start_codon_index, dna.CodonCount - start_codon_index) + 
+                   dna.GetSubsequence(0, stop_codon_index + 1);
     }
 
-    public static int GetBlockLength(DNA dna, string marker, int local_codon_index)
+    public static Catalyst GetCatalyst(DNA dna, int codon_index, out int length)
     {
-        return GetBlockSequence(dna, marker, local_codon_index).Length / 3;
+        string catalyst_sequence = "";
+
+        for (; codon_index < dna.CodonCount; codon_index++)
+        {
+            string codon = dna.GetCodon(codon_index);
+
+            switch (codon[0])
+            {
+                case 'V':
+                case 'F':
+                    catalyst_sequence += codon;
+
+                    Ribozyme ribozyme = Ribozyme.GetRibozyme(catalyst_sequence);
+                    Enzyme enzyme = Enzyme.GetEnzyme(Enzyme.DNASequenceToAminoAcidSequence(catalyst_sequence));
+
+                    if (ribozyme != null || enzyme != null)
+                    {
+                        length = catalyst_sequence.Length / 3;
+
+                        if (ribozyme != null)
+                            return ribozyme;
+                        else
+                            return enzyme;
+                    }
+
+                    break;
+
+                case 'C':
+                    codon_index += Interpretase.GetOperandCount(dna, codon_index);
+                    break;
+
+                case 'L':
+                    break;
+            }
+        }
+
+        length = -1;
+        return null;
     }
 
-    public static DNA Excise(DNA dna, string marker, int local_codon_index)
+    public static Catalyst GetCatalyst(DNA dna, int codon_index)
     {
-        return dna.RemoveStrand(FindMarkerCodon(dna, marker, local_codon_index) + 1, GetBlockLength(dna, marker, local_codon_index));
+        int length;
+        return GetCatalyst(dna, codon_index, out length);
     }
 
     public static int CodonToValue(string codon)
@@ -301,10 +354,10 @@ public class Interpretase : ProgressiveCatalyst
 
             switch (character)
             {
-                case 'A': value = 0; break;
+                case 'V': value = 0; break;
                 case 'C': value = 1; break;
-                case 'G': value = 2; break;
-                case 'T': value = 3; break;
+                case 'F': value = 2; break;
+                case 'L': value = 3; break;
             }
 
             total += MathUtility.Pow(4, exponent) * value;
@@ -325,10 +378,10 @@ public class Interpretase : ProgressiveCatalyst
 
             switch (digit)
             {
-                case 0: codon += "A"; break;
+                case 0: codon += "V"; break;
                 case 1: codon += "C"; break;
-                case 2: codon += "G"; break;
-                case 3: codon += "T"; break;
+                case 2: codon += "F"; break;
+                case 3: codon += "L"; break;
             }
         }
 
@@ -365,7 +418,7 @@ public class Interpretase : ProgressiveCatalyst
 
         switch (function_codon)
         {
-            case "GAA":
+            case "FVV":
                 Cell.Slot.Relation direction = CodonToDirection(slot, dna, next_codon_index, out next_codon_index);
                 if (direction == Cell.Slot.Relation.None)
                     return 0;
@@ -373,21 +426,21 @@ public class Interpretase : ProgressiveCatalyst
                 Cell.Slot query_slot = slot.GetAdjacentSlot(direction);
                 return query_slot.Compound == null ? 0 : (int)query_slot.Compound.Quantity;
 
-            case "GAC":
-            case "GAT":
-            case "GAG":
-            case "GCA":
-            case "GCC":
+            case "FVC":
+            case "FVL":
+            case "FVF":
+            case "FCV":
+            case "FCC":
                 int operand0 = ComputeFunction(slot, dna, next_codon_index, out next_codon_index);
                 int operand1 = ComputeFunction(slot, dna, next_codon_index, out next_codon_index);
 
                 switch (function_codon)
                 {
-                    case "GAC": return operand0 > operand1 ? 1 : 0;
-                    case "GAT": return operand0 < operand1 ? 1 : 0;
-                    case "GAG": return operand0 == operand1 ? 1 : 0;
-                    case "GCA": return operand0 + operand1;
-                    case "GCC": return operand0 - operand1;
+                    case "FVC": return operand0 > operand1 ? 1 : 0;
+                    case "FVL": return operand0 < operand1 ? 1 : 0;
+                    case "FVF": return operand0 == operand1 ? 1 : 0;
+                    case "FCV": return operand0 + operand1;
+                    case "FCC": return operand0 - operand1;
                 }
                 break;
         }
@@ -429,10 +482,61 @@ public class Interpretase : ProgressiveCatalyst
     }
 
 
+    public class LoadProgram : Action
+    {
+        public override bool IsLegal
+        {
+            get
+            {
+                Compound compound = ProgramSlot.Compound;
+
+                if (compound == null || !(compound.Molecule is DNA))
+                    return false;
+
+                return true;
+            }
+        }
+
+        public Cell.Slot ProgramSlot
+        {
+            get { return Catalyst.GetFacet<Interpretase>().InputAttachment.GetSlotPointedAt(CatalystSlot); }
+        }
+
+        public Compound ProgramCompound { get; private set; }
+
+        public LoadProgram(Cell.Slot catalyst_slot) : base(catalyst_slot, 1)
+        {
+
+        }
+
+        public override Dictionary<object, List<Compound>> GetResourceDemands()
+        {
+            Dictionary<object, List<Compound>> resource_demands = base.GetResourceDemands();
+            resource_demands[ProgramSlot] = Utility.CreateList(ProgramSlot.Compound);
+
+            return resource_demands;
+        }
+
+        public override void Begin()
+        {
+            base.Begin();
+
+            ProgramCompound = ProgramSlot.RemoveCompound();
+        }
+
+        public override void End()
+        {
+            Catalyst.GetFacet<Interpretase>().AddCofactor(ProgramCompound);
+
+            base.End();
+        }
+    }
+
+
     public class Command : EnergeticAction
     {
         protected int CommandCodonIndex { get; set; }
-        protected int NextCodonIndex { get { return CommandCodonIndex + GetCommandLength(DNA, CommandCodonIndex); } }
+        protected int NextCodonIndex { get { return CommandCodonIndex + GetOperandCount(DNA, CommandCodonIndex) + 1; } }
 
         public DNA DNA { get { return GetGeneticCofactor(Catalyst); } }
 
@@ -448,12 +552,17 @@ public class Interpretase : ProgressiveCatalyst
         }
     }
 
-    public class ExciseCommand : Command
+    public class CopyCommand : Command
     {
-        string marker;
+        string start_marker, stop_marker;
 
         public Cell.Slot Destination { get; private set; }
-        public Compound RemovedCompound { get; private set; }
+        public Compound CopiedCompound { get; private set; }
+
+        public string SequenceToBeCopied
+        {
+            get { return GetMarkedSequence(DNA, start_marker, stop_marker, CommandCodonIndex); }
+        }
 
         public override float Scale
         {
@@ -473,7 +582,7 @@ public class Interpretase : ProgressiveCatalyst
                 {
                     if (!(Destination.Compound.Molecule is DNA))
                         return false;
-                    else if (GetBlockSequence(DNA, marker, CommandCodonIndex) != (Destination.Compound.Molecule as DNA).Sequence)
+                    else if (SequenceToBeCopied != (Destination.Compound.Molecule as DNA).Sequence)
                         return false;
                 }
 
@@ -481,32 +590,25 @@ public class Interpretase : ProgressiveCatalyst
             }
         }
 
-        public ExciseCommand(Cell.Slot catalyst_slot, int command_codon_index, Cell.Slot output_slot, string marker_) 
+        public CopyCommand(Cell.Slot catalyst_slot, int command_codon_index, Cell.Slot output_slot, 
+                           string start_marker_, string stop_marker_) 
             : base(catalyst_slot, command_codon_index, 1)
         {
             Destination = output_slot;
-            marker = marker_;
+            start_marker = start_marker_;
+            stop_marker = stop_marker_;
         }
 
         public override void Begin()
         {
             base.Begin();
 
-            bool command_codon_index_shifted = FindMarkerCodon(DNA, marker, CommandCodonIndex) < CommandCodonIndex;
-            DNA dna = Excise(DNA, marker, CommandCodonIndex);
-            if(command_codon_index_shifted)
-                CommandCodonIndex -= dna.CodonCount;
-                
-            Polymer polymer = Ribozyme.GetRibozyme(dna.Sequence);
-            if (polymer != null)
-                dna = polymer as DNA;
-
-            RemovedCompound = new Compound(dna, 1);
+            CopiedCompound = new Compound(new DNA(SequenceToBeCopied), 1);
         }
 
         public override void End()
         {
-            Destination.AddCompound(RemovedCompound);
+            Destination.AddCompound(CopiedCompound);
 
             base.End();
         }

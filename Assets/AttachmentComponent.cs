@@ -8,9 +8,9 @@ public class AttachmentComponent : GoodBehavior
 
     public Attachment Attachment { get; private set; }
 
-    protected virtual void Update()
+    protected override void Update()
     {
-        
+        base.Update();
     }
 
     public virtual AttachmentComponent SetAttachment(Attachment attachment, Color color)

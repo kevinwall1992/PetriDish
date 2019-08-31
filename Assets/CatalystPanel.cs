@@ -37,7 +37,7 @@ public class CatalystPanel : DetailPanel
     public static CatalystPanel Create(Catalyst catalyst)
     {
         CatalystPanel catalyst_panel = Instantiate(Scene.Micro.Prefabs.CatalystPanel);
-        catalyst_panel.transform.SetParent(Scene.Micro.Canvas.transform, false);
+        catalyst_panel.transform.SetParent(Scene.Micro.DetailPanelContainer, false);
 
         catalyst_panel.Data = catalyst;
 

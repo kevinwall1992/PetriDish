@@ -40,20 +40,25 @@ public class MicroVisualization : GoodBehavior
         water_locale = WaterLocale.CreateVentLocale();
     }
 
-    void Start()
+    protected override void Start()
     {
-        OrganismComponent = GetComponentInChildren<OrganismComponent>();
-        water_locale.AddOrganism(OrganismComponent.Organism);
+        base.Start();
 
-        OrganismComponent.ResetExperiment("TAG" + new Ribozyme(new Constructase()).Sequence + "TTTCAAAACCTTTAACAAAAGCAAAACTAACAAAAATTTCAAAAACAAAAACACAACAACCAAAACCAAAAGCAAAAGCGGTAGCCCAACTACCAAAAACTGTACGACGAAAAAAAATTT");
+        OrganismComponent = GetComponentInChildren<OrganismComponent>();
+
+        OrganismComponent.LoadOrganism("Organisms/test_organism");
+        water_locale.AddOrganism(OrganismComponent.Organism);
+        OrganismComponent.Organism.Cytosol.AddCompound(Molecule.NRG, 5);
 
         Scene.Micro.Editor.TrackThis(OrganismComponent.Organism);
 
         Speed = 1.0f;
     }
 
-    void Update()
+    protected override void Update()
     {
+        base.Update();
+
         float scroll_speed = 3.5f;
         if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
             Scene.Micro.Camera.transform.Translate(new Vector3(0, scroll_speed * Time.deltaTime));

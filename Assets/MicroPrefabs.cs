@@ -65,4 +65,24 @@ public class MicroPrefabs : MonoBehaviour
     [SerializeField]
     GrabberComponent grabber_component;
     public GrabberComponent GrabberComponent { get { return grabber_component; } }
+
+    [SerializeField]
+    AttachmentComponent extruder_component;
+    public AttachmentComponent ExtruderComponent { get { return extruder_component; } }
+
+    [SerializeField]
+    SectorNode sector_node;
+    public SectorNode SectorNode { get { return sector_node; } }
+
+    [SerializeField]
+    CommandNode command_node;
+    public CommandNode CommandNode { get { return command_node; } }
+
+    [SerializeField]
+    LocusNode locus_node;
+    public LocusNode LocusNode { get { return locus_node; } }
+
+    [SerializeField]
+    CatalystNode catalyst_node;
+    public CatalystNode CatalystNode { get { return catalyst_node; } }
 }

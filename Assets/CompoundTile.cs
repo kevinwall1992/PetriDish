@@ -72,13 +72,15 @@ public class CompoundTile : GoodBehavior
         Compound = null;
     }
 
-    void Start()
+    protected override void Start()
     {
-        
+        base.Start();
     }
 
-    void Update()
+    protected override void Update()
     {
+        base.Update();
+
         name_text.resizeTextMaxSize = (int)(22 * Size / 107.0f);
     }
 
@@ -107,33 +109,6 @@ public class CompoundTile : GoodBehavior
             transform.position = transform.position + (Vector3)eventData.delta;
         else
             transform.position = Input.mousePosition;
-
-        if (DetailPanel.Left != null && DetailPanel.Left is DNAPanel && Compound.Molecule is Catalyst)
-        {
-            DNAPanel dna_panel = DetailPanel.Left as DNAPanel;
-
-            if (dna_panel.CodonLayout.IsPointedAt)
-            {
-                int insertion_index = dna_panel.CodonLayout.GetInsertionIndex();
-                if (insertion_index < 0)
-                    return;
-
-                if (placeholder_index < 0)
-                {
-                    dna_panel.AddDNASequence("AAA", insertion_index);
-                    dna_panel.CodonLayout.GetCodonElement(insertion_index).GetComponent<CanvasGroup>().alpha = 0;
-                }
-                else
-                    dna_panel.CodonLayout.AddCodonElement(dna_panel.CodonLayout.RemoveCodonElement(placeholder_index), insertion_index);
-
-                placeholder_index = insertion_index;
-            }
-            else if (placeholder_index >= 0)
-            {
-                Destroy(dna_panel.CodonLayout.RemoveCodonElement(placeholder_index).gameObject);
-                placeholder_index = -1;
-            }
-        }
     }
 
     public override void OnEndDrag(PointerEventData eventData)
@@ -152,7 +127,7 @@ public class CompoundTile : GoodBehavior
             {
                 DNAPanel dna_panel = DetailPanel.Left as DNAPanel;
 
-                if (dna_panel.CodonLayout.IsPointedAt)
+                if (dna_panel.IsPointedAt)
                 {
                     string dna_sequence;
                     if (Compound.Molecule is Ribozyme)
@@ -160,12 +135,7 @@ public class CompoundTile : GoodBehavior
                     else
                         dna_sequence = (Compound.Molecule as Enzyme).DNASequence;
 
-                    Destroy(dna_panel.CodonLayout.RemoveCodonElement(placeholder_index).gameObject);
-
-                    dna_panel.AddDNASequence("TAA" + dna_sequence + "TTT", placeholder_index);
-                    dna_panel.ApplyChanges();
-
-                    placeholder_index = -1;
+                    dna_panel.SectorNode.GetDeepestVisibleSectorNode().InsertDNASequence(dna_sequence);
                 }
             }
         }

@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System;
+using Newtonsoft.Json.Linq;
 
-
-public interface Catalyst : Copiable<Catalyst>, Stackable
+public interface Catalyst : Copiable<Catalyst>, Stackable, Encodable
 {
     //Same across all instances
     string Name { get; }
@@ -23,6 +24,8 @@ public interface Catalyst : Copiable<Catalyst>, Stackable
 
     T GetFacet<T>() where T : class, Catalyst;
 
+    Cell.Slot.Relation GetAttachmentDirection(Attachment attachment);
+
     void RotateLeft();
     void RotateRight();
 
@@ -30,20 +33,43 @@ public interface Catalyst : Copiable<Catalyst>, Stackable
     void AddCofactor(Compound cofactor);
 
     void Step(Cell.Slot slot);
+    void Communicate(Cell.Slot slot, Action.Stage stage);
     Action Catalyze(Cell.Slot slot, Action.Stage stage);
 
     Catalyst Mutate();
 }
 
-public abstract class Attachment { }
+public abstract class Attachment
+{
+    public Cell.Slot GetSlotPointedAt(Cell.Slot catalyst_slot)
+    {
+        if (catalyst_slot.Compound == null)
+            return null;
+
+        Catalyst catalyst = catalyst_slot.Compound.Molecule as Catalyst;
+        if (catalyst == null)
+            return null;
+
+        return catalyst_slot.GetAdjacentSlot(catalyst.GetAttachmentDirection(this));
+    }
+}
 
 public class InputAttachment : Attachment
 {
     public Molecule Molecule { get; private set; }
 
-    public InputAttachment(Molecule molecule)
+    public InputAttachment(Molecule molecule = null)
     {
         Molecule = molecule;
+    }
+
+    public Compound Take(Cell.Slot catalyst_slot, float quantity)
+    {
+        Cell.Slot slot = GetSlotPointedAt(catalyst_slot);
+        if (slot == null)
+            return null;
+
+        return slot.Compound.Split(quantity);
     }
 }
 
@@ -51,9 +77,18 @@ public class OutputAttachment : Attachment
 {
     public Molecule Molecule { get; private set; }
 
-    public OutputAttachment(Molecule molecule)
+    public OutputAttachment(Molecule molecule = null)
     {
         Molecule = molecule;
+    }
+
+    public void Put(Cell.Slot catalyst_slot, Compound compound)
+    {
+        Cell.Slot slot = GetSlotPointedAt(catalyst_slot);
+        if (slot == null || (slot.Compound != null && !slot.Compound.Molecule.IsStackable(compound.Molecule)))
+            return;
+
+        slot.AddCompound(compound);
     }
 }
 
@@ -68,6 +103,7 @@ public abstract class ProgressiveCatalyst : Catalyst
     public string Name { get; private set; }
     public string Description { get; private set; }
     public int Price { get; private set; }
+    bool is_initialized = false;
 
     public virtual Example Example { get { return null; } }
 
@@ -84,13 +120,37 @@ public abstract class ProgressiveCatalyst : Catalyst
 
     public ProgressiveCatalyst(string name, int price, string description = "")
     {
-        Name = name;
-        Description = description;
-        Price = price;
+        Initialize(name, price, description);
 
         Attachments = new Dictionary<Cell.Slot.Relation, Attachment>();
 
         Orientation = Cell.Slot.Relation.Across;
+    }
+
+    protected ProgressiveCatalyst()
+    {
+        Name = "Uninitialized";
+        Description = "";
+        Price = 0;
+
+        Attachments = new Dictionary<Cell.Slot.Relation, Attachment>();
+
+        Orientation = Cell.Slot.Relation.Across;
+    }
+
+    protected void Initialize(string name, int price, string description)
+    {
+        if(is_initialized)
+        {
+            Debug.Assert(false);
+            return;
+        }
+
+        Name = name;
+        Description = description;
+        Price = price;
+
+        is_initialized = true;
     }
 
     protected abstract Action GetAction(Cell.Slot slot);
@@ -100,6 +160,18 @@ public abstract class ProgressiveCatalyst : Catalyst
         Progress += slot.Compound.Quantity;
     }
 
+    public virtual void Communicate(Cell.Slot slot, Action.Stage stage)
+    {
+        Action action = GetAction(slot);
+        if (!stage.Includes(action))
+            return;
+
+        Dictionary<object, List<Compound>> demands = action.GetResourceDemands();
+        foreach (object source in demands.Keys)
+            foreach (Compound compound in demands[source])
+                MakeClaim(source, compound);
+    }
+
     public virtual Action Catalyze(Cell.Slot slot, Action.Stage stage)
     {
         Action action = GetAction(slot);
@@ -107,6 +179,9 @@ public abstract class ProgressiveCatalyst : Catalyst
             return null;
 
         if (!stage.Includes(action))
+            return null;
+
+        if (GetNormalizedClaimYield() < 1)
             return null;
 
         if (!action.IsLegal)
@@ -148,14 +223,28 @@ public abstract class ProgressiveCatalyst : Catalyst
         return this as T;
     }
 
+    public Cell.Slot.Relation GetAttachmentDirection(Attachment attachment)
+    {
+        foreach (Cell.Slot.Relation direction in Enum.GetValues(typeof(Cell.Slot.Relation)))
+            if (Attachments.ContainsKey(direction) && Attachments[direction] == attachment)
+                return ApplyOrientation(direction);
+
+        return Cell.Slot.Relation.None;
+    }
+
     public void RotateLeft()
     {
-        Orientation = (Cell.Slot.Relation)(((int)Orientation + 2) % 3);
+        Orientation = Cell.Slot.RotateRelation(Orientation, false);
     }
 
     public void RotateRight()
     {
-        Orientation = (Cell.Slot.Relation)(((int)Orientation + 1) % 3);
+        Orientation = Cell.Slot.RotateRelation(Orientation, true);
+    }
+
+    public Cell.Slot.Relation ApplyOrientation(Cell.Slot.Relation direction)
+    {
+        return (Cell.Slot.Relation)(((int)direction + (int)Orientation) % 3);
     }
 
     public virtual bool CanAddCofactor(Compound cofactor)
@@ -229,6 +318,271 @@ public abstract class ProgressiveCatalyst : Catalyst
 
         return this;
     }
+
+
+    public virtual string EncodeString() { return EncodeJson().ToString(); }
+    public virtual void DecodeString(string string_encoding) { DecodeJson(JObject.Parse(string_encoding)); }
+
+    public virtual JObject EncodeJson()
+    {
+        JArray json_cofactor_array = new JArray();
+
+        foreach (Compound cofactor in Cofactors)
+            json_cofactor_array.Add(JObject.FromObject(Utility.CreateDictionary<string, object>("Molecule", cofactor.Molecule.EncodeJson(), 
+                                                                                                "Quantity", cofactor.Quantity)));
+
+        return JObject.FromObject(Utility.CreateDictionary<string, object>(
+            "Type", GetType().Name, 
+            "Orientation", System.Enum.GetName(typeof(Cell.Slot.Relation), Orientation),
+            "Cofactors", json_cofactor_array));
+    }
+
+    public virtual void DecodeJson(JObject json_object)
+    {
+        switch(Utility.JTokenToString(json_object["Orientation"]))
+        {
+            case "Right": Orientation = Cell.Slot.Relation.Right; break;
+            case "Left": Orientation = Cell.Slot.Relation.Left; break;
+            case "Across": Orientation = Cell.Slot.Relation.Across; break;
+        }
+
+        foreach(JToken json_token in json_object["Cofactors"])
+        {
+            JObject json_cofactor_object = json_token as JObject;
+
+            AddCofactor(new Compound(Molecule.DecodeMolecule(json_cofactor_object["Molecule"] as JObject), 
+                                     Utility.JTokenToFloat(json_cofactor_object["Quantity"])));
+        }
+    }
+
+    public static Catalyst DecodeCatalyst(JObject json_object)
+    {
+        Catalyst catalyst;
+
+        switch (Utility.JTokenToString(json_object["Type"]))
+        {
+            case "Constructase": catalyst = new Constructase(); break;
+            case "Separatase": catalyst = new Separatase(); break;
+            case "Pumpase": catalyst = new Pumpase(); break;
+            case "Porin": catalyst = new Porin(null); break;
+            case "Transcriptase": catalyst = new Transcriptase(); break;
+            case "Interpretase": catalyst = new Interpretase(); break;
+
+            case "ReactionCatalyst": catalyst = Reaction.CreateBlankCatalyst(); break;
+
+            default: throw new System.NotImplementedException();
+        }
+
+        catalyst.DecodeJson(json_object);
+
+        return catalyst;
+    }
+
+
+    protected struct Claim
+    {
+        Catalyst claimant;
+
+        object source;
+        Compound compound;
+
+        public Catalyst Claimant { get { return claimant; } }
+
+        public object Source { get { return source; } }
+        public Compound Resource { get { return compound; } }
+
+        public Claim(Catalyst claimant_, object source_, Compound compound_)
+        {
+            claimant = claimant_;
+
+            source = source_;
+            compound = compound_;
+        }
+    }
+
+    static Dictionary<object, List<Claim>> sources = new Dictionary<object, List<Claim>>();
+    static Dictionary<Catalyst, List<Claim>> claimants = new Dictionary<Catalyst, List<Claim>>();
+
+    static Dictionary<Catalyst, float> normalized_claim_yields = null;
+
+    protected void MakeClaim(object source, Compound compound)
+    {
+        if (normalized_claim_yields != null)
+        {
+            sources.Clear();
+            claimants.Clear();
+            normalized_claim_yields = null;
+        }
+
+        if (!claimants.ContainsKey(this))
+            claimants[this] = new List<Claim>();
+        
+        if (!sources.ContainsKey(source))
+            sources[source] = new List<Claim>();
+
+        Claim claim = new Claim(this, source, compound);
+        sources[source].Add(claim);
+        claimants[this].Add(claim);
+    }
+
+    class Availability
+    {
+        public float available_quantity, unclaimed_quantity, demanded_quantity;
+
+        public float UnclaimedToDemandedRatio
+        {
+            get { return Mathf.Min(1, unclaimed_quantity / demanded_quantity); }
+        }
+
+        public float UnclaimedToAvailableRatio
+        {
+            get { return Mathf.Min(1, unclaimed_quantity / available_quantity); }
+        }
+
+        public Availability(float available_quantity_)
+        {
+            available_quantity = unclaimed_quantity = available_quantity_;
+            demanded_quantity = 0;
+        }
+    }
+
+    protected float GetNormalizedClaimYield()
+    {
+        if (normalized_claim_yields == null)
+        {
+            normalized_claim_yields = new Dictionary<Catalyst, float>();
+
+            Dictionary<object, Dictionary<Molecule, Availability>> availablities =
+                new Dictionary<object, Dictionary<Molecule, Availability>>();
+
+            List<Catalyst> satisfied_claimants = new List<Catalyst>();
+
+            int foo = 0;
+            while (satisfied_claimants.Count < claimants.Count && foo++ < 100)
+            {
+                foreach (object source in availablities.Keys)
+                    foreach (Molecule molecule in availablities[source].Keys)
+                        availablities[source][molecule].demanded_quantity = 0;
+
+                foreach (Catalyst claimant in claimants.Keys)
+                {
+                    if (satisfied_claimants.Contains(claimant))
+                        continue;
+
+                    foreach (Claim claim in claimants[claimant])
+                    {
+                        Molecule molecule = claim.Resource.Molecule;
+
+                        if (!availablities.ContainsKey(claim.Source))
+                            availablities[claim.Source] = new Dictionary<Molecule, Availability>();
+
+                        if (!availablities[claim.Source].ContainsKey(molecule))
+                        {
+                            float available_quantity = 0;
+
+                            if (claim.Source is Cell.Slot)
+                            {
+                                Cell.Slot slot = claim.Source as Cell.Slot;
+
+                                if (slot.Compound != null)
+                                    available_quantity = slot.Compound.Quantity;
+                            }
+                            else if (claim.Source is Cytosol)
+                                available_quantity = (claim.Source as Cytosol).GetQuantity(molecule);
+                            else if (claim.Source is WaterLocale)
+                                available_quantity = (claim.Source as WaterLocale).Solution.GetQuantity(molecule);
+
+                            availablities[claim.Source][molecule] = new Availability(available_quantity);
+                        }
+
+                        availablities[claim.Source][molecule].demanded_quantity += claim.Resource.Quantity;
+                    }
+                }
+
+                List<Catalyst> pissed_off_claimants = new List<Catalyst>();
+                foreach (Catalyst claimant in claimants.Keys)
+                {
+                    if (claimant is InstantCatalyst)
+                        continue;
+
+                    foreach (Claim claim in claimants[claimant])
+                        if (availablities[claim.Source][claim.Resource.Molecule].UnclaimedToDemandedRatio < 1)
+                        {
+                            pissed_off_claimants.Add(claimant);
+                            break;
+                        }
+                }
+                foreach (Catalyst claimant in pissed_off_claimants)
+                {
+                    foreach (Claim claim in claimants[claimant])
+                        availablities[claim.Source][claim.Resource.Molecule].demanded_quantity -= claim.Resource.Quantity;
+
+                    claimants.Remove(claimant);
+                }
+
+                Dictionary<Claim, float> quantity_claimed = new Dictionary<Claim, float>();
+                foreach (Catalyst claimant in claimants.Keys)
+                {
+                    if (satisfied_claimants.Contains(claimant))
+                        continue;
+
+                    float smallest_ratio = 1;
+
+                    foreach (Claim claim in claimants[claimant])
+                    {
+                        float ratio = availablities[claim.Source][claim.Resource.Molecule].UnclaimedToDemandedRatio;
+
+                        smallest_ratio = Mathf.Min(smallest_ratio, ratio);
+                    }
+
+                    if (smallest_ratio == 1)
+                        satisfied_claimants.Add(claimant);
+
+                    normalized_claim_yields[claimant] = smallest_ratio;
+
+                    foreach (Claim claim in claimants[claimant])
+                        quantity_claimed[claim] =
+                            claim.Resource.Quantity *
+                            smallest_ratio *
+                            availablities[claim.Source][claim.Resource.Molecule].UnclaimedToAvailableRatio;
+                }
+
+                foreach (Catalyst claimant in claimants.Keys)
+                {
+                    if (satisfied_claimants.Contains(claimant))
+                        continue;
+
+                    foreach (Claim claim in claimants[claimant])
+                        availablities[claim.Source][claim.Resource.Molecule].unclaimed_quantity -= quantity_claimed[claim];
+
+                    if (normalized_claim_yields[claimant] == 1)
+                        satisfied_claimants.Add(claimant);
+                }
+
+                foreach (Catalyst claimant in claimants.Keys)
+                {
+                    if (satisfied_claimants.Contains(claimant))
+                        continue;
+
+                    foreach (Claim claim in claimants[claimant])
+                    {
+                        Molecule molecule = claim.Resource.Molecule;
+
+                        if (availablities[claim.Source][molecule].unclaimed_quantity < 0.0000001f)
+                        {
+                            satisfied_claimants.Add(claimant);
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!normalized_claim_yields.ContainsKey(this))
+            return 1;
+
+        return normalized_claim_yields[this];
+    }
 }
 
 //This Catalyst always returns an action (if able), 
@@ -241,13 +595,38 @@ public abstract class InstantCatalyst : ProgressiveCatalyst
         
     }
 
+    protected InstantCatalyst()
+    {
+
+    }
+
+    public override void Communicate(Cell.Slot slot, Action.Stage stage)
+    {
+        Action action = GetAction(slot);
+        if (!stage.Includes(action))
+            return;
+
+        action.Cost = slot.Compound.Quantity;
+
+        Dictionary<object, List<Compound>> demands = action.GetResourceDemands();
+        foreach (object source in demands.Keys)
+            foreach (Compound compound in demands[source])
+                MakeClaim(source, compound);
+    }
+
     //Enforce productivity from above?
     public override Action Catalyze(Cell.Slot slot, Action.Stage stage)
     {
         Action action = GetAction(slot);
 
-        if (action != null)
-            action.Cost = slot.Compound.Quantity;
+        if (action == null)
+            return null;
+
+        if (!stage.Includes(action))
+            return null;
+
+        action.Cost = slot.Compound.Quantity;
+        action.Scale *= GetNormalizedClaimYield();
 
         return action;
     }
@@ -258,9 +637,14 @@ public class Constructase : ProgressiveCatalyst
 {
     public override int Power { get { return 7; } }
 
+    public InputAttachment Feed { get; private set; }
+    public Extruder Extruder { get; private set; }
+    public float RequiredQuantity { get { return 4; } }
+
     public Constructase() : base("Constructase", 1, "Makes new cells")
     {
-
+        Attachments[Cell.Slot.Relation.Across] = Feed = new InputAttachment(Molecule.GetMolecule("Structate"));
+        Attachments[Cell.Slot.Relation.Across] = Extruder = new Extruder();
     }
 
     protected override Action GetAction(Cell.Slot slot)
@@ -280,20 +664,44 @@ public class Constructase : ProgressiveCatalyst
         {
             get
             {
-                if (CatalystSlot.AdjacentCell != null)
+                if ((Catalyst as Constructase).Extruder.GetSlotPointedAt(CatalystSlot) != null)
+                    return false;
+
+                Cell.Slot feed_slot = (Catalyst as Constructase).Feed.GetSlotPointedAt(CatalystSlot);
+                if (feed_slot == null ||
+                    feed_slot.Compound == null ||
+                    !feed_slot.Compound.Molecule.IsStackable((Catalyst as Constructase).Feed.Molecule))
                     return false;
 
                 return base.IsLegal;
             }
         }
 
+        public Compound Feedstock { get; private set; }
+
         public ConstructCell(Cell.Slot catalyst_slot)
             : base(catalyst_slot, 2, -2.0f)
         {
-
+            
         }
 
-        public override void Begin() { }
+        public override Dictionary<object, List<Compound>> GetResourceDemands()
+        {
+            Dictionary<object, List<Compound>> demands = base.GetResourceDemands();
+
+            Constructase constructase = Catalyst as Constructase;
+            demands[constructase.Feed.GetSlotPointedAt(CatalystSlot)]
+                .Add(new Compound(constructase.Feed.Molecule, constructase.RequiredQuantity));
+
+            return demands;
+        }
+
+        public override void Begin()
+        {
+            Constructase constructase = Catalyst as Constructase;
+
+            Feedstock = constructase.Feed.Take(CatalystSlot, constructase.RequiredQuantity);
+        }
 
         public override void End()
         {
@@ -307,6 +715,9 @@ public class Constructase : ProgressiveCatalyst
         }
     }
 }
+
+public class Extruder : Attachment { }
+
 
 public class Separatase : ProgressiveCatalyst
 {
@@ -339,7 +750,7 @@ public class Separatase : ProgressiveCatalyst
                 if (CatalystSlot.AdjacentCell == null)
                     return false;
 
-                if (Cytosol.GetQuantity(Molecule.ATP) < (EnergyBalance + 10))
+                if (Cytosol.GetQuantity(ChargeableMolecule.NRG) < (EnergyBalance + 10))
                     return false;
 
                 return base.IsLegal;
@@ -352,6 +763,15 @@ public class Separatase : ProgressiveCatalyst
 
         }
 
+        public override Dictionary<object, List<Compound>> GetResourceDemands()
+        {
+            Dictionary<object, List<Compound>> demands = base.GetResourceDemands();
+
+            demands[Cytosol].Add(new Compound(Molecule.NRG, 10));
+
+            return demands;
+        }
+
         public override void Begin()
         {
             if (!IsLegal)
@@ -359,7 +779,7 @@ public class Separatase : ProgressiveCatalyst
 
             base.Begin();
 
-            SeedCompound = Cytosol.RemoveCompound(Molecule.ATP, 10);
+            SeedCompound = Cytosol.RemoveCompound(Molecule.NRG, 10);
         }
 
         public override void End()
@@ -376,46 +796,37 @@ public class Separatase : ProgressiveCatalyst
 public class Pumpase : InstantCatalyst
 {
     bool pump_out;
-    Molecule molecule;
+
+    public Molecule Molecule { get; private set; }
 
     public override int Power { get { return 6; } }
 
-    public Pumpase(bool pump_out_, Molecule molecule_) 
-        : base(pump_out_ ? "Exopumpase" : "Endopumpase", 
-               1, 
-               pump_out_ ? "Removes compounds from cell" : "Draws in compounds from outside")
+
+    Pumpase(bool pump_out_, Molecule molecule) 
+        : base()
     {
         pump_out = pump_out_;
-        molecule = molecule_;
+        Molecule = molecule;
+
+        DefaultInitialization();
     }
 
-    Molecule GetMolecule(Cell.Slot slot)
+    public Pumpase()
     {
-        if (molecule != null)
-            return molecule;
 
-        if (slot.Compound == null)
-            return null;
+    }
 
-        return slot.PreviousSlot.Compound.Molecule;
+    void DefaultInitialization()
+    {
+        base.Initialize(pump_out ? "Exopumpase" : "Endopumpase", 1, "Draws in compounds from outside");
     }
 
     protected override Action GetAction(Cell.Slot slot)
     {
-        if (molecule == null && slot.Compound == null)
+        if (Molecule == null && slot.Compound == null)
             return null;
 
-        return new PumpAction(slot, pump_out, GetMolecule(slot), 1);
-    }
-
-    public static Pumpase Endo(Molecule molecule)
-    {
-        return new Pumpase(false, molecule);
-    }
-
-    public static Pumpase Exo(Molecule molecule)
-    {
-        return new Pumpase(true, molecule);
+        return new PumpAction(slot, pump_out, Molecule, 1);
     }
 
     public override Catalyst Mutate()
@@ -427,7 +838,7 @@ public class Pumpase : InstantCatalyst
             if (MathUtility.Roll(0.9f))
                 return new Pumpase(pump_out, GetRandomMolecule());
             else
-                return new Pumpase(!pump_out, molecule);
+                return new Pumpase(!pump_out, Molecule);
         }
     }
 
@@ -439,22 +850,52 @@ public class Pumpase : InstantCatalyst
         Pumpase other = obj as Pumpase;
 
         return other.pump_out == pump_out &&
-               other.molecule.Equals(molecule);
+               other.Molecule.Equals(Molecule);
     }
 
+    public override Catalyst Copy()
+    {
+        return new Pumpase(pump_out, Molecule).CopyStateFrom(this);
+    }
+
+    public override JObject EncodeJson()
+    {
+        JObject json_catalyst_object = base.EncodeJson();
+
+        json_catalyst_object["Direction"] = pump_out ? "Out" : "In";
+        json_catalyst_object["Molecule"] = Molecule.Name;
+
+        return json_catalyst_object;
+    }
+
+    public override void DecodeJson(JObject json_object)
+    {
+        base.DecodeJson(json_object);
+
+        pump_out = Utility.JTokenToString(json_object["Direction"]) == "Out";
+        Molecule = Molecule.GetMolecule(Utility.JTokenToString(json_object["Molecule"]));
+
+        DefaultInitialization();
+    }
+
+
+    public static Pumpase Endo(Molecule molecule)
+    {
+        return new Pumpase(false, molecule);
+    }
+
+    public static Pumpase Exo(Molecule molecule)
+    {
+        return new Pumpase(true, molecule);
+    }
 
     static Molecule GetRandomMolecule()
     {
         Dictionary<Molecule, float> weighted_molecules =
-            Utility.CreateDictionary<Molecule, float>(Molecule.GetMolecule("Hydrogen"), 10.0f,
-                                                      Molecule.GetMolecule("Methane"), 10.0f,
-                                                      Molecule.GetMolecule("Carbon Dioxide"), 10.0f,
-                                                      Molecule.GetMolecule("Hydrogen Sulfide"), 10.0f,
-                                                      Molecule.GetMolecule("Oxygen"), 5.0f,
-                                                      Molecule.GetMolecule("Water"), 10.0f,
-                                                      Molecule.GetMolecule("Salt"), 10.0f,
-                                                      Molecule.GetMolecule("Nitrogen"), 5.0f,
-                                                      Molecule.GetMolecule("Glucose"), 10.0f);
+            Utility.CreateDictionary<Molecule, float>(Molecule.GetMolecule("Hindenburgium Gas"), 10.0f,
+                                                      Molecule.GetMolecule("Umamium Gas"), 10.0f,
+                                                      Molecule.GetMolecule("Karbon Diaeride"), 10.0f,
+                                                      Molecule.GetMolecule("Hindenburgium Stankide"), 10.0f);
 
         foreach (Molecule molecule in Molecule.Molecules)
             if (!weighted_molecules.ContainsKey(molecule))
@@ -462,18 +903,13 @@ public class Pumpase : InstantCatalyst
 
         return MathUtility.RandomElement(weighted_molecules);
     }
-
-    public override Catalyst Copy()
-    {
-        return new Pumpase(pump_out, molecule).CopyStateFrom(this);
-    }
 }
 
 public class PumpAction : EnergeticAction
 {
     bool pump_out;
     Molecule molecule;
-    float rate;
+    float base_quantity;
 
     Solution Source
     {
@@ -497,20 +933,6 @@ public class PumpAction : EnergeticAction
         }
     }
 
-    float EffectiveRate
-    {
-        get
-        {
-            float source_concentration = Source.GetConcentration(molecule);
-            float destination_concentration = Destination.GetConcentration(molecule);
-
-            return rate * 
-                source_concentration * 10000000 *
-                Mathf.Min(source_concentration / destination_concentration, 10) *
-                Scale;
-        }
-    }
-
     public override bool IsLegal
     {
         get
@@ -530,14 +952,26 @@ public class PumpAction : EnergeticAction
     {
         pump_out = pump_out_;
         molecule = molecule_;
-        rate = rate_;
+        base_quantity = Organism.Membrane.GetTransportRate(molecule, pump_out) * 
+                        CatalystSlot.Compound.Quantity;
+    }
+
+    public override Dictionary<object, List<Compound>> GetResourceDemands()
+    {
+        Dictionary<object, List<Compound>> demands = base.GetResourceDemands();
+
+        if (!demands.ContainsKey(Source))
+            demands[Source] = new List<Compound>();
+        demands[Source].Add(new Compound(molecule, base_quantity * Scale));
+
+        return demands;
     }
 
     public override void Begin()
     {
         base.Begin();
 
-        PumpedCompound = Source.RemoveCompound(new Compound(molecule, EffectiveRate));
+        PumpedCompound = Source.RemoveCompound(new Compound(molecule, base_quantity * Scale));
     }
 
     public override void End()
@@ -547,76 +981,109 @@ public class PumpAction : EnergeticAction
 }
 
 
-public class Transcriptase : InstantCatalyst
+public class Porin : InstantCatalyst
 {
-    public override int Power { get { return 9; } }
+    float size;
 
-    public Transcriptase() : base("Transcriptase", 3, "Copies DNA")
+    public Molecule Molecule { get; private set; }
+
+    public override int Power { get { return 6; } }
+
+
+    public Porin(Molecule molecule, float size_ = 1)
+        : base("Porin", 1, "Equalizes the concentration of a substance with the environment.")
     {
-
+        Molecule = molecule;
+        size = size_;
     }
 
     protected override Action GetAction(Cell.Slot slot)
     {
-        Cell.Slot dna_slot = slot.PreviousSlot;
-        DNA dna = GetMoleculeInSlotAs<DNA>(dna_slot);
-        if (dna == null)
+        if (Molecule == null && slot.Compound == null)
             return null;
 
-        int amp_count = 0,
-            cmp_count = 0,
-            gmp_count = 0,
-            tmp_count = 0;
-        foreach (Nucleotide nucleotide in dna.Monomers)
-        {
-            if (nucleotide == Nucleotide.AMP)
-                amp_count++;
-            else if (nucleotide == Nucleotide.CMP)
-                cmp_count++;
-            else if (nucleotide == Nucleotide.GMP)
-                gmp_count++;
-            else if (nucleotide == Nucleotide.TMP)
-                tmp_count++;
-        }
+        float cytosol_concentration = slot.Cell.Organism.Cytosol.GetConcentration(Molecule);
+        float locale_concentration = (slot.Cell.Organism.Locale as WaterLocale).Solution.GetConcentration(Molecule);
 
-        Cell.Slot amp_slot = null,
-                  cmp_slot = null,
-                  gmp_slot = null,
-                  tmp_slot = null;
+        return new PumpAction(slot, cytosol_concentration > locale_concentration, Molecule, size);
+    }
 
-        foreach (Cell.Slot other_slot in slot.Cell.Slots)
-            if (other_slot.Compound.Molecule == Nucleotide.AMP)
-                amp_slot = other_slot;
-            else if (other_slot.Compound.Molecule == Nucleotide.CMP)
-                cmp_slot = other_slot;
-            else if (other_slot.Compound.Molecule == Nucleotide.GMP)
-                gmp_slot = other_slot;
-            else if (other_slot.Compound.Molecule == Nucleotide.TMP)
-                tmp_slot = other_slot;
+    public override Catalyst Copy()
+    {
+        return new Porin(Molecule, size).CopyStateFrom(this);
+    }
 
-        foreach (Cell.Slot other_slot in Utility.CreateList(amp_slot, cmp_slot, gmp_slot, tmp_slot))
-            if (other_slot == null)
-                return null;
+    public override JObject EncodeJson()
+    {
+        JObject json_catalyst_object = base.EncodeJson();
 
-        float cost= (amp_count + cmp_count + gmp_count + tmp_count) / (1.0f / 4.0f);
+        json_catalyst_object["Size"] = size;
+        json_catalyst_object["Molecule"] = Molecule.Name;
+
+        return json_catalyst_object;
+    }
+
+    public override void DecodeJson(JObject json_object)
+    {
+        base.DecodeJson(json_object);
+
+        Molecule = Molecule.GetMolecule(Utility.JTokenToString(json_object["Molecule"]));
+        size = Utility.JTokenToFloat(json_object["Size"]);
+    }
+}
+
+
+public class Transcriptase : InstantCatalyst
+{
+    public override int Power { get { return 9; } }
+
+    public InputAttachment Feed { get; private set; }
+    public Transcriptor Transcriptor { get; private set; }
+
+    public Transcriptase() : base("Transcriptase", 3, "Copies DNA")
+    {
+        Attachments[Cell.Slot.Relation.Left] = Feed = new InputAttachment(Molecule.GetMolecule("Genes"));
+        Attachments[Cell.Slot.Relation.Right] = Transcriptor = new Transcriptor();
+    }
+
+    protected override Action GetAction(Cell.Slot slot)
+    {
+        DNA dna = Transcriptor.GetDNA(slot);
+        float cost = dna.Monomers.Count / (100.0f);
 
         return new ReactionAction(
                 slot,
-                Utility.CreateDictionary<Cell.Slot, Compound>(
-                    amp_slot, new Compound(Nucleotide.AMP, amp_count),
-                    cmp_slot, new Compound(Nucleotide.CMP, cmp_count),
-                    gmp_slot, new Compound(Nucleotide.GMP, gmp_count),
-                    tmp_slot, new Compound(Nucleotide.TMP, tmp_count)),
-                Utility.CreateDictionary<Cell.Slot, Compound>(
-                    slot.AcrossSlot, new Compound(dna_slot.Compound.Molecule, 1)),
+                Utility.CreateDictionary<Cell.Slot, Compound>(Feed.GetSlotPointedAt(slot), new Compound(Feed.Molecule, dna.Monomers.Count / 100.0f)),
+                Utility.CreateDictionary<Cell.Slot, Compound>(Transcriptor.GetSlotPointedAt(slot), new Compound(dna, 1)),
                 null,
-                Utility.CreateList(new Compound(Molecule.Water, dna.Monomers.Count - 1)), 
-                cost / 4, 
+                Utility.CreateList(new Compound(Molecule.Water, (dna.Monomers.Count - 1) / 100.0f)),
+                null, null,
+                cost * 3,
                 cost);
     }
 
     public override Catalyst Copy()
     {
         return new Transcriptase().CopyStateFrom(this);
+    }
+
+
+    
+}
+
+public class Transcriptor : Attachment
+{
+    public Transcriptor()
+    {
+
+    }
+
+    public DNA GetDNA(Cell.Slot catalyst_slot)
+    {
+        Compound compound = GetSlotPointedAt(catalyst_slot).Compound;
+        if (compound == null)
+            return null;
+
+        return compound.Molecule as DNA;
     }
 }

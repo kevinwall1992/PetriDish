@@ -130,7 +130,7 @@ public class TrashcanPanel : DetailPanel
     public static TrashcanPanel Create(Trashcan trashcan)
     {
         TrashcanPanel trashcan_panel = Instantiate(Scene.Micro.Prefabs.TrashcanPanel);
-        trashcan_panel.transform.SetParent(Scene.Micro.Canvas.transform, false);
+        trashcan_panel.transform.SetParent(Scene.Micro.DetailPanelContainer, false);
 
         trashcan_panel.Data = trashcan;
 

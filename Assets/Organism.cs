@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using Newtonsoft.Json.Linq;
 
-
-public class Organism : Chronal, Versionable<Organism>
+public class Organism : Chronal, Versionable<Organism>, Encodable
 {
     List<List<Cell>> cells= new List<List<Cell>>();
 
@@ -22,18 +22,22 @@ public class Organism : Chronal, Versionable<Organism>
     public float SurfaceArea { get { return GetSurfaceArea(); } }
 
 
-    public Organism(Cell cell = null)
+    public Organism(Cell cell)
     {
         membrane = new Membrane(this, new Dictionary<Molecule, float>());
 
         cells.Add(new List<Cell>());
-        if (cell != null)
-        {
-            cells[0].Add(cell);
-            cell.Organism = this;
-        }
-        else
-            cells[0].Add(new Cell(this));
+        cells[0].Add(cell);
+        cell.Organism = this;
+
+    }
+
+    public Organism()
+    {
+        membrane = new Membrane(this, new Dictionary<Molecule, float>());
+
+        cells.Add(new List<Cell>());
+        cells[0].Add(new Cell(this));
     }
 
     //Would like to make this private, 
@@ -168,6 +172,27 @@ public class Organism : Chronal, Versionable<Organism>
     {
         Deck deck = new Deck();
 
+        System.Func<Catalyst, bool> IsAlreadyInDeck =
+            delegate (Catalyst catalyst)
+            {
+                if (catalyst is Ribozyme)
+                {
+                    Ribozyme ribozyme = catalyst as Ribozyme;
+                    foreach (Ribozyme other_ribozyme in deck.Where((other_catalyst) => (other_catalyst is Ribozyme)))
+                        if (other_ribozyme.Sequence == ribozyme.Sequence)
+                            return true;
+                }
+                else
+                {
+                    Enzyme enzyme = catalyst as Enzyme;
+                    foreach (Enzyme other_enzyme in deck.Where((other_catalyst) => (other_catalyst is Enzyme)))
+                        if (other_enzyme.DNASequence == enzyme.DNASequence)
+                            return true;
+                }
+
+                return false;
+            };
+
         foreach (Cell cell in GetCells())
         {
             foreach (Cell.Slot slot in cell.Slots)
@@ -176,31 +201,43 @@ public class Organism : Chronal, Versionable<Organism>
                     continue;
 
                 if (slot.Compound.Molecule is Catalyst && slot.Compound.Molecule is Ribozyme)
-                    deck.Add(slot.Compound.Molecule as Catalyst);
+                {
+                    Catalyst catalyst = slot.Compound.Molecule as Catalyst;
+                    if(!IsAlreadyInDeck(catalyst))
+                        deck.Add(catalyst);
+                }
                 else if (slot.Compound.Molecule is DNA)
                 {
                     DNA dna = slot.Compound.Molecule as DNA;
-                    
-                    for (int marker_value = 48; marker_value < 63; marker_value++)
+
+                    string catalyst_sequence = "";
+
+                    for (int codon_index = 0; codon_index < dna.CodonCount; codon_index++)
                     {
-                        string marker = Interpretase.ValueToCodon(marker_value);
+                        string codon = dna.GetCodon(codon_index);
 
-                        int codon_index = 0;
-
-                        while (codon_index < dna.CodonCount && 
-                               (codon_index = Interpretase.FindMarkerCodon(dna, marker, codon_index, false, false)) >= 0)
+                        switch (codon[0])
                         {
-                            string dna_sequence = Interpretase.GetBlockSequence(dna, marker, codon_index);
+                            case 'V':
+                            case 'F':
+                                int length;
+                                Catalyst catalyst = Interpretase.GetCatalyst(dna, codon_index, out length);
+                                if (catalyst != null)
+                                {
+                                    if (!IsAlreadyInDeck(catalyst))
+                                        deck.Add(catalyst);
 
-                            Ribozyme ribozyme = Ribozyme.GetRibozyme(dna_sequence);
-                            if (ribozyme != null)
-                                deck.Add(ribozyme);
+                                    codon_index += length - 1;
+                                }
 
-                            Enzyme enzyme = Enzyme.GetEnzyme(Enzyme.DNASequenceToAminoAcidSequence(dna_sequence));
-                            if (enzyme != null)
-                                deck.Add(enzyme);
+                                break;
 
-                            codon_index++;
+                            case 'C':
+                                codon_index += Interpretase.GetOperandCount(dna, codon_index);
+                                break;
+
+                            case 'L':
+                                break;
                         }
                     }
                 }
@@ -323,12 +360,30 @@ public class Organism : Chronal, Versionable<Organism>
         return GetCells().Count;
     }
 
-    public List<Action> GetActions(Action.Stage stage)
+    public Dictionary<Catalyst, Cell.Slot> GetCatalysts()
     {
-        List<Action> actions = new List<Action>();
+        Dictionary<Catalyst, Cell.Slot> catalysts = new Dictionary<Catalyst, Cell.Slot>();
 
         foreach (Cell cell in GetCells())
-            actions.AddRange(cell.GetActions(stage));
+            foreach (Cell.Slot slot in cell.Slots)
+                if (slot.Compound != null && slot.Compound.Molecule is Catalyst)
+                    catalysts[slot.Compound.Molecule as Catalyst] = slot;
+
+        return catalysts;
+    }
+
+    public List<Action> GetActions(Action.Stage stage)
+    {
+        Dictionary<Catalyst, Cell.Slot> catalysts = GetCatalysts();
+
+        List<Action> actions = new List<Action>();
+        foreach (Catalyst catalyst in GetCatalysts().Keys)
+        {
+            Action action = catalyst.Catalyze(catalysts[catalyst], stage);
+
+            if(action != null)
+                actions.Add(action);
+        }
 
         return actions;
     }
@@ -340,18 +395,30 @@ public class Organism : Chronal, Versionable<Organism>
         foreach (Cell cell in GetCells())
             cell.Step();
 
+        Dictionary<Catalyst, Cell.Slot> catalysts = GetCatalysts();
+
         Queue<Action.Stage> stage_queue = new Queue<Action.Stage>(Action.Stages);
 
         while(stage_queue.Count > 0)
         {
-            List<Action> actions = GetActions(stage_queue.Dequeue());
+            Action.Stage stage = stage_queue.Dequeue();
 
-            //Resolve inter-stage conflicts by not executing, otherwise begin
-            //(Pre-stage conflicts are resolved in Catalyst.Catalyze())
+            foreach (Catalyst catalyst in catalysts.Keys)
+                catalyst.Communicate(catalysts[catalyst], stage);
+
+            //Conflicts caused by the sequence of steps and stages, 
+            //(f.e. cell construction not having enough material)
+            //are resolved by Catalyst.Catalyze() simply not returning an action.
+            //In addition conflicts such as two actions not being able to execute in a 
+            //order agnostic way (like one outputting what the other needs), are also
+            //detected in that step and thus never appear in the action list.
+            //So, at this point, all actions should be able to Begin() without conflict. 
+            List<Action> actions = GetActions(stage);
             foreach (Action action in actions) action.Begin();
 
-            //End(). Any sequence conflicts at this point must be 
-            //resolved through gameplay mechanics
+            //Not all conflicts within a stage can be detected beforehand. In that scenario,
+            //conflicts must rise to the level of (order agnostic) gameplay mechanics.
+            //(f.e. if two compounds get pushed onto the same slot, a "Mess" is formed) 
             foreach (Action action in actions) if(action.HasBegun) action.End();
         }
     }
@@ -368,20 +435,26 @@ public class Organism : Chronal, Versionable<Organism>
             for (int column = 0; column < cells[row].Count; column++)
             {
                 Cell cell = cells[row][column];
+                Cell cell_copy = null;
+
                 if (cell != null)
                 {
-                    Cell cell_copy = new Cell(organism);
+                    cell_copy = new Cell(organism);
 
                     for (int slot_index = 0; slot_index < 6; slot_index++)
                     {
                         Cell.Slot slot = cell.Slots[slot_index];
 
+                        int foo = 0;
+                        if (slot.Compound != null && slot.Compound.Molecule is Ribozyme && (slot.Compound.Molecule as Ribozyme).Name == "Interpretase")
+                            foo += 1;
+
                         if (slot.Compound != null)
                             cell_copy.Slots[slot_index].AddCompound(slot.Compound.Copy());
                     }
-
-                    organism.cells[row].Add(cell_copy);
                 }
+
+                organism.cells[row].Add(cell_copy);
             }
         }
 
@@ -402,14 +475,23 @@ public class Organism : Chronal, Versionable<Organism>
             for (int column = 0; column < other.cells[row].Count; column++)
             {
                 Cell other_cell = other.cells[row][column];
-                Cell cell_copy = new Cell(this);
+                Cell cell_copy = null;
 
-                for (int slot_index = 0; slot_index < 6; slot_index++)
+                if (other_cell != null)
                 {
-                    Cell.Slot slot = other_cell.Slots[slot_index];
+                    cell_copy = new Cell(this);
 
-                    if (slot.Compound != null)
-                        cell_copy.Slots[slot_index].AddCompound(slot.Compound.Copy());
+                    for (int slot_index = 0; slot_index < 6; slot_index++)
+                    {
+                        Cell.Slot slot = other_cell.Slots[slot_index];
+
+                        int foo = 0;
+                        if (slot.Compound != null && slot.Compound.Molecule is Ribozyme && (slot.Compound.Molecule as Ribozyme).Name == "Interpretase")
+                            foo += 1;
+
+                        if (slot.Compound != null)
+                            cell_copy.Slots[slot_index].AddCompound(slot.Compound.Copy());
+                    }
                 }
 
                 cells[row].Add(cell_copy);
@@ -464,6 +546,124 @@ public class Organism : Chronal, Versionable<Organism>
                 return false;
 
         return true;
+    }
+
+    public string EncodeString()
+    {
+        return EncodeJson().ToString();
+    }
+
+    public void DecodeString(string string_encoding)
+    {
+        DecodeJson(JObject.Parse(string_encoding));
+    }
+
+    public JObject EncodeJson()
+    {
+        JArray json_cell_array = new JArray();
+
+        foreach (Cell cell in GetCells())
+        {
+            JObject json_cell_object = new JObject();
+
+            Vector2Int position = GetCellPosition(cell);
+            json_cell_object["Column"] = position.x;
+            json_cell_object["Row"] = position.y;
+
+            JArray json_slot_array = new JArray();
+            foreach (Cell.Slot slot in cell.Slots)
+            {
+                JObject json_slot_object = new JObject();
+
+                if (slot.Compound != null)
+                {
+                    JObject json_compound_object = new JObject();
+                    json_compound_object["Molecule"] = slot.Compound.Molecule.EncodeJson();
+                    json_compound_object["Quantity"] = slot.Compound.Quantity;
+
+                    json_slot_object["Compound"] = json_compound_object;
+                }
+
+                json_slot_array.Add(json_slot_object);
+            }
+            json_cell_object["Slots"] = json_slot_array;
+
+            json_cell_array.Add(json_cell_object);
+        }
+
+
+        JArray json_deck_array = new JArray();
+
+        Deck deck = GetDeck();
+        foreach (Catalyst catalyst in deck)
+            json_deck_array.Add(catalyst.EncodeJson());
+
+
+        return JObject.FromObject(Utility.CreateDictionary<string, object>("Cells", json_cell_array, "Deck", json_deck_array));
+    }
+
+    public void DecodeJson(JObject json_organism_object)
+    {
+        Dictionary<Vector2Int, Cell> decoded_cells = new Dictionary<Vector2Int, Cell>();
+
+        Vector2Int min = Vector2Int.zero,
+                   max = Vector2Int.zero;
+        bool is_min_max_initialized = false;
+
+        foreach (var json_cell_token in json_organism_object["Cells"] as JArray)
+        {
+            JObject json_cell_object = json_cell_token as JObject;
+
+            Vector2Int position = new Vector2Int(Utility.JTokenToInt(json_cell_object["Column"]),
+                                                 Utility.JTokenToInt(json_cell_object["Row"]));
+
+            if (!is_min_max_initialized)
+            {
+                min = max = position;
+                is_min_max_initialized = true;
+            }
+
+            min = new Vector2Int(Mathf.Min(min.x, position.x), Mathf.Min(min.y, position.y));
+            max = new Vector2Int(Mathf.Max(max.x, position.x), Mathf.Max(max.y, position.y));
+
+            Cell cell = decoded_cells[position] = new Cell(this);
+
+            int slot_index = 0;
+            foreach (var json_slot_token in json_cell_object["Slots"] as JArray)
+            {
+                JObject json_slot_object = json_slot_token as JObject;
+
+                if (json_slot_object["Compound"] != null)
+                    cell.Slots[slot_index].AddCompound(Molecule.DecodeMolecule(json_slot_object["Compound"]["Molecule"] as JObject),
+                                                       Utility.JTokenToFloat(json_slot_object["Compound"]["Quantity"]));
+
+                slot_index++;
+            }
+        }
+
+
+        cells.Clear();
+
+        for(int x = min.x; x<= max.x; x++)
+        {
+            List<Cell> column = new List<Cell>();
+
+            for (int y = min.y; y <= max.y; y++)
+                column.Add(null);
+
+            cells.Add(column);
+        }
+
+        foreach(Vector2Int position in decoded_cells.Keys)
+        {
+            Vector2Int relative_position = position - min;
+
+            cells[relative_position.x][relative_position.y] = decoded_cells[position];
+        }
+
+
+        foreach (var json_catalyst_token in json_organism_object["Deck"] as JArray)
+            Molecule.DecodeMolecule(json_catalyst_token as JObject);
     }
 }
 

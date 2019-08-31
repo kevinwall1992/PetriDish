@@ -70,7 +70,7 @@ public class ActionComponent : MonoBehaviour
                     compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
                     compound_component.gameObject.AddComponent<MoveAnimation>()
-                        .SetParameters(CellComponent.GetSlotComponent(reactant_slot).CompoundComponent.gameObject, 
+                        .SetParameters(OrganismComponent.GetSlotComponent(reactant_slot).CompoundComponent.gameObject, 
                                        CellComponent.GetSlotComponent(action.CatalystSlot).CompoundComponent.gameObject)
                         .SetLength(0.5f * length);
 
@@ -87,7 +87,7 @@ public class ActionComponent : MonoBehaviour
                     compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
                     compound_component.gameObject.AddComponent<MoveAnimation>()
-                        .SetParameters(CellComponent.GetSlotComponent(action.CatalystSlot).CompoundComponent.gameObject, CellComponent.GetSlotComponent(product_slot).CompoundComponent.gameObject)
+                        .SetParameters(CellComponent.GetSlotComponent(action.CatalystSlot).CompoundComponent.gameObject, OrganismComponent.GetSlotComponent(product_slot).CompoundComponent.gameObject)
                                                                 .SetLength(0.5f * length, 0.5f * length);
 
                     compound_component.gameObject.AddComponent<FadeAnimation>()
@@ -138,19 +138,41 @@ public class ActionComponent : MonoBehaviour
                 }
             }
 
-            if (action is Interpretase.ExciseCommand)
+            if (action is Interpretase.LoadProgram)
             {
-                Interpretase.ExciseCommand excise_command = action as Interpretase.ExciseCommand;
+                Interpretase.LoadProgram load_program_action = action as Interpretase.LoadProgram;
 
                 CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                 compound_component.SetCompound(new Compound(new DNA(), 1));
                 compound_component.transform.SetParent(CellComponent.transform);
                 compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
-                SlotComponent output_slot_component = CellComponent.OrganismComponent.GetCellComponent(excise_command.Destination.Cell).GetSlotComponent(excise_command.Destination);
+                Cell.Slot program_slot = load_program_action.ProgramSlot;
+                SlotComponent program_slot_component = CellComponent.OrganismComponent.GetCellComponent(program_slot.Cell).GetSlotComponent(program_slot);
 
                 compound_component.gameObject.AddComponent<MoveAnimation>()
-                    .SetParameters(CellComponent.GetSlotComponent(excise_command.CatalystSlot).CompoundComponent.gameObject, 
+                    .SetParameters(program_slot_component.CompoundComponent.gameObject, 
+                                   CellComponent.GetSlotComponent(load_program_action.CatalystSlot).CompoundComponent.gameObject)
+                    .SetLength(1.0f * length);
+
+                compound_component.gameObject.AddComponent<FadeAnimation>()
+                    .SetParameters(true, false)
+                    .SetLength(0.5f);
+            }
+
+            if (action is Interpretase.CopyCommand)
+            {
+                Interpretase.CopyCommand copy_command = action as Interpretase.CopyCommand;
+
+                CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
+                compound_component.SetCompound(new Compound(new DNA(), 1));
+                compound_component.transform.SetParent(CellComponent.transform);
+                compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
+
+                SlotComponent output_slot_component = CellComponent.OrganismComponent.GetCellComponent(copy_command.Destination.Cell).GetSlotComponent(copy_command.Destination);
+
+                compound_component.gameObject.AddComponent<MoveAnimation>()
+                    .SetParameters(CellComponent.GetSlotComponent(copy_command.CatalystSlot).CompoundComponent.gameObject, 
                                    output_slot_component.CompoundComponent.gameObject)
                     .SetLength(1.0f * length);
 

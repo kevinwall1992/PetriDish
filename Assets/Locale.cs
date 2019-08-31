@@ -81,12 +81,10 @@ public class WaterLocale : Locale
         return water_locale;
     }
 
-    //This is semi-realistic for seawater in general, but I don't have any useful 
-    //data for vent seawater so, in particular, the amounts listed
-    //for Hydrogen Sulfide, Methane, and Hydrogen gas are completely made up.
     public static WaterLocale CreateVentLocale()
     {
-        return CreateCustomWaterLocale(Utility.CreateDictionary<Molecule, float>(
+        return CreateCustomWaterLocale(Utility.CreateDictionary<Molecule, float>());
+            /*
             Molecule.GetMolecule("Chloride"), 18.9f,
             Molecule.GetMolecule("Sodium"), 10.6f,
             Molecule.GetMolecule("Sulfate"), 2.65f,
@@ -104,6 +102,7 @@ public class WaterLocale : Locale
             Molecule.GetMolecule("Hydrogen Sulfide"), 0.004f,
             Molecule.GetMolecule("Methane"), 0.002f,
             Molecule.GetMolecule("Hydrogen"), 0.007f));
+            */
     }
 }
 

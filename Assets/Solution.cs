@@ -82,32 +82,6 @@ public class Solution : MutableContainer<Compound>, Volume
             }
         }
 
-        class Buffer
-        {
-            Molecule molecule;
-            Molecule conjugate;
-
-            public Molecule Molecule { get { return molecule; } }
-            public Molecule Conjugate { get { return conjugate; } }
-
-            public bool IsAcid
-            {
-                get { return (conjugate.Charge - molecule.Charge) < 0; }
-            }
-
-            public Buffer(Molecule molecule_, Molecule conjugate_)
-            {
-                molecule = molecule_;
-                conjugate = conjugate_;
-
-                Debug.Assert((int)(System.Math.Abs(molecule.Charge - conjugate.Charge) + 0.5f) == 1);
-            }
-        }
-
-        static List<Buffer> buffers = Utility.CreateList(new Buffer(Molecule.Water, Molecule.Hydronium),
-                                                         new Buffer(Molecule.Water, Molecule.Hydroxide),
-                                                         new Buffer(Molecule.CarbonicAcid, Molecule.Bicarbonate));
-
         Dictionary<Molecule, PrecisionCompound> compounds = new Dictionary<Molecule, PrecisionCompound>();
 
         decimal heat = 0;
@@ -136,9 +110,7 @@ public class Solution : MutableContainer<Compound>, Volume
         {
             get
             {
-                return GetQuantity(Molecule.Hydroxide) == 0 ?
-                         -(decimal)System.Math.Log10((double)GetConcentration(Molecule.Hydronium) + System.Math.Pow(10, -7)) :
-                         14 - pOH;
+                return 7;
             }
         }
 
@@ -146,9 +118,7 @@ public class Solution : MutableContainer<Compound>, Volume
         {
             get
             {
-                return GetQuantity(Molecule.Hydronium) == 0 ?
-                         -(decimal)System.Math.Log10((double)GetConcentration(Molecule.Hydroxide) + System.Math.Pow(10, -7)) :
-                         14 - pH;
+                return 7;
             }
         }
 
@@ -185,43 +155,10 @@ public class Solution : MutableContainer<Compound>, Volume
             if (compound.quantity == 0)
                 return;
 
-            bool is_proton = compound.molecule == Molecule.Proton;
-            bool is_proton_or_hydronium = is_proton || compound.molecule == Molecule.Hydronium;
-            bool is_primitive_ion = is_proton_or_hydronium || compound.molecule == Molecule.Hydroxide;
-
-            if (is_primitive_ion)
-                foreach (Buffer buffer in buffers)
-                {
-                    bool consume_conjugate = is_proton_or_hydronium ? buffer.IsAcid : !buffer.IsAcid;
-
-                    Molecule consumed = consume_conjugate ? buffer.Conjugate : buffer.Molecule;
-                    Molecule produced = consume_conjugate ? buffer.Molecule : buffer.Conjugate;
-
-                    if (produced == compound.molecule)
-                        continue;
-
-                    decimal quantity = compound.Split(GetQuantity(consumed)).quantity;
-
-                    RemoveCompound(consumed, quantity);
-                    if (!is_proton)
-                        AddCompound(Molecule.Water, quantity);
-                    AddCompound(produced, quantity);
-
-                    if (compound.quantity == 0)
-                        break;
-                }
-
             GetCompound(compound.molecule).quantity += compound.quantity;
 
             //Just assume temperature of compounds added for now.
             heat += 298 * compound.molecule.Mass * compound.quantity;
-
-            if (!is_primitive_ion)
-            {
-                AddCompound(RemoveCompound(Molecule.Proton));
-                AddCompound(RemoveCompound(Molecule.Hydronium));
-                AddCompound(RemoveCompound(Molecule.Hydroxide));
-            }
         }
 
         public void AddCompound(Molecule molecule, decimal quantity)
@@ -246,7 +183,6 @@ public class Solution : MutableContainer<Compound>, Volume
         {
             return Measures.SmolesToMoles(GetQuantity(molecule)) / Liters;
         }
-
 
         //This attempts to approximate the number of molecules
         //in contact with the surface of the solution by assuming # of atoms

@@ -21,7 +21,7 @@ public class Reaction
 
     public static void LoadReactions(string filename)
     {
-        JObject reactions_file = JObject.Parse(Resources.Load<TextAsset>(filename).text);
+        JObject reactions_file = JObject.Parse(Resources.Load<TextAsset>("Reactions/" + filename).text);
 
         if (reactions_file["Reactions"] == null)
             return;
@@ -34,28 +34,24 @@ public class Reaction
             string reaction_name = reaction_pair.Key;
             JObject reaction = reaction_pair.Value as JObject;
 
-            Dictionary<Compound, float> reactants = new Dictionary<Compound, float>();
+            List<Compound> reactants = new List<Compound>();
             if (reaction["Reactants"] != null)
             {
                 foreach (var reactant in reaction["Reactants"] as JObject)
                     if (Molecule.DoesMoleculeExist(reactant.Key))
-                        reactants[new Compound(Molecule.GetMolecule(reactant.Key),
-                                               Utility.JTokenToFloat(reactant.Value["Quantity"]))]
-                        = Utility.JTokenToFloat(reactant.Value["Slotted"]);
+                        reactants.Add(new Compound(Molecule.GetMolecule(reactant.Key), Utility.JTokenToFloat(reactant.Value)));
                     else
                         failed = true;
             }
             else
                 failed = true;
 
-            Dictionary<Compound, float> products = new Dictionary<Compound, float>();
+            List<Compound> products = new List<Compound>();
             if (reaction["Products"] != null)
             {
                 foreach (var product in reaction["Products"] as JObject)
                     if (Molecule.DoesMoleculeExist(product.Key))
-                        products[new Compound(Molecule.GetMolecule(product.Key),
-                                              Utility.JTokenToFloat(product.Value["Quantity"]))]
-                        = Utility.JTokenToFloat(product.Value["Slotted"]);
+                        products.Add(new Compound(Molecule.GetMolecule(product.Key), Utility.JTokenToFloat(product.Value)));
                     else
                         failed = true;
             }
@@ -98,10 +94,17 @@ public class Reaction
         }
     }
 
+    public static Catalyst CreateBlankCatalyst()
+    {
+        return new ReactionCatalyst();
+    }
+
     static Reaction()
     {
-        LoadReactions("reactions");
+        LoadReactions("default");
     }
+
+    
 
 
     class Attribute
@@ -158,7 +161,11 @@ public class Reaction
             }
         }
 
-        public float Percentile { get { return percentile; } }
+        public float Percentile
+        {
+            get { return percentile; }
+            set { percentile = value; }
+        }
 
         public Attribute(ProbabilityDistribution value_distribution_, float base_weight_)
         {
@@ -251,14 +258,14 @@ public class Reaction
 
     string catalyst_name, description = "";
 
-    Dictionary<Compound, Attribute> reactants= new Dictionary<Compound, Attribute>();
-    Dictionary<Compound, Attribute> products = new Dictionary<Compound, Attribute>();
+    List<Compound> reactants = new List<Compound>();
+    List<Compound> products = new List<Compound>();
     float cost;
 
     Dictionary<Molecule, Attribute> inhibitors = new Dictionary<Molecule, Attribute>();
     Dictionary<Molecule, Attribute> cofactors = new Dictionary<Molecule, Attribute>();
 
-    Dictionary<int, Attribute> slot_order = new Dictionary<int, Attribute>();
+    Dictionary<Cell.Slot.Relation, Attribute> direction_precedence = new Dictionary<Cell.Slot.Relation, Attribute>();
 
     Attribute is_ribozyme;
     Attribute optimal_temperature;
@@ -283,8 +290,8 @@ public class Reaction
     }
 
     public Reaction( string name, string catalyst_name_,
-                     Dictionary<Compound, float> reactants_,
-                     Dictionary<Compound, float> products_,
+                     List<Compound> reactants_,
+                     List<Compound> products_,
                      float cost_,
                      float ribozyme_probability,
                      float mean_optimal_temperature,
@@ -301,16 +308,17 @@ public class Reaction
     {
         catalyst_name = catalyst_name_;
 
-        foreach (Compound compound in reactants_.Keys)
-            reactants[compound] = new Attribute(new ChoiceFunction(reactants_[compound]), 3);
 
-        foreach (Compound compound in products_.Keys)
-            products[compound] = new Attribute(new ChoiceFunction(products_[compound]), 3);
+        reactants = reactants_;
+        products = products_;
 
         cost = cost_;
 
-        for (int i = 1; i < 6; i++)
-            slot_order[i] = new Attribute(new UniformDistribution(), 0);
+        List<Cell.Slot.Relation> directions = Utility.CreateList(Cell.Slot.Relation.Right, 
+                                                                 Cell.Slot.Relation.Left, 
+                                                                 Cell.Slot.Relation.Across);
+        foreach (Cell.Slot.Relation direction in directions)
+            direction_precedence[direction] = new Attribute(new UniformDistribution(), 0);
 
         is_ribozyme = new Attribute(new ChoiceFunction(ribozyme_probability), 0);
 
@@ -357,9 +365,6 @@ public class Reaction
     List<Attribute> GetCompetingAttributes()
     {
         List<Attribute> attributes = new List<Attribute>();
-
-        attributes.AddRange(reactants.Values);
-        attributes.AddRange(products.Values);
 
         attributes.Add(optimal_temperature);
         attributes.Add(temperature_tolerance);
@@ -515,17 +520,17 @@ public class Reaction
         }
     }
 
-    class CatalystImplementation : InstantCatalyst
+    class ReactionCatalyst : InstantCatalyst
     {
         Reaction reaction;
 
-        Dictionary<Compound, int> slot_reactants= new Dictionary<Compound, int>(), 
-                                  slot_products= new Dictionary<Compound, int>();
+        Dictionary<Compound, Cell.Slot.Relation> slot_reactants= new Dictionary<Compound, Cell.Slot.Relation>(), 
+                                                 slot_products= new Dictionary<Compound, Cell.Slot.Relation>();
         List<Compound> cytosol_reactants= new List<Compound>(), 
                        cytosol_products= new List<Compound>();
         ActivityFunction activity_function;
 
-        float ATP_balance;
+        float NRG_balance;
 
         public override Example Example
         {
@@ -534,13 +539,10 @@ public class Reaction
                 Organism organism = new Organism();
                 Cell cell = organism.GetCells()[0];
 
-                if (ATP_balance > 0)
-                {
-                    organism.Cytosol.AddCompound(Molecule.ADP, ATP_balance * 10);
-                    organism.Cytosol.AddCompound(Molecule.Phosphate, ATP_balance * 10);
-                }
+                if (NRG_balance > 0)
+                    organism.Cytosol.AddCompound(Molecule.NRG.Discharged(), NRG_balance * 10);
                 else
-                    organism.Cytosol.AddCompound(Molecule.ATP, -ATP_balance * 10);
+                    organism.Cytosol.AddCompound(Molecule.NRG, -NRG_balance * 10);
 
                 foreach (Compound compound in cytosol_reactants)
                     organism.Cytosol.AddCompound(compound.Molecule, compound.Quantity * 10);
@@ -550,7 +552,7 @@ public class Reaction
                 cell.Slots[0].AddCompound(new Ribozyme(this), 1);
 
                 foreach(Compound compound in slot_reactants.Keys)
-                    cell.Slots[slot_reactants[compound]].AddCompound(compound);
+                    cell.Slots[0].GetAdjacentSlot(slot_reactants[compound]).AddCompound(compound);
 
                 return new Example(organism, 1);
             }
@@ -567,48 +569,58 @@ public class Reaction
             }
         }
 
-        public CatalystImplementation(string name, Reaction reaction_) : base(name, 2, reaction_.description)
+        public ReactionCatalyst(string name, Reaction reaction_) : base(name, 1, reaction_.description)
         {
             reaction = reaction_;
+            if (reaction == null)
+                return;
 
-            //Until we actually have a way to mutate reactions in game, 
-            //need to have least disruptive slot order
-            //This ordering may also be useful later as a possible mutation
-            bool simple_slot_order = true;
-            List<int> available_slots = new List<int> { 1, 2, 3, 4, 5 };
-            if(!simple_slot_order)
-                available_slots.Sort((a, b) => (reaction.slot_order[a].Value.CompareTo(reaction.slot_order[b].Value)));
+            List<Cell.Slot.Relation> available_directions = new List<Cell.Slot.Relation>(reaction.direction_precedence.Keys);
+            available_directions.Sort((a, b) => (reaction.direction_precedence[a].Value.CompareTo
+                                                (reaction.direction_precedence[b].Value)));
+
+            System.Predicate<Molecule> IsCytosolMolecule = 
+                molecule => molecule.Equals(Molecule.Water) ||
+                            molecule.Equals(Molecule.GetMolecule("NRG")) ||
+                            molecule.Equals((Molecule.GetMolecule("NRG") as ChargeableMolecule).Discharged());
 
             float enthalpy = 0;
-            foreach (Compound compound in reaction.reactants.Keys)
+            foreach (Compound compound in reaction.reactants)
             {
-                if (reaction.reactants[compound].IsTrue)
-                    slot_reactants[compound] = Utility.RemoveElementAt(available_slots, 0);
-                else
+                if (IsCytosolMolecule(compound.Molecule))
                     cytosol_reactants.Add(compound);
+                else
+                {
+                    Cell.Slot.Relation direction = Utility.RemoveElementAt(available_directions, 0);
+
+                    slot_reactants[compound] = direction;
+                    Attachments[direction] = new InputAttachment(compound.Molecule);
+                }
                 
                 enthalpy += compound.Molecule.Enthalpy;
             }
 
-            foreach (Compound compound in reaction.products.Keys)
+            foreach (Compound compound in reaction.products)
             {
-                if (reaction.products[compound].IsTrue)
-                    slot_products[compound] = Utility.RemoveElementAt(available_slots, 0);
-                else
+                if (IsCytosolMolecule(compound.Molecule))
                     cytosol_products.Add(compound);
+                else
+                {
+                    Cell.Slot.Relation direction = Utility.RemoveElementAt(available_directions, 0);
+
+                    slot_products[compound] = direction;
+                    Attachments[direction] = new OutputAttachment(compound.Molecule);
+                }
 
                 enthalpy -= compound.Molecule.Enthalpy;
             }
 
-            float kJ_per_ATP = (Molecule.ADP.Enthalpy + Molecule.Phosphate.Enthalpy) -
-                                (Molecule.ATP.Enthalpy + Molecule.Water.Enthalpy);
-
             float efficiency = 0.7f;
 
-            float kJ_lost = Mathf.Abs(enthalpy * (1 - efficiency)) - kJ_per_ATP * reaction.cost;
+            float kJ_lost = Mathf.Abs(enthalpy * (1 - efficiency)) - Molecule.NRG.kJPerMole * reaction.cost;
             enthalpy += kJ_lost;
 
-            ATP_balance = enthalpy / kJ_per_ATP;
+            NRG_balance = enthalpy / Molecule.NRG.kJPerMole;
 
             List<ActivityFunction> activity_functions = Utility.CreateList<ActivityFunction>(new ConstantActivityFunction(reaction.productivity.Value));
 
@@ -629,17 +641,41 @@ public class Reaction
             activity_function = new CompoundActivityFunction(activity_functions);
         }
 
+        public ReactionCatalyst()
+        {
+
+        }
+
+        float GetActivity(Cytosol cytosol)
+        {
+            return activity_function.Compute(cytosol);
+        }
+
         protected override Action GetAction(Cell.Slot slot)
         {
-            float activity = activity_function.Compute(slot.Cell.Organism.Cytosol);
+            float activity = GetActivity(slot.Cell.Organism.Cytosol);
 
             Dictionary<Cell.Slot, Compound> slot_reactants = new Dictionary<Cell.Slot, Compound>();
+            List<Compound> locale_reactants = new List<Compound>();
             foreach (Compound compound in this.slot_reactants.Keys)
-                slot_reactants[slot.Cell.Slots[slot.Index + this.slot_reactants[compound]]] = new Compound(compound.Molecule, compound.Quantity * activity);
+            {
+                Cell.Slot reactant_slot = slot.GetAdjacentSlot(ApplyOrientation(this.slot_reactants[compound]));
+                if (reactant_slot != null)
+                    slot_reactants[reactant_slot] = new Compound(compound.Molecule, compound.Quantity * activity);
+                else
+                    locale_reactants.Add(compound * activity);
+            }
 
             Dictionary<Cell.Slot, Compound> slot_products = new Dictionary<Cell.Slot, Compound>();
+            List<Compound> locale_products = new List<Compound>();
             foreach (Compound compound in this.slot_products.Keys)
-                slot_products[slot.Cell.Slots[slot.Index + this.slot_products[compound]]] = new Compound(compound.Molecule, compound.Quantity * activity);
+            {
+                Cell.Slot product_slot = slot.GetAdjacentSlot(ApplyOrientation(this.slot_products[compound]));
+                if (product_slot != null)
+                    slot_products[product_slot] = new Compound(compound.Molecule, compound.Quantity * activity);
+                else
+                    locale_products.Add(compound * activity);
+            }
 
             List<Compound> cytosol_reactants = new List<Compound>();
             foreach (Compound compound in this.cytosol_reactants)
@@ -649,12 +685,11 @@ public class Reaction
             foreach (Compound compound in this.cytosol_products)
                 cytosol_products.Add(new Compound(compound.Molecule, compound.Quantity * activity));
 
-            return new ReactionAction(slot, 
-                                      slot_reactants,
-                                      slot_products,
-                                      cytosol_reactants,
-                                      cytosol_products, 
-                                      ATP_balance * activity);
+            return new ReactionAction(slot,
+                                      slot_reactants, slot_products,
+                                      cytosol_reactants, cytosol_products,
+                                      locale_reactants, locale_products,
+                                      NRG_balance * activity);
         }
 
         public override Catalyst Mutate()
@@ -664,7 +699,93 @@ public class Reaction
 
         public override Catalyst Copy()
         {
-            return new CatalystImplementation(Name, reaction).CopyStateFrom(this);
+            return new ReactionCatalyst(Name, reaction).CopyStateFrom(this);
+        }
+
+        public override JObject EncodeJson()
+        {
+            JObject json_reaction_object = base.EncodeJson();
+
+            json_reaction_object["Name"] = reaction.Name;
+
+            JObject inhibitors_json_object = new JObject();
+            foreach (Molecule molecule in reaction.inhibitors.Keys)
+                inhibitors_json_object[molecule.Name] = reaction.inhibitors[molecule].Percentile;
+            json_reaction_object["Inhibitors"] = inhibitors_json_object;
+
+            JObject cofactors_json_object = new JObject();
+            foreach (Molecule molecule in reaction.cofactors.Keys)
+                cofactors_json_object[molecule.Name] = reaction.cofactors[molecule].Percentile;
+            json_reaction_object["Cofactors"] = cofactors_json_object;
+
+            JObject directions_json_object = new JObject();
+            foreach (Cell.Slot.Relation direction in reaction.direction_precedence.Keys)
+                directions_json_object[direction.ToString()] = reaction.direction_precedence[direction].Percentile;
+            json_reaction_object["Directions"] = directions_json_object;
+
+            json_reaction_object["Is Ribozyme"] = reaction.is_ribozyme.Percentile;
+            json_reaction_object["Optimal Temperature"] = reaction.optimal_temperature.Percentile;
+            json_reaction_object["Temperature Tolerance"] = reaction.temperature_tolerance.Percentile;
+            json_reaction_object["Optimal pH"] = reaction.optimal_pH.Percentile;
+            json_reaction_object["pH Tolerance"] = reaction.pH_tolerance.Percentile;
+            json_reaction_object["Productivity"] = reaction.productivity.Percentile;
+            json_reaction_object["Potential"] = reaction.potential.Percentile;
+
+            return json_reaction_object;
+        }
+
+        public override void DecodeJson(JObject json_object)
+        {
+            base.DecodeJson(json_object);
+
+            reaction = Reaction.GetReaction(Utility.JTokenToString(json_object["Name"])).Mutate();
+
+            foreach (var molecule_pair in json_object["Inhibitors"] as JObject)
+                reaction.inhibitors[Molecule.GetMolecule(molecule_pair.Key)].Percentile = Utility.JTokenToFloat(molecule_pair.Value);
+
+            foreach (var molecule_pair in json_object["Cofactors"] as JObject)
+                reaction.cofactors[Molecule.GetMolecule(molecule_pair.Key)].Percentile = Utility.JTokenToFloat(molecule_pair.Value);
+
+            foreach (var direction_pair in json_object["Directions"] as JObject)
+            {
+                Cell.Slot.Relation direction;
+                switch (direction_pair.Key)
+                {
+                    case "Right":  direction = Cell.Slot.Relation.Right; break;
+                    case "Left": direction = Cell.Slot.Relation.Left; break;
+                    case "Across": direction = Cell.Slot.Relation.Across; break;
+
+                    default:
+                        Debug.Assert(false);
+                        direction = Cell.Slot.Relation.None;
+                        break;
+                }
+
+                reaction.direction_precedence[direction].Percentile = Utility.JTokenToFloat(direction_pair.Value);
+            }
+
+            reaction.is_ribozyme.Percentile = Utility.JTokenToFloat(json_object["Is Ribozyme"]);
+            reaction.optimal_temperature.Percentile = Utility.JTokenToFloat(json_object["Optimal Temperature"]);
+            reaction.temperature_tolerance.Percentile = Utility.JTokenToFloat(json_object["Temperature Tolerance"]);
+            reaction.optimal_pH.Percentile = Utility.JTokenToFloat(json_object["Optimal pH"]);
+            reaction.pH_tolerance.Percentile = Utility.JTokenToFloat(json_object["pH Tolerance"]);
+            reaction.productivity.Percentile = Utility.JTokenToFloat(json_object["Productivity"]);
+            reaction.potential.Percentile = Utility.JTokenToFloat(json_object["Potential"]);
+
+
+            ReactionCatalyst other = new ReactionCatalyst(reaction.catalyst_name, reaction);
+
+            Initialize(other.Name, other.Price, other.Description);
+
+            slot_reactants = new Dictionary<Compound, Cell.Slot.Relation>(other.slot_reactants);
+            slot_products = new Dictionary<Compound, Cell.Slot.Relation>(other.slot_products);
+            cytosol_reactants = new List<Compound>(other.cytosol_reactants);
+            cytosol_products = new List<Compound>(other.cytosol_products);
+            activity_function = other.activity_function;
+            NRG_balance = other.NRG_balance;
+
+            foreach (Cell.Slot.Relation direction in other.Attachments.Keys)
+                Attachments[direction] = other.Attachments[direction];
         }
     }
 
@@ -682,8 +803,10 @@ public class Reaction
         mutant.optimal_pH = optimal_pH.Copy();
         mutant.pH_tolerance = pH_tolerance.Copy();
 
-        mutant.inhibitors = inhibitors;
-        mutant.cofactors = cofactors;
+        mutant.inhibitors = new Dictionary<Molecule, Attribute>(inhibitors);
+        mutant.cofactors = new Dictionary<Molecule, Attribute>(cofactors);
+
+        mutant.direction_precedence = new Dictionary<Cell.Slot.Relation, Attribute>(direction_precedence);
 
         mutant.productivity = productivity.Copy();
 
@@ -699,11 +822,9 @@ public class Reaction
                                                         mutant.pH_tolerance,
                                                         mutant.productivity,
                                                         mutant.potential);
-        genes.AddRange(new List<Attribute>(mutant.reactants.Values).Cast<object>());
-        genes.AddRange(new List<Attribute>(mutant.products.Values).Cast<object>());
         genes.AddRange(new List<Attribute>(mutant.inhibitors.Values).Cast<object>());
         genes.AddRange(new List<Attribute>(mutant.cofactors.Values).Cast<object>());
-        genes.Add(new List<Attribute>(mutant.slot_order.Values));
+        genes.Add(new List<Attribute>(mutant.direction_precedence.Values));
 
         //Select primary mutant and apply mutation
         object element= MathUtility.RemoveRandomElement(genes);
@@ -729,50 +850,13 @@ public class Reaction
         return mutant;
     }
 
-    class ReactionRibozyme : Ribozyme
-    {
-        Reaction reaction;
-
-        public ReactionRibozyme(string name, Reaction reaction_) 
-            : base(new CatalystImplementation(name, reaction_))
-        {
-            reaction = reaction_;
-        }
-
-        public override Catalyst Mutate()
-        {
-            return Catalyst.Mutate();
-        }
-    }
-
-    class ReactionEnzyme : Enzyme
-    {
-        Reaction reaction;
-
-        public ReactionEnzyme(string name, Reaction reaction_)
-            : base(new CatalystImplementation(name, reaction_))
-        {
-            reaction = reaction_;
-        }
-
-        public override Catalyst Mutate()
-        {
-            return Catalyst.Mutate();
-        }
-    }
-
     Catalyst catalyst = null;
     public Catalyst Catalyst
     {
         get
         {
-            if(catalyst== null)
-            {
-                if (is_ribozyme.IsTrue)
-                    catalyst = new ReactionRibozyme(catalyst_name, this);
-                else
-                    catalyst = new ReactionEnzyme(catalyst_name, this);
-            }
+            if(catalyst == null)
+                catalyst = new ReactionCatalyst(catalyst_name, this);
 
             return catalyst;
         }

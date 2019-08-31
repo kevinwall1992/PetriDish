@@ -1,0 +1,76 @@
+{
+  "Molecules":
+  {
+    "NRG":
+    {
+      "Enthalpy": -15957.0,
+      "Formula": "K8 H19 P1 A10 U2"
+    },
+
+    "Umamium Gas":
+    {
+      "Enthalpy": -750.0,
+      "Formula": "U2"
+    },
+
+    "Water":
+    {
+      "Enthalpy": -934.0,
+      "Formula": "H2 A1"
+    },
+
+    "Aerogen Gas":
+    {
+      "Enthalpy": -495.0,
+      "Formula": "A2"
+    },
+
+    "Hindenburgium Gas":
+    {
+      "Enthalpy": -432.0,
+      "Formula": "H2"
+    },
+
+    "Umomia":
+    {
+      "Enthalpy": -1477.0,
+      "Formula": "H2 A1 U2"
+    },
+
+    "Hindenburgium Stankide":
+    {
+      "Enthalpy": -694.0,
+      "Formula": "H2 S1"
+    },
+
+    "Energate":
+    {
+      "Enthalpy": -2429.0,
+      "Formula": "H3 P1 A2"
+    },
+
+    "Structate":
+    {
+      "Enthalpy": -4061.0,
+      "Formula": "K2 H6 A3"
+    },
+
+    "Genes":
+    {
+      "Enthalpy": -14137.0,
+      "Formula": "K8 H18 A9 U2"
+    },
+
+    "Karbon Diaeride":
+    {
+      "Enthalpy": -1490.0,
+      "Formula": "K1 A2"
+    },
+
+    "Bananium Gloride":
+    {
+      "Enthalpy": -1490.0,
+      "Formula": "B1 G1"
+    }
+  }
+}

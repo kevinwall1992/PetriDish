@@ -11,13 +11,11 @@ public class UIOverlay : GoodBehavior
     [SerializeField]
     Text quantity_text_prefab;
 
-    void Start()
-    {
 
-    }
-
-    void Update()
+    protected override void Update()
     {
+        base.Update();
+
         //Remove deleted compounds
         Dictionary<CompoundComponent, Text>.KeyCollection keys = compound_quantity_texts.Keys;
         List<CompoundComponent> deleted_compound_components= new List<CompoundComponent>();

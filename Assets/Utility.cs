@@ -172,21 +172,6 @@ public class Utility
     }
 
 
-    public static string ReadTextFile(string path)
-    {
-        return new StreamReader(path).ReadToEnd(); 
-    }
-
-    public static void WriteTextFile(string path, string text, bool append = false)
-    {
-        new StreamWriter(path, append).WriteLine(text);
-    }
-
-    public static void OutputText(string text, string name, bool append = false)
-    {
-        WriteTextFile("Output/" + name + ".txt", text, append);
-    }
-
     static void SetLayer(GameObject game_object, int layer_index)
     {
         game_object.layer = layer_index;
@@ -231,5 +216,20 @@ public class Utility
     public static T GetOrAddComponent<T>(Transform transform) where T : MonoBehaviour
     {
         return GetOrAddComponent<T>(transform.gameObject);
+    }
+
+
+    public static Vector2 GetMouseMotion()
+    {
+        return new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
+    }
+
+    public static bool IsPointedAt(MonoBehaviour mono_behaviour)
+    {
+        if (mono_behaviour.transform is RectTransform)
+            return RectTransformUtility.RectangleContainsScreenPoint(mono_behaviour.transform as RectTransform, 
+                                                                     Input.mousePosition);
+        else
+            return false;
     }
 }

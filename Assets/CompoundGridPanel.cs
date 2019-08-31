@@ -68,7 +68,7 @@ public class CompoundGridPanel : GridPanel
     public static CompoundGridPanel Create(IMutableContainer<Compound> compound_container)
     {
         CompoundGridPanel compound_grid = Instantiate(Scene.Micro.Prefabs.CompoundGridPanel);
-        compound_grid.transform.SetParent(Scene.Micro.Canvas.transform, false);
+        compound_grid.transform.SetParent(Scene.Micro.DetailPanelContainer, false);
 
         compound_grid.Data = compound_container;
 

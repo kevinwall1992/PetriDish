@@ -88,13 +88,15 @@ public class OrganismComponent : GoodBehavior
         Organism = new Organism();
     }
 
-    void Start()
+    protected override void Start()
     {
-        
+        base.Start();
     }
 
-    void Update()
+    protected override void Update()
     {
+        base.Update();
+
         ValidateCells();
 
         foreach (CellComponent cell_component in CellComponents)
@@ -104,14 +106,22 @@ public class OrganismComponent : GoodBehavior
             return;
 
         if (stage_queue.Count > 0)
-            foreach (Action action in Organism.GetActions(stage_queue.Dequeue()))
+        {
+            Action.Stage stage = stage_queue.Dequeue();
+
+            Dictionary<Catalyst, Cell.Slot> catalysts = Organism.GetCatalysts();
+            foreach (Catalyst catalyst in catalysts.Keys)
+                catalyst.Communicate(catalysts[catalyst], stage);
+
+            foreach (Action action in Organism.GetActions(stage))
             {
                 float length = 1.5f;
-                if(action is ReactionAction)
+                if (action is ReactionAction)
                     length = 3;
 
                 gameObject.AddComponent<ActionComponent>().SetAction(action, length);
             }
+        }
     }
 
     void ValidateCells()
@@ -199,28 +209,8 @@ public class OrganismComponent : GoodBehavior
         stage_queue = new Queue<Action.Stage>(Action.Stages);
     }
 
-    public void ResetExperiment(string dna_sequence= "")
+    public void LoadOrganism(string name)
     {
-        Locale locale = Organism.Locale;
-        locale.RemoveOrganism(Organism);
-        locale.AddOrganism(Organism = new Organism());
-
-        Cell cell = Organism.GetCell(new Vector2Int(0, 0));
-
-        if (dna_sequence != "")
-        {
-            Organism.AddCell(cell, Cell.Relation.Up);
-
-            Ribozyme interpretase = new Ribozyme(new Interpretase());
-            interpretase.AddCofactor(new Compound(new DNA(dna_sequence), 1));
-            cell.Slots[0].AddCompound(new Compound(interpretase, 1));
-
-            cell.Slots[1].AddCompound(new Compound(Molecule.Glucose, 2));
-            cell.Slots[2].AddCompound(new Compound(Molecule.Glucose, 1));
-            cell.Slots[3].AddCompound(new Compound(Molecule.ATP, 1));
-
-            Organism.Cytosol.AddCompound(new Compound(Molecule.ATP, 10));
-            Organism.Cytosol.AddCompound(new Compound(Molecule.Phosphate, 10));
-        }
+        Organism = FileUtility.Load<Organism>(name + ".json");
     }
 }

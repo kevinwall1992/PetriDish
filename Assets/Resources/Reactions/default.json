@@ -1,0 +1,139 @@
+{
+  "Reactions":
+  {
+    "Structatogenesis":
+    {
+      "Ribozyme": 0.75,
+      "Potential": 1,
+      "Temperature Tolerance": 1.0,
+      "Cryophilic": false,
+      "Cofactors":
+      {},
+
+      "Reactants":
+      {
+        "Hindenburgium Gas": "4",
+        "Karbon Diaeride": "2"
+      },
+
+      "Productivity": 1.0,
+      "Optimal pH": 7.0,
+      "pH Tolerance": 1.0,
+      "Flexibility": 1,
+      "Catalyst Name": "Structatogenase",
+      "Inhibitors":
+      {},
+
+      "Products":
+      {
+        "Water": "1",
+        "Structate": "1"
+      },
+
+      "Optimal Temperature": 298,
+      "Cost": 0.0,
+      "Thermophilic": false
+    },
+
+    "Umamium Fixation":
+    {
+      "Ribozyme": 0.75,
+      "Potential": 1,
+      "Temperature Tolerance": 1.0,
+      "Cryophilic": false,
+      "Cofactors":
+      {},
+
+      "Reactants":
+      {
+        "Water": "1",
+        "Umamium Gas": "1"
+      },
+
+      "Productivity": 1.0,
+      "Optimal pH": 7.0,
+      "pH Tolerance": 1.0,
+      "Flexibility": 1,
+      "Catalyst Name": "Umogenesis",
+      "Inhibitors":
+      {},
+
+      "Products":
+      {
+        "Umomia": "1"
+      },
+
+      "Optimal Temperature": 298,
+      "Cost": 0.0,
+      "Thermophilic": false
+    },
+
+    "Gene Synthesis":
+    {
+      "Ribozyme": 0.75,
+      "Potential": 1,
+      "Temperature Tolerance": 1.0,
+      "Cryophilic": false,
+      "Cofactors":
+      {},
+
+      "Reactants":
+      {
+        "Structate": "4",
+        "Umomia": "1"
+      },
+
+      "Productivity": 1.0,
+      "Optimal pH": 7.0,
+      "pH Tolerance": 1.0,
+      "Flexibility": 1,
+      "Catalyst Name": "Gene Synthase",
+      "Inhibitors":
+      {},
+
+      "Products":
+      {
+        "Genes": "1",
+        "Water": "4"
+      },
+
+      "Optimal Temperature": 298,
+      "Cost": 0.0,
+      "Thermophilic": false
+    },
+
+    "NRG Synthesis":
+    {
+      "Ribozyme": 0.75,
+      "Potential": 1,
+      "Temperature Tolerance": 1.0,
+      "Cryophilic": false,
+      "Cofactors":
+      {},
+
+      "Reactants":
+      {
+        "Genes": "1",
+        "Energate": "1"
+      },
+
+      "Productivity": 1.0,
+      "Optimal pH": 7.0,
+      "pH Tolerance": 1.0,
+      "Flexibility": 1,
+      "Catalyst Name": "NRG Synthase",
+      "Inhibitors":
+      {},
+
+      "Products":
+      {
+        "NRG": "1",
+        "Water": "1"
+      },
+
+      "Optimal Temperature": 298,
+      "Cost": 0.0,
+      "Thermophilic": false
+    }
+  }
+}

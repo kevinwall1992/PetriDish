@@ -84,13 +84,10 @@ public class Card : GoodBehavior, IPointerClickHandler, Spawner
     }
 
 
-    void Start()
+    protected override void Update()
     {
-        
-    }
+        base.Update();
 
-    void Update()
-    {
         if(CurrentZoomTarget == ZoomTarget.None)
         {
             target_scale = RestScale;

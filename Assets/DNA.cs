@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-
+﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class DNA : Polymer
 {
@@ -33,21 +34,24 @@ public class DNA : Polymer
 
     public DNA(string sequence)
     {
-        AddSequence(sequence);
+        AppendSequence(sequence);
+        AddMainSector();
     }
 
     public DNA()
     {
-
+        AddMainSector();
     }
 
-    public override void AddMonomer(Monomer monomer)
+
+
+    public override void InsertMonomer(Monomer monomer, int index)
     {
-        if (monomer == Nucleotide.AMP ||
-            monomer == Nucleotide.CMP ||
-            monomer == Nucleotide.GMP ||
-            monomer == Nucleotide.TMP)
-            base.AddMonomer(monomer);
+        if (monomer.Equals(Nucleotide.Valanine) ||
+            monomer.Equals(Nucleotide.Comine) ||
+            monomer.Equals(Nucleotide.Funcosine) ||
+            monomer.Equals(Nucleotide.Locomine))
+            base.InsertMonomer(monomer, index);
     }
 
     public override Monomer RemoveMonomer(int index)
@@ -58,26 +62,6 @@ public class DNA : Polymer
         return base.RemoveMonomer(index);
     }
 
-    public void AddAdenine()
-    {
-        AddMonomer(Nucleotide.AMP);
-    }
-
-    public void AddCytosine()
-    {
-        AddMonomer(Nucleotide.CMP);
-    }
-
-    public void AddGuanine()
-    {
-        AddMonomer(Nucleotide.GMP);
-    }
-
-    public void AddThymine()
-    {
-        AddMonomer(Nucleotide.TMP);
-    }
-
     public string GetCodon(int codon_index)
     {
         string codon = "";
@@ -86,14 +70,14 @@ public class DNA : Polymer
         {
             Monomer monomer = Monomers[(codon_index * 3 + i)];
 
-            if (monomer == Nucleotide.AMP)
-                codon += "A";
-            else if (monomer == Nucleotide.CMP)
+            if (monomer.Equals(Nucleotide.Valanine))
+                codon += "V";
+            else if (monomer.Equals(Nucleotide.Comine))
                 codon += "C";
-            else if (monomer == Nucleotide.GMP)
-                codon += "G";
-            else if (monomer == Nucleotide.TMP)
-                codon += "T";
+            else if (monomer.Equals(Nucleotide.Funcosine))
+                codon += "F";
+            else if (monomer.Equals(Nucleotide.Locomine))
+                codon += "L";
         }
 
         return codon;
@@ -109,32 +93,60 @@ public class DNA : Polymer
         return subsequence;
     }
 
-    public DNA RemoveStrand(int starting_index, int length)
+
+    public void InsertSequence(int index, string sequence)
+    {
+        int monomer_index = index * 3;
+
+        foreach (char character in sequence)
+            switch (character)
+            {
+                case 'V': InsertMonomer(Nucleotide.Valanine, monomer_index++); break;
+                case 'C': InsertMonomer(Nucleotide.Comine, monomer_index++); break;
+                case 'F': InsertMonomer(Nucleotide.Funcosine, monomer_index++); break;
+                case 'L': InsertMonomer(Nucleotide.Locomine, monomer_index++); break;
+                default: break;
+            }
+       
+        int length = sequence.Length / 3;
+
+        foreach (Sector sector in Sectors)
+        {
+            if (sector == MainSector)
+                continue;
+
+            if (sector.FirstCodonIndex > index)
+                sector.FirstCodonIndex += length;
+            else if (sector.LastCodonIndex >= index)
+                sector.LastCodonIndex += length;
+        }
+    }
+
+    public void AppendSequence(string sequence)
+    {
+        InsertSequence(Monomers.Count, sequence);
+    }
+
+    public DNA RemoveSequence(int starting_index, int length)
     {
         DNA removed_dna = new DNA();
 
         for (int i = 0; i < length; i++)
         {
-            removed_dna.AddMonomer(RemoveMonomer(starting_index * 3));
-            removed_dna.AddMonomer(RemoveMonomer(starting_index * 3));
-            removed_dna.AddMonomer(RemoveMonomer(starting_index * 3));
+            removed_dna.AppendMonomer(RemoveMonomer(starting_index * 3));
+            removed_dna.AppendMonomer(RemoveMonomer(starting_index * 3));
+            removed_dna.AppendMonomer(RemoveMonomer(starting_index * 3));
         }
+
+        foreach (Sector sector in Sectors)
+            if (sector.FirstCodonIndex > starting_index)
+                sector.FirstCodonIndex -= length;
+            else if (sector.LastCodonIndex >= starting_index)
+                sector.LastCodonIndex = Mathf.Max(sector.LastCodonIndex - length, starting_index);
 
         return removed_dna;
     }
 
-    public void AddSequence(string sequence)
-    {
-        foreach (char character in sequence)
-            switch (character)
-            {
-                case 'A': AddAdenine(); break;
-                case 'C': AddCytosine(); break;
-                case 'G': AddGuanine(); break;
-                case 'T': AddThymine(); break;
-                default: break;
-            }
-    }
 
     public override bool Equals(object obj)
     {
@@ -152,57 +164,211 @@ public class DNA : Polymer
         DNA copy = new DNA(Sequence);
         copy.ActiveCodonIndex = ActiveCodonIndex;
 
+        copy.sectors.Clear();
+        foreach (Sector sector in Sectors)
+            copy.AddSector(sector.Name, sector.Description, sector.FirstCodonIndex, sector.LastCodonIndex);
+
         return copy;
+    }
+
+    public override JObject EncodeJson()
+    {
+        JObject json_dna_object = new JObject();
+
+        json_dna_object["Type"] = "DNA";
+        json_dna_object["Sequence"] = Sequence;
+
+        if (sectors.Count > 0)
+        {
+            JArray json_sector_array = new JArray();
+            foreach (Sector sector in Sectors)
+            {
+                JObject json_sector_object = new JObject();
+                json_sector_object["Name"] = sector.Name;
+                json_sector_object["Description"] = sector.Description;
+                json_sector_object["First Codon Index"] = sector.FirstCodonIndex;
+                json_sector_object["Last Codon Index"] = sector.LastCodonIndex;
+
+                json_sector_array.Add(json_sector_object);
+            }
+            json_dna_object["Sectors"] = json_sector_array;
+        }
+
+        return json_dna_object;
+    }
+
+    public override void DecodeJson(JObject json_dna_object)
+    {
+        Monomers.Clear();
+        AppendSequence(Utility.JTokenToString(json_dna_object["Sequence"]));
+
+        if (json_dna_object.ContainsKey("Sectors"))
+        {
+            sectors.Clear();
+
+            foreach (JToken json_token in json_dna_object["Sectors"])
+            {
+                JObject json_sector_object = json_token as JObject;
+
+                AddSector(Utility.JTokenToString(json_sector_object["Name"]),
+                            Utility.JTokenToString(json_sector_object["Description"]),
+                            Utility.JTokenToInt(json_sector_object["First Codon Index"]),
+                            Utility.JTokenToInt(json_sector_object["Last Codon Index"]));
+            }
+        }
+    }
+
+
+    List<Sector> sectors = new List<Sector>();
+    public IEnumerable<Sector> Sectors
+    {
+        get { return sectors; }
+    }
+
+    public Sector MainSector
+    {
+        get
+        {
+            Sector main_sector = null;
+
+            foreach (Sector sector in Sectors)
+                if (sector.FirstCodonIndex == 0 && (main_sector == null || sector.LastCodonIndex > main_sector.LastCodonIndex))
+                    main_sector = sector;
+
+            main_sector.LastCodonIndex = CodonCount - 1;
+            return main_sector;
+        }
+    }
+    void AddMainSector() { AddSector("Main Sector", "Describe this DNA strand here", 0, CodonCount - 1); }
+
+    public Sector AddSector(string name , string description, int first_codon_index, int last_codon_index)
+    {
+        Sector sector = new Sector(this, name, description, first_codon_index, last_codon_index);
+        sectors.Add(sector);
+
+        return sector;
+    }
+
+    public void RemoveSector(Sector sector)
+    {
+        if (sector == MainSector)
+            return;
+
+        sectors.Remove(sector);
+    }
+
+    public Sector GetSector(int codon_index)
+    {
+        Sector deepest_sector = null;
+
+        foreach (Sector sector in Sectors)
+            if (sector.FirstCodonIndex <= codon_index &&
+                sector.LastCodonIndex >= codon_index)
+                if (deepest_sector == null || (deepest_sector.FirstCodonIndex <= sector.FirstCodonIndex &&
+                                               deepest_sector.LastCodonIndex >= sector.LastCodonIndex))
+                    deepest_sector = sector;
+
+        return deepest_sector;
+    }
+
+    public class Sector
+    {
+        public DNA DNA { get; private set; }
+
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public int FirstCodonIndex { get; set; }
+        public int LastCodonIndex { get; set; }
+
+        public int Identity { get; private set; }
+
+        public int Length { get { return LastCodonIndex - FirstCodonIndex + 1; } }
+
+        public string Sequence { get { return DNA.GetSubsequence(FirstCodonIndex, Length); } }
+
+        public Sector(DNA dna, string name, string description, int first_codon_index, int last_codon_index)
+        {
+            DNA = dna;
+
+            Name = name;
+            Description = description;
+            FirstCodonIndex = first_codon_index;
+            LastCodonIndex = last_codon_index;
+
+            Identity = 0;
+
+            while (true)
+            {
+                foreach (Sector sector in DNA.Sectors)
+                    if (Identity == sector.Identity)
+                    {
+                        Identity++;
+                        continue;
+                    }
+
+                break;
+            }
+        }
     }
 }
 
 
 public class Nucleotide : Polymer.Monomer
 {
-    public static Nucleotide AMP { get; private set; }
-    public static Nucleotide CMP { get; private set; }
-    public static Nucleotide GMP { get; private set; }
-    public static Nucleotide TMP { get; private set; }
+    public static Molecule genes;
+
+    public static Nucleotide Valanine { get { return new Nucleotide(Type.Valanine); } }
+    public static Nucleotide Comine { get { return new Nucleotide(Type.Comine); } }
+    public static Nucleotide Funcosine { get { return new Nucleotide(Type.Funcosine); } }
+    public static Nucleotide Locomine { get { return new Nucleotide(Type.Locomine); } }
 
     static Nucleotide()
     {
-        AMP = new Nucleotide(new SimpleMolecule("C5 H5 N5", 96.9f));
-        CMP = new Nucleotide(new SimpleMolecule("C4 H4 N3 O", -235.4f));
-        GMP = new Nucleotide(new SimpleMolecule("C5 H4 N5 O", -183.9f));
-        TMP = new Nucleotide(new SimpleMolecule("C4 H5 N2 O2", -462.8f));
+        genes = GetMolecule("Genes");
+        RegisterNamedMolecule("Genes", new Nucleotide());
     }
 
 
-    Molecule common_structure = new SimpleMolecule("P O7 C5 H10", -1113.8f, -1);
-    Molecule nucleobase;
+    enum Type { None, Valanine, Comine, Funcosine, Locomine }
+    Type type;
 
-    public override int Charge { get { return common_structure.Charge; } }
+    public override float Enthalpy { get { return genes.Enthalpy; } }
+    public override Dictionary<Element, int> Elements { get { return genes.Elements; } }
 
-    public override float Enthalpy
+    Nucleotide(Type type_ = Type.None) : base(Water)
     {
-        get { return common_structure.Enthalpy + nucleobase.Enthalpy - (IsCondensed ? Condensate.Enthalpy : 0); }
+        type = type_;
     }
 
-    public override Dictionary<Element, int> Elements
+    public Nucleotide() : base(Water)
     {
-        get
+        type = Type.None;
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (!base.Equals(obj))
+            return false;
+
+        return (obj as Nucleotide).type == type;
+    }
+
+    public override JObject EncodeJson()
+    {
+        return JObject.FromObject(Utility.CreateDictionary<string, string>("Type", "Nucleotide", 
+                                                                           "Nucleotide Type", type.ToString()));
+    }
+
+    public override void DecodeJson(JObject json_object)
+    {
+        switch(Utility.JTokenToString(json_object["Nucleotide Type"]))
         {
-            Dictionary<Element, int> elements = new Dictionary<Element, int>(common_structure.Elements);
-            foreach (Element element in nucleobase.Elements.Keys)
-            {
-                if (!elements.ContainsKey(element))
-                    elements[element] = 0;
+            case "Valanine": type = Type.Valanine; break;
+            case "Comine": type = Type.Comine; break;
+            case "Funcosine": type = Type.Funcosine; break;
+            case "Locomine": type = Type.Locomine; break;
 
-                elements[element] += nucleobase.Elements[element];
-            }
-            elements[Element.elements["H"]] -= 2;//Just assume this for now
-
-            return elements;
+            default: type = Type.None; break;
         }
-    }
-
-    Nucleotide(Molecule nucleobase_) : base(Water)
-    {
-        nucleobase = nucleobase_;
     }
 }

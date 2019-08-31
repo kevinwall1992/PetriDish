@@ -8,7 +8,7 @@ public class Membrane : Interface<Cytosol, Locale>
 
     Organism organism;
 
-    Dictionary<Molecule, float> permeability = Utility.CreateDictionary<Molecule, float>(Molecule.ATP, 0.1f, Molecule.ADP, 0.1f);
+    Dictionary<Molecule, float> permeability = Utility.CreateDictionary<Molecule, float>();
 
     public override Cytosol A { get { return organism.Cytosol; } }
     public override Locale B { get { return organism.Locale; } }
@@ -78,5 +78,23 @@ public class Membrane : Interface<Cytosol, Locale>
             Inside.AddCompound((Outside as WaterLocale).Solution.RemoveCompound(compound));
         else
             throw new System.NotImplementedException();
+    }
+
+
+    //1 unit would be transferred at a concentration of 10ppb and 
+    //1:1 concentration across membrane. 2 units at 20ppb, 0.5 units 
+    //if destination 2x concentrated, etc. up to 10 units maximum
+    public float GetTransportRate(Molecule molecule, bool transport_out)
+    {
+        Debug.Assert(organism.Locale is WaterLocale);
+
+        Solution source = transport_out ? organism.Cytosol : (organism.Locale as WaterLocale).Solution;
+        Solution destination = transport_out ? (organism.Locale as WaterLocale).Solution : organism.Cytosol;
+
+        float source_concentration = source.GetConcentration(molecule);
+        float destination_concentration = destination.GetConcentration(molecule);
+
+        return source_concentration * 10000000 *
+                Mathf.Min(source_concentration / destination_concentration, 10);
     }
 }

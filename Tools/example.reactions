@@ -1,0 +1,16 @@
+Everything before the first reaction definition or command is a comment. 
+
+'load xxxx.json' will load a molecule json file in order to look up
+the name of each molecule from its empirical formula
+
+
+load Molecules/example.json
+
+"Structatogenesis"
+2 K A2   +   4 H2   =>   1 K2 H6 A3   +   1 H2 A 
+
+"Umamium Fixation"
+1 U2   +   1 H2 A   =>   1 H2 U2 A 
+
+"Gene Fragment Sythesis"
+4 K2 H6 A3   +   1 H2 U2 A   =>   1 H18 K8 U2 A9   +   4 H2 A 

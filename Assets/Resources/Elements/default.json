@@ -1,0 +1,15 @@
+{
+  "Elements" :
+  {
+    "H" :   { "Name" : "Hindenburgium", "Atomic Number" : 1},
+    "K" :   { "Name" : "Karbon", "Atomic Number" : 6},
+    "U" :   { "Name" : "Umamium", "Atomic Number" : 7},
+    "A" :   { "Name" : "Aerogen", "Atomic Number" : 8},
+    "P" :   { "Name" : "Phlorosium", "Atomic Number" : 15},
+    "S" :   { "Name" : "Stank", "Atomic Number" : 16},
+    "G" :   { "Name" : "Glorine", "Atomic Number" : 17},
+    "B" :   { "Name" : "Bananium", "Atomic Number" : 19}
+  }
+}
+
+  

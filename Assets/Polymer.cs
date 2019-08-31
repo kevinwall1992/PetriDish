@@ -1,19 +1,11 @@
 ﻿using System.Collections.Generic;
-
+using Newtonsoft.Json.Linq;
 
 public class Polymer : Molecule
 {
     List<Monomer> monomers = new List<Monomer>();
 
     public List<Monomer> Monomers { get { return monomers; } }
-
-    public override int Charge
-    {
-        get
-        {
-            return MathUtility.Sum(monomers, (monomer) => (monomer.Charge));
-        }
-    }
 
     public override float Enthalpy
     {
@@ -44,7 +36,7 @@ public class Polymer : Molecule
     public Polymer(List<Monomer> monomers_)
     {
         foreach (Monomer monomer in monomers_)
-            AddMonomer(monomer);
+            AppendMonomer(monomer);
     }
 
     public Polymer()
@@ -52,12 +44,17 @@ public class Polymer : Molecule
 
     }
 
-    public virtual void AddMonomer(Monomer monomer)
+    public virtual void InsertMonomer(Monomer monomer, int index)
     {
         if (monomers.Count > 0)
             monomer.Condense();
 
-        monomers.Add(monomer);
+        monomers.Insert(index, monomer);
+    }
+
+    public void AppendMonomer(Monomer monomer)
+    {
+        InsertMonomer(monomer, Monomers.Count);
     }
 
     public virtual Monomer RemoveMonomer(int index)
@@ -98,6 +95,26 @@ public class Polymer : Molecule
         return hash;
     }
 
+    public override JObject EncodeJson()
+    {
+        JObject json_polymer_object = new JObject();
+
+        json_polymer_object["Type"] = "Polymer";
+
+        List<JObject> json_monomer_objects = new List<JObject>();
+        foreach (Monomer monomer in Monomers)
+            json_monomer_objects.Add(monomer.EncodeJson());
+        json_polymer_object["Monomers"] = new JObject(json_monomer_objects);
+
+        return json_polymer_object;
+    }
+
+    public override void DecodeJson(JObject json_object)
+    {
+        foreach (JToken json_token in json_object["Monomers"])
+            Monomers.Add(Molecule.DecodeMolecule(json_token as JObject) as Monomer);
+    }
+
 
     public abstract class Monomer : Molecule
     {
@@ -134,24 +151,7 @@ public class Polymer : Molecule
         {
             is_condensed = true;
         }
-    }
 
-    public class WrapperMonomer : Monomer
-    {
-        Molecule molecule;
 
-        public override int Charge { get { return molecule.Charge; } }
-
-        public override float Enthalpy
-        {
-            get { return molecule.Enthalpy - (IsCondensed ? Condensate.Enthalpy : 0); }
-        }
-
-        public override Dictionary<Element, int> Elements { get { return molecule.Elements; } }
-
-        public WrapperMonomer(Molecule molecule_, Molecule condensate) : base(condensate)
-        {
-            molecule = molecule_;
-        }
     }
 }

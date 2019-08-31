@@ -64,17 +64,6 @@ public class Cell
             slot.Step();
     }
 
-    public List<Action> GetActions(Action.Stage stage)
-    {
-        List<Action> actions = new List<Action>();
-
-        foreach (Slot slot in slots)
-            if (slot.Compound != null && slot.Compound.Molecule is Catalyst)
-                actions.Add((slot.Compound.Molecule as Catalyst).Catalyze(slot, stage));
-
-        return actions.Where(action => action != null).ToList();
-    }
-
     public class Slot
     {
         Cell cell;
@@ -186,9 +175,9 @@ public class Cell
         {
             switch(relation)
             {
-                case Relation.Across: return AcrossSlot;
                 case Relation.Right: return NextSlot;
                 case Relation.Left: return PreviousSlot;
+                case Relation.Across: return AcrossSlot;
 
                 default: return null;
             }

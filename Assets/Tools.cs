@@ -71,15 +71,8 @@ public static class Tools
         static List<Reaction> GetReactions(Reaction incomplete_reaction, List<Molecule> byproducts)
         {
             Dictionary<Element, int> elements = new Dictionary<Element, int>();
-            int input_charge = 0;
-            int output_charge = 0;
             foreach (Component component in incomplete_reaction)
             {
-                if (component.IsInput)
-                    input_charge += component.Molecule.Charge * component.Quantity;
-                else
-                    output_charge += component.Molecule.Charge * component.Quantity;
-
                 foreach (Element element in component.Molecule.Elements.Keys)
                 {
                     if (!elements.ContainsKey(element))
@@ -92,21 +85,6 @@ public static class Tools
             foreach (Element element in elements.Keys)
                 if (elements[element] < 0)
                     return new List<Reaction>();
-
-            int canceled_charge = input_charge < 0 ?
-                                  (output_charge < 0 ? 0 : Mathf.Min(-input_charge, output_charge)) :
-                                  -(output_charge > 0 ? 0 : Mathf.Min(input_charge, -output_charge));
-            if (canceled_charge > 0)
-                incomplete_reaction.Add(new Component(Molecule.Proton, canceled_charge, true, false));
-            else if (canceled_charge < 0)
-                incomplete_reaction.Add(new Component(Molecule.Hydroxide, -canceled_charge, true, false));
-
-            int released_charge = (output_charge - input_charge) - canceled_charge;
-            if (released_charge > 0)
-                incomplete_reaction.Add(new Component(Molecule.Hydroxide, released_charge, false, false));
-            else if (canceled_charge < 0)
-                incomplete_reaction.Add(new Component(Molecule.Proton, -released_charge, false, false));
-
 
             List<Reaction> reactions = new List<Reaction>();
 
@@ -323,7 +301,7 @@ public static class Tools
                 reaction_brainstorms_text += "\n\n";
             }
 
-            Utility.OutputText(reaction_brainstorms_text, "reaction_brainstorms");
+            FileUtility.OutputText(reaction_brainstorms_text, "reaction_brainstorms");
         }
     }
 
@@ -334,6 +312,6 @@ public static class Tools
 
     static string ReadToolFile(string name)
     {
-        return Utility.ReadTextFile("Tools/" + name + ".json");
+        return FileUtility.ReadTextFile("Tools/" + name + ".json");
     }
 }

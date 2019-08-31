@@ -4,79 +4,43 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
-public abstract class Molecule : Copiable<Molecule>, Stackable
+public abstract class Molecule : Copiable<Molecule>, Stackable, Encodable
 {
     static Dictionary<string, Molecule> molecules = new Dictionary<string, Molecule>();
 
     public static IEnumerable<Molecule> Molecules { get { return molecules.Values; } }
 
-    public static Molecule Oxygen { get; private set; }
-    public static Molecule CarbonDioxide { get; private set; }
-    public static Molecule Nitrogen { get; private set; }
-    public static Molecule Hydrogen { get; private set; }
     public static Molecule Water { get; private set; }
-    public static Molecule Proton { get; private set; }
-    public static Molecule Hydronium { get; private set; }
-    public static Molecule Hydroxide { get; private set; }
-    public static Molecule Salt { get; private set; }
-    public static Molecule Glucose { get; private set; }
-    public static Molecule ATP { get; private set; }
-    public static Molecule ADP { get; private set; }
-    public static Molecule Phosphate { get; private set; }
-    public static Molecule CarbonicAcid { get; private set; }
-    public static Molecule Bicarbonate { get; private set; }
-    public static Molecule Imidazole { get; private set; }
-    public static Molecule Methane { get; private set; }
+    public static ChargeableMolecule NRG { get; private set; }
 
     static void LoadMolecules(string filename)
     {
-        JObject molecules_file = JObject.Parse(Resources.Load<TextAsset>(filename).text);
+        JObject molecules_file = JObject.Parse(Resources.Load<TextAsset>("Molecules/" + filename).text);
 
         if (molecules_file["Molecules"] != null)
         {
             JObject molecules = molecules_file["Molecules"] as JObject;
             foreach (var molecule in molecules)
                 Molecule.RegisterNamedMolecule(molecule.Key, new SimpleMolecule(molecule.Value["Formula"].ToString(),
-                                                                                Utility.JTokenToFloat(molecule.Value["Enthalpy"]),
-                                                                                Utility.JTokenToInt(molecule.Value["Charge"])));
+                                                                                Utility.JTokenToFloat(molecule.Value["Enthalpy"])));
         }
     }
 
     static Molecule()
     {
-        LoadMolecules("molecules");
-
-        CarbonDioxide = GetMolecule("Carbon Dioxide");
-        Oxygen = GetMolecule("Oxygen");
-        Nitrogen = GetMolecule("Nitrogen");
-        Hydrogen = GetMolecule("Hydrogen");
+        LoadMolecules("default");
 
         Water = GetMolecule("Water");
-        Proton = GetMolecule("Proton");
-        Hydronium = GetMolecule("Hydronium");
-        Hydroxide = GetMolecule("Hydroxide");
+        NRG = RegisterNamedMolecule("NRG", new ChargeableMolecule(GetMolecule("NRG"), 1000));
 
-        Salt = GetMolecule("Salt");
-        Glucose = GetMolecule("Glucose");
+        RegisterNamedMolecule("Valanine", Nucleotide.Valanine);
+        RegisterNamedMolecule("Comine", Nucleotide.Comine);
+        RegisterNamedMolecule("Funcosine", Nucleotide.Funcosine);
+        RegisterNamedMolecule("Locomine", Nucleotide.Locomine);
 
-        ATP = GetMolecule("ATP");
-        ADP = GetMolecule("ADP");
-        Phosphate = GetMolecule("Phosphate");
-
-        CarbonicAcid = GetMolecule("CarbonicAcid");
-        Bicarbonate = GetMolecule("Bicarbonate");
-
-        Imidazole = GetMolecule("Imidazole");
-        Methane = GetMolecule("Methane");
-
-        RegisterNamedMolecule("AMP", Nucleotide.AMP);
-        RegisterNamedMolecule("CMP", Nucleotide.CMP);
-        RegisterNamedMolecule("GMP", Nucleotide.GMP);
-        RegisterNamedMolecule("TMP", Nucleotide.TMP);
-
-        RegisterNamedMolecule("Histidine", AminoAcid.Histidine);
-        RegisterNamedMolecule("Alanine", AminoAcid.Alanine);
-        RegisterNamedMolecule("Serine", AminoAcid.Serine);
+        RegisterNamedMolecule("Phlorodine", AminoAcid.Phlorodine);
+        RegisterNamedMolecule("Umine", AminoAcid.Umine);
+        RegisterNamedMolecule("Aquine", AminoAcid.Aquine);
     }
 
     public static T RegisterNamedMolecule<T>(string name, T molecule) where T : Molecule
@@ -96,7 +60,7 @@ public abstract class Molecule : Copiable<Molecule>, Stackable
         if (!DoesMoleculeExist(name))
             return null;
 
-        return molecules[name];
+        return molecules[name].Copy();
     }
 
 
@@ -113,8 +77,6 @@ public abstract class Molecule : Copiable<Molecule>, Stackable
         }
     }
 
-    public abstract int Charge { get; }
-
     public abstract float Enthalpy { get; }
 
     public virtual string Name
@@ -122,7 +84,7 @@ public abstract class Molecule : Copiable<Molecule>, Stackable
         get
         {
             foreach (string name in molecules.Keys)
-                if (ReferenceEquals(molecules[name], this))
+                if (Equals(molecules[name], this))
                     return name;
 
             return "Unnamed";
@@ -157,12 +119,14 @@ public abstract class Molecule : Copiable<Molecule>, Stackable
 
         Molecule other = obj as Molecule;
 
-        if (this.Name != "Unnamed" || other.Name != "Unnamed")
-            return this.Name == other.Name;
-
         foreach (Element element in this.Elements.Keys)
             if (!other.Elements.ContainsKey(element) ||
                 this.Elements[element] != other.Elements[element])
+                return false;
+
+        foreach (Element element in other.Elements.Keys)
+            if (!this.Elements.ContainsKey(element) ||
+                other.Elements[element] != this.Elements[element])
                 return false;
 
         return true;
@@ -189,21 +153,48 @@ public abstract class Molecule : Copiable<Molecule>, Stackable
     {
         return this;
     }
+
+
+    public virtual string EncodeString() { return EncodeJson().ToString(); }
+    public virtual void DecodeString(string string_encoding) { DecodeJson(JObject.Parse(string_encoding)); }
+
+    public abstract JObject EncodeJson();
+    public abstract void DecodeJson(JObject json_object);
+
+    public static Molecule DecodeMolecule(JObject json_object)
+    {
+        Molecule molecule;
+
+        switch (Utility.JTokenToString(json_object["Type"]))
+        {
+            case "Simple Molecule": molecule = new SimpleMolecule("", 0); break;
+            case "Chargeable Molecule": molecule = new ChargeableMolecule(null, 0); break;
+            case "Ribozyme": molecule = new Ribozyme(null); break;
+            case "Enzyme": molecule = new Enzyme(null); break;
+            case "DNA": molecule = new DNA(); break;
+            case "Nucleotide": molecule = new Nucleotide(); break;
+            case "Amino Acid": molecule = new AminoAcid(null, ""); break;
+            case "Mess": molecule = new Mess(); break;
+
+            default: return null;
+        }
+
+        molecule.DecodeJson(json_object);
+
+        return molecule;
+    }
 }
 
 public class SimpleMolecule : Molecule
 {
     Dictionary<Element, int> elements = new Dictionary<Element, int>();
-    int charge;
     float enthalpy;
-
-    public override int Charge { get { return charge; } }
 
     public override float Enthalpy { get { return enthalpy; } }
 
     public override Dictionary<Element, int> Elements { get { return elements; } }
 
-    public SimpleMolecule(string formula, float enthalpy_, int charge_ = 0)
+    public SimpleMolecule(string formula, float enthalpy_)
     {
         MatchCollection match_collection = Regex.Matches(formula, "([A-Z][a-z]?)([0-9]*) *");
         foreach (Match match in match_collection)
@@ -221,7 +212,28 @@ public class SimpleMolecule : Molecule
             elements[element] += count;
         }
 
-        charge = charge_;
         enthalpy = enthalpy_;
+    }
+
+    public SimpleMolecule(string string_encoding)
+    {
+        DecodeString(string_encoding);
+    }
+
+    public override JObject EncodeJson()
+    {
+        return JObject.FromObject(Utility.CreateDictionary<string, string>("Type", "Simple Molecule",
+                                                                           "Name", Name));
+    }
+
+    public override void DecodeJson(JObject json_object)
+    {
+        SimpleMolecule other = GetMolecule(Utility.JTokenToString(json_object["Name"])) as SimpleMolecule;
+        Debug.Assert(other != null);
+
+        elements = new Dictionary<Element, int>(other.elements);
+        enthalpy = other.enthalpy;
+
+        
     }
 }

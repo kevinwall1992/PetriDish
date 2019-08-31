@@ -20,15 +20,19 @@ public class ScalingButton : GoodBehavior, IPointerClickHandler
 
     protected Image Image { get { return GetComponent<Image>(); } }
 
-    protected virtual void Start()
+    protected override void Start()
     {
+        base.Start();
+
         Color = Image.color;
 
         IsInteractable = true;
     }
 
-    protected virtual void Update()
+    protected override void Update()
     {
+        base.Update();
+
         float scale = IsPointedAt && IsInteractable ? 1.1f : 1;
         float speed = 15;
 

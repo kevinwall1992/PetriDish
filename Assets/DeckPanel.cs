@@ -45,7 +45,7 @@ public class DeckPanel : GridPanel
     public static DeckPanel Create(Organism organism)
     {
         DeckPanel deck_panel = Instantiate(Scene.Micro.Prefabs.DeckPanel);
-        deck_panel.transform.SetParent(Scene.Micro.Canvas.transform, false);
+        deck_panel.transform.SetParent(Scene.Micro.DetailPanelContainer, false);
 
         deck_panel.Data = organism;
 

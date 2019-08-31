@@ -38,6 +38,16 @@ public class Compound : Copiable<Compound>
         return new Compound(Molecule, quantity);
     }
 
+    public static Compound operator *(Compound compound, float scalar)
+    {
+        return new Compound(compound.Molecule, compound.Quantity * scalar);
+    }
+
+    public static Compound operator /(Compound compound, float scalar)
+    {
+        return compound * (1 / scalar);
+    }
+
     public override bool Equals(object obj)
     {
         if (!(obj is Compound))

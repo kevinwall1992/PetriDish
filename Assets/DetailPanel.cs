@@ -32,15 +32,6 @@ public class DetailPanel : GoodBehavior
     public bool IsOpen { get { return position == Position.Left ? Left == this : 
                                                                   Right == this; } }
 
-    protected virtual void Start()
-    {
-        
-    }
-
-    protected virtual void Update()
-    {
-        
-    }
 
     private void OnGUI()
     {

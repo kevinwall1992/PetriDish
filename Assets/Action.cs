@@ -56,6 +56,11 @@ public abstract class Action
         BaseCost = cost;
     }
 
+    public virtual Dictionary<object, List<Compound>> GetResourceDemands()
+    {
+        return new Dictionary<object, List<Compound>>();
+    }
+
     public virtual void Begin() { HasBegun = true; }
     public virtual void End() { }
 
@@ -69,9 +74,11 @@ public abstract class Action
 
                 new Stage(typeof(ReactionAction),
                             typeof(Pumpase),
-                            typeof(Interpretase.GrabCommand),
-                            typeof(Interpretase.ReleaseCommand),
-                            typeof(Interpretase.ExciseCommand)),
+                            typeof(Interpretase.CopyCommand),
+                            typeof(Interpretase.LoadProgram)),
+
+                new Stage(typeof(Interpretase.GrabCommand),
+                            typeof(Interpretase.ReleaseCommand)),
 
                 new Stage(typeof(Constructase.ConstructCell)),
 
@@ -165,6 +172,26 @@ public class CompositeAction : Action
         BaseCost += MathUtility.Sum(this.actions, (action) => (action.Cost));
     }
 
+    public override Dictionary<object, List<Compound>> GetResourceDemands()
+    {
+        Dictionary<object, List<Compound>> demands = new Dictionary<object, List<Compound>>();
+
+        foreach (Action action in actions)
+        {
+            Dictionary<object, List<Compound>> child_demands = action.GetResourceDemands();
+
+            foreach (object resource in child_demands.Keys)
+            {
+                if (!demands.ContainsKey(resource))
+                    demands[resource] = new List<Compound>();
+
+                demands[resource].AddRange(child_demands[resource]);
+            }
+        }
+
+        return demands;
+    }
+
     public override void Begin()
     {
         base.Begin();
@@ -182,17 +209,17 @@ public class CompositeAction : Action
 
 public class EnergeticAction : Action
 {
-    float atp_balance_per_cost;
+    float nrg_balance_per_cost;
 
     public float EnergyBalance
     {
-        get { return atp_balance_per_cost * Cost; }
+        get { return nrg_balance_per_cost * Cost; }
         protected set
         {
             if (value == 0 || Cost == 0)
-                atp_balance_per_cost = value;
+                nrg_balance_per_cost = value;
             else
-                atp_balance_per_cost = value / Cost;
+                nrg_balance_per_cost = value / Cost;
         }
     }
 
@@ -204,25 +231,29 @@ public class EnergeticAction : Action
         EnergyBalance = energy_balance;
     }
 
+    public override Dictionary<object, List<Compound>> GetResourceDemands()
+    {
+        Compound compound = new Compound(EnergyBalance < 0 ? Molecule.NRG : Molecule.NRG.Discharged(), Mathf.Abs(EnergyBalance));
+
+        return Utility.CreateDictionary<object, List<Compound>>(
+            Organism.Cytosol, Utility.CreateList(compound));
+    }
+
     public override void Begin()
     {
         if (IsExergonic)
         {
-            if (Cytosol.GetQuantity(Molecule.ADP) < EnergyBalance &&
-                Cytosol.GetQuantity(Molecule.Phosphate) < EnergyBalance)
+            if (Cytosol.GetQuantity(Molecule.NRG.Discharged()) < EnergyBalance)
                 return;
 
-            Cytosol.RemoveCompound(Molecule.ADP, EnergyBalance);
-            Cytosol.RemoveCompound(Molecule.Phosphate, EnergyBalance);
+            Cytosol.RemoveCompound(Molecule.NRG.Discharged(), EnergyBalance);
         }
         else
         {
-            if (Cytosol.GetQuantity(Molecule.ATP) < -EnergyBalance &&
-                Cytosol.GetQuantity(Molecule.Water) < -EnergyBalance)
+            if (Cytosol.GetQuantity(Molecule.NRG) < -EnergyBalance)
                 return;
 
-            Cytosol.RemoveCompound(Molecule.ATP, -EnergyBalance);
-            Cytosol.RemoveCompound(Molecule.Water, -EnergyBalance);
+            Cytosol.RemoveCompound(Molecule.NRG, -EnergyBalance);
         }
 
         base.Begin();
@@ -231,15 +262,9 @@ public class EnergeticAction : Action
     public override void End()
     {
         if (IsExergonic)
-        {
-            Cytosol.AddCompound(Molecule.ATP, EnergyBalance);
-            Cytosol.AddCompound(Molecule.Water, EnergyBalance);
-        }
+            Cytosol.AddCompound(Molecule.NRG, EnergyBalance);
         else
-        {
-            Cytosol.AddCompound(Molecule.ADP, -EnergyBalance);
-            Cytosol.AddCompound(Molecule.Phosphate, -EnergyBalance);
-        }
+            Cytosol.AddCompound(Molecule.NRG.Discharged(), -EnergyBalance);
 
         base.End();
     }
@@ -466,10 +491,9 @@ public class PushAction : CompositeAction
 
 public class ReactionAction : EnergeticAction
 {
-    protected Dictionary<Cell.Slot, Compound> slot_reactants = new Dictionary<Cell.Slot, Compound>(),
-                                              slot_products = new Dictionary<Cell.Slot, Compound>();
-    protected List<Compound> cytosol_reactants = new List<Compound>(),
-                             cytosol_products = new List<Compound>();
+    protected Dictionary<Cell.Slot, Compound> slot_reactants, slot_products;
+    protected List<Compound> cytosol_reactants, cytosol_products;
+    protected List<Compound> locale_reactants, locale_products;
 
     public IEnumerable<Cell.Slot> ReactantSlots { get { return slot_reactants.Keys; } }
     public IEnumerable<Cell.Slot> ProductSlots { get { return slot_products.Keys; } }
@@ -484,13 +508,17 @@ public class ReactionAction : EnergeticAction
                     return false;
 
             foreach (Cell.Slot source in slot_reactants.Keys)
-                if (source.Compound == null ||
-                    source.Compound.Molecule != slot_reactants[source].Molecule ||
-                    source.Compound.Quantity < slot_reactants[source].Quantity)
+                if (source.Compound != null && (source.Compound.Molecule != slot_reactants[source].Molecule ||
+                                                source.Compound.Quantity < slot_reactants[source].Quantity))
                     return false;
 
             foreach (Compound reactant in cytosol_reactants)
                 if (Organism.Cytosol.GetQuantity(reactant.Molecule) < reactant.Quantity)
+                    return false;
+
+            Debug.Assert(Organism.Locale is WaterLocale);
+            foreach (Compound reactant in locale_reactants)
+                if ((Organism.Locale as WaterLocale).Solution.GetQuantity(reactant.Molecule) < reactant.Quantity)
                     return false;
 
             return base.IsLegal;
@@ -501,21 +529,69 @@ public class ReactionAction : EnergeticAction
                     Dictionary<Cell.Slot, Compound> slot_reactants_, 
                     Dictionary<Cell.Slot, Compound> slot_products_, 
                     List<Compound> cytosol_reactants_, 
-                    List<Compound> cytosol_products_, 
-                    float atp_balance,
-                    float cost = 1) : base(catalyst_slot, cost, atp_balance)
+                    List<Compound> cytosol_products_,
+                    List<Compound> locale_reactants_,
+                    List<Compound> locale_products_,
+                    float nrg_balance,
+                    float cost = 1) : base(catalyst_slot, cost, nrg_balance)
     {
-        if(slot_reactants_ != null)
-            slot_reactants = slot_reactants_;
+        slot_reactants = slot_reactants_;
+        slot_products = slot_products_;
+        if (slot_reactants == null) slot_reactants = new Dictionary<Cell.Slot, Compound>();
+        if (slot_products == null) slot_products = new Dictionary<Cell.Slot, Compound>();
 
-        if (slot_products_ != null)
-            slot_products = slot_products_;
+        cytosol_reactants = cytosol_reactants_;
+        cytosol_products = cytosol_products_;
+        if (cytosol_reactants == null) cytosol_reactants = new List<Compound>();
+        if (cytosol_products == null) cytosol_products = new List<Compound>();
 
-        if (cytosol_reactants_ != null)
-            cytosol_reactants = cytosol_reactants_;
+        locale_reactants = locale_reactants_;
+        locale_products = locale_products_;
+        if (locale_reactants == null) locale_reactants = new List<Compound>();
+        if (locale_products == null) locale_products = new List<Compound>();
 
-        if (cytosol_products_ != null)
-            cytosol_products = cytosol_products_;
+
+        //This adjusts Action.Scale based on transport rates of 
+        //compounds being moved across the membrane.
+        float max_ratio = 1;
+
+        System.Func<Compound, bool, float> GetTransportRate = delegate (Compound compound, bool transport_out)
+        {
+            Molecule molecule = compound.Molecule;
+            float quantity = compound.Quantity * Scale;
+
+            float max_rate = Organism.Membrane.GetTransportRate(molecule, false) *
+                             quantity *
+                             CatalystSlot.Compound.Quantity;
+
+            return Mathf.Min(quantity, max_rate);
+        };
+
+        foreach (Compound compound in locale_reactants)
+            max_ratio = Mathf.Min(max_ratio, GetTransportRate(compound, false) / compound.Quantity);
+
+        foreach (Compound compound in locale_products)
+            max_ratio = Mathf.Min(max_ratio, GetTransportRate(compound, true) / compound.Quantity);
+
+        Scale *= max_ratio;
+    }
+
+    public override Dictionary<object, List<Compound>> GetResourceDemands()
+    {
+        Dictionary<object, List<Compound>> demands = base.GetResourceDemands();
+
+        foreach (Cell.Slot slot in slot_reactants.Keys)
+        {
+            if (!demands.ContainsKey(slot))
+                demands[slot] = new List<Compound>();
+
+            demands[slot].Add(slot_reactants[slot]);
+        }
+
+        foreach (Compound compound in cytosol_reactants)
+            demands[Organism.Cytosol].Add(compound);
+
+        return demands;
     }
 
     public override void Begin()
@@ -523,19 +599,26 @@ public class ReactionAction : EnergeticAction
         base.Begin();
 
         foreach (Cell.Slot source in slot_reactants.Keys)
-            source.Compound.Split(slot_reactants[source].Quantity);
-
+            source.Compound.Split(slot_reactants[source].Quantity * Scale);
+         
         foreach (Compound reactant in cytosol_reactants)
-            Organism.Cytosol.RemoveCompound(reactant);
+            Organism.Cytosol.RemoveCompound(reactant * Scale);
+
+        Debug.Assert(Organism.Locale is WaterLocale);
+        foreach (Compound reactant in locale_reactants)
+            (Organism.Locale as WaterLocale).Solution.RemoveCompound(reactant * Scale);
     }
 
     public override void End()
     {
         foreach (Cell.Slot destination in slot_products.Keys)
-            destination.AddCompound(slot_products[destination]);
+            destination.AddCompound(slot_products[destination] * Scale);
 
         foreach (Compound product in cytosol_products)
-            Organism.Cytosol.AddCompound(product);
+            Organism.Cytosol.AddCompound(product * Scale);
+
+        foreach (Compound product in cytosol_products)
+            (Organism.Locale as WaterLocale).Solution.AddCompound(product * Scale);
     }
 
     public List<Cell.Slot> GetReactantSlots()

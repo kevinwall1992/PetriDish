@@ -6,11 +6,9 @@ using UnityEngine.EventSystems;
 
 public class GoodBehavior : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
 {
-    bool is_being_dragged = false;
-
     public bool IsBeingDragged
     {
-        get { return is_being_dragged; }
+        get { return DraggedElement == this; }
     }
 
     //This returns true if the mouse pointer is over the
@@ -33,19 +31,30 @@ public class GoodBehavior : MonoBehaviour, IDragHandler, IBeginDragHandler, IEnd
     //Touched essentially means IsPointedAt && nothing is in the way
     public bool IsTouched { get; private set; }
 
+    protected virtual void Start()
+    {
+
+    }
+
+    protected virtual void Update()
+    {
+
+    }
+
     public virtual void OnBeginDrag(PointerEventData eventData)
     {
-        is_being_dragged = true;
+        DraggedElement = this;
     }
 
     public virtual void OnDrag(PointerEventData eventData)
     {
-        is_being_dragged = true;
+        DraggedElement = this;
     }
 
     public virtual void OnEndDrag(PointerEventData eventData)
     {
-        is_being_dragged = false;
+        if (IsBeingDragged)
+            DraggedElement = null;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -107,4 +116,7 @@ public class GoodBehavior : MonoBehaviour, IDragHandler, IBeginDragHandler, IEnd
     {
         return GetComponent<T>() != null;
     }
+
+
+    public static GoodBehavior DraggedElement { get; private set; }
 }

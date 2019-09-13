@@ -79,7 +79,7 @@ public class Polymer : Molecule
             return false;
 
         for (int i = 0; i < Monomers.Count; i++)
-            if (Monomers[i] != other.Monomers[i])
+            if (!Monomers[i].Equals(other.Monomers[i]))
                 return false;
 
         return true;

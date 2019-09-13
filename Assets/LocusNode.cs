@@ -37,8 +37,10 @@ public class LocusNode : DNAPanelNode, Choice<string>
         }
     }
 
-    void Start()
+    protected override void Start()
     {
+        base.Start();
+
         int i = 0;
         foreach (LocusIcon locus_icon in options.GetComponentsInChildren<LocusIcon>())
             locus_icon.Codon = Interpretase.ValueToCodon(i++ + 48);

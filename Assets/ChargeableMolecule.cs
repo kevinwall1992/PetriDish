@@ -82,12 +82,14 @@ public class ChargeableMolecule : Molecule
     {
         return JObject.FromObject(Utility.CreateDictionary<string, object>("Type", "Chargeable Molecule", 
                                                                            "Molecule", molecule.EncodeJson(), 
-                                                                           "kJ Per Mole", kJPerMole));
+                                                                           "kJ Per Mole", kJPerMole, 
+                                                                           "Is Charged", IsCharged));
     }
 
     public override void DecodeJson(JObject json_object)
     {
         molecule = Molecule.DecodeMolecule(json_object["Molecule"] as JObject);
         kJPerMole = Utility.JTokenToFloat(json_object["kJ Per Mole"]);
+        IsCharged = Utility.JTokenToBool(json_object["Is Charged"]);
     }
 }

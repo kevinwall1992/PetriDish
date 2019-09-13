@@ -445,10 +445,6 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
                     {
                         Cell.Slot slot = cell.Slots[slot_index];
 
-                        int foo = 0;
-                        if (slot.Compound != null && slot.Compound.Molecule is Ribozyme && (slot.Compound.Molecule as Ribozyme).Name == "Interpretase")
-                            foo += 1;
-
                         if (slot.Compound != null)
                             cell_copy.Slots[slot_index].AddCompound(slot.Compound.Copy());
                     }
@@ -484,10 +480,6 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
                     for (int slot_index = 0; slot_index < 6; slot_index++)
                     {
                         Cell.Slot slot = other_cell.Slots[slot_index];
-
-                        int foo = 0;
-                        if (slot.Compound != null && slot.Compound.Molecule is Ribozyme && (slot.Compound.Molecule as Ribozyme).Name == "Interpretase")
-                            foo += 1;
 
                         if (slot.Compound != null)
                             cell_copy.Slots[slot_index].AddCompound(slot.Compound.Copy());

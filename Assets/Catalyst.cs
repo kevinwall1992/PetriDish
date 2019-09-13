@@ -454,8 +454,11 @@ public abstract class ProgressiveCatalyst : Catalyst
 
             List<Catalyst> satisfied_claimants = new List<Catalyst>();
 
-            int foo = 0;
-            while (satisfied_claimants.Count < claimants.Count && foo++ < 100)
+            //In in each iteration, sum the demands of remaining claimants, 
+            //scale demands down to fit within resource availability,
+            //Subtract this final demanded quantity from availability,
+            //And remove claimants that demanded any now depleted resource.
+            while (processed_claimants.Count < claimants.Count)
             {
                 foreach (object source in availablities.Keys)
                     foreach (Molecule molecule in availablities[source].Keys)

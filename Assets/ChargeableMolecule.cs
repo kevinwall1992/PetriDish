@@ -70,6 +70,14 @@ public class ChargeableMolecule : Molecule
                (IsCharged == other.IsCharged);
     }
 
+    public override Molecule Copy()
+    {
+        ChargeableMolecule copy = new ChargeableMolecule(molecule, kJPerMole);
+        copy.IsCharged = IsCharged;
+
+        return copy;
+    }
+
     public override JObject EncodeJson()
     {
         return JObject.FromObject(Utility.CreateDictionary<string, object>("Type", "Chargeable Molecule", 

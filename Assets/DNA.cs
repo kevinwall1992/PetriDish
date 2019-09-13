@@ -178,7 +178,9 @@ public class DNA : Polymer
         json_dna_object["Type"] = "DNA";
         json_dna_object["Sequence"] = Sequence;
 
-        if (sectors.Count > 0)
+        if (sectors.Count > 1 || 
+            MainSector.Name != default_main_sector_name || 
+            MainSector.Description != default_main_sector_description)
         {
             JArray json_sector_array = new JArray();
             foreach (Sector sector in Sectors)
@@ -239,7 +241,9 @@ public class DNA : Polymer
             return main_sector;
         }
     }
-    void AddMainSector() { AddSector("Main Sector", "Describe this DNA strand here", 0, CodonCount - 1); }
+    const string default_main_sector_name = "Main Sector";
+    const string default_main_sector_description = "Describe this DNA strand here";
+    void AddMainSector() { AddSector(default_main_sector_name, default_main_sector_description, 0, CodonCount - 1); }
 
     public Sector AddSector(string name , string description, int first_codon_index, int last_codon_index)
     {

@@ -73,7 +73,7 @@ public abstract class Action
                 new Stage(typeof(Interpretase.GoToCommand)),
 
                 new Stage(typeof(ReactionAction),
-                            typeof(Pumpase),
+                            typeof(PumpAction),
                             typeof(Interpretase.CopyCommand),
                             typeof(Interpretase.LoadProgram)),
 

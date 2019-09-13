@@ -114,6 +114,8 @@ public class CommandNode : DNAPanelNode
             case "CVL": icon_filename = "release_icon"; break;
             case "CCC": icon_filename = "spin_icon"; break;
             case "CFF": icon_filename = "copy_icon"; break;
+            case "CLV": icon_filename = "pass_icon"; break;
+            case "CLC": icon_filename = "wait_icon"; break;
             case "CLF": icon_filename = "if_icon"; break;
             case "CLL": icon_filename = "try_icon"; break;
         }

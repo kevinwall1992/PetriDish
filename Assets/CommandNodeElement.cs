@@ -45,7 +45,8 @@ public class CommandNodeElement : GoodBehavior
             switch(value)
             {
                 case "CVF": 
-                case "CVL": 
+                case "CVL":
+                case "CLV":
                 case "FVV": break;
 
                 case "CVV":
@@ -59,6 +60,8 @@ public class CommandNodeElement : GoodBehavior
                 case "FCC": operands = "VVVVVV"; break;
 
                 case "CFF": operands = "LVVLVV"; break;
+
+                case "CLC": operands = "VVC"; break;
 
                 case "CLL": operands = "LVVCVFVVV"; break;
                      
@@ -119,7 +122,7 @@ public class CommandNodeElement : GoodBehavior
 
             if ((int)scroll_value != 0)
             {
-                string[] command_codons = { "CVV", "CVC", "CVF", "CVL", "CCC", "CFF", "CLL", "CLF" };
+                string[] command_codons = { "CVV", "CVC", "CVF", "CVL", "CCC", "CFF", "CLV", "CLC", "CLL", "CLF" };
 
                 string[] value_and_function_codons = { "VVV", "VVC", "VVF", "VVL",
                                                        "VCV", "VCC", "VCF", "VCL",
@@ -245,6 +248,8 @@ public class CommandNodeElement : GoodBehavior
                     case "CVL": codon_text.text = "Release"; break;
                     case "CCC": codon_text.text = "Spin"; break;
                     case "CFF": codon_text.text = "Copy"; break;
+                    case "CLV": codon_text.text = "Pass"; break;
+                    case "CLC": codon_text.text = "Wait"; break;
                     case "CLL": codon_text.text = "Try"; break;
                     case "CLF": codon_text.text = "If"; break;
                 }

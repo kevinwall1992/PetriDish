@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
 public class Interpretase : ProgressiveCatalyst
 {
     public override int Power { get { return 10; } }
@@ -102,6 +101,18 @@ public class Interpretase : ProgressiveCatalyst
                                          start_marker as string, 
                                          stop_marker as string);
 
+            case "CLV":
+                return new PassCommand(slot, command_codon_index);
+
+            //Wait
+            case "CLC":
+                if(ComputeFunction(slot, DNA, operand_index, out operand_index)!= 0)
+                {
+                    DNA.ActiveCodonIndex = command_codon_index + GetOperandCount(DNA, command_codon_index) + 1;
+                    return Interpret(slot, FindCommandCodon(DNA));
+                }
+                break;
+
             //If
             case "CLF":
 
@@ -160,11 +171,13 @@ public class Interpretase : ProgressiveCatalyst
                     {
                         case "CVF":
                         case "CVL":
+                        case "CLV":
                             operand_count += 0;
                             break;
 
                         case "CVV":
                         case "CCC":
+                        case "CLC":
                             operand_count += 1;
                             break;
 
@@ -903,6 +916,15 @@ public class Interpretase : ProgressiveCatalyst
         public static Direction CodonToDirection(string codon)
         {
             return ValueToDirection(CodonToValue(codon));
+        }
+    }
+
+    public class PassCommand : Command
+    {
+        public PassCommand(Cell.Slot catalyst_slot, int command_codon_index) 
+            : base(catalyst_slot, command_codon_index, 0)
+        {
+
         }
     }
 }

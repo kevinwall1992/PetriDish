@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Newtonsoft.Json.Linq;
+using System.IO;
 
 public static class FileUtility
 {
@@ -25,13 +26,13 @@ public static class FileUtility
 
     public static void Save(Encodable encodable, string path)
     {
-        WriteTextFile(path, encodable.EncodeString());
+        WriteTextFile(path, encodable.EncodeJson().ToString());
     }
 
     public static T Load<T>(string path) where T : Encodable, new()
     {
         T obj = new T();
-        obj.DecodeString(ReadTextFile(path));
+        obj.DecodeJson(JObject.Parse(ReadTextFile(path)));
 
         return obj;
     }

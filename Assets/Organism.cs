@@ -548,16 +548,6 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
         return true;
     }
 
-    public string EncodeString()
-    {
-        return EncodeJson().ToString();
-    }
-
-    public void DecodeString(string string_encoding)
-    {
-        DecodeJson(JObject.Parse(string_encoding));
-    }
-
     public JObject EncodeJson()
     {
         JArray json_cell_array = new JArray();

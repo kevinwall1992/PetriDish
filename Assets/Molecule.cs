@@ -155,9 +155,6 @@ public abstract class Molecule : Copiable<Molecule>, Stackable, Encodable
     }
 
 
-    public virtual string EncodeString() { return EncodeJson().ToString(); }
-    public virtual void DecodeString(string string_encoding) { DecodeJson(JObject.Parse(string_encoding)); }
-
     public abstract JObject EncodeJson();
     public abstract void DecodeJson(JObject json_object);
 
@@ -215,11 +212,6 @@ public class SimpleMolecule : Molecule
         enthalpy = enthalpy_;
     }
 
-    public SimpleMolecule(string string_encoding)
-    {
-        DecodeString(string_encoding);
-    }
-
     public override JObject EncodeJson()
     {
         return JObject.FromObject(Utility.CreateDictionary<string, string>("Type", "Simple Molecule",
@@ -233,7 +225,5 @@ public class SimpleMolecule : Molecule
 
         elements = new Dictionary<Element, int>(other.elements);
         enthalpy = other.enthalpy;
-
-        
     }
 }

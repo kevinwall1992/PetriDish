@@ -320,9 +320,6 @@ public abstract class ProgressiveCatalyst : Catalyst
     }
 
 
-    public virtual string EncodeString() { return EncodeJson().ToString(); }
-    public virtual void DecodeString(string string_encoding) { DecodeJson(JObject.Parse(string_encoding)); }
-
     public virtual JObject EncodeJson()
     {
         JArray json_cofactor_array = new JArray();

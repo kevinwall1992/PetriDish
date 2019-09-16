@@ -620,7 +620,7 @@ public abstract class InstantCatalyst : ProgressiveCatalyst
     public override void Communicate(Cell.Slot slot, Action.Stage stage)
     {
         Action action = GetAction(slot);
-        if (!stage.Includes(action))
+        if (action == null || !stage.Includes(action) || !action.IsLegal)
             return;
 
         action.Cost = slot.Compound.Quantity;
@@ -642,8 +642,15 @@ public abstract class InstantCatalyst : ProgressiveCatalyst
         if (!stage.Includes(action))
             return null;
 
+        if (!action.IsLegal)
+            return null;
+
         action.Cost = slot.Compound.Quantity;
-        action.Scale *= GetNormalizedClaimYield();
+
+        float claim_yield = GetNormalizedClaimYield();
+        if (claim_yield == 0)
+            return null;
+        action.Scale *= claim_yield;
 
         return action;
     }

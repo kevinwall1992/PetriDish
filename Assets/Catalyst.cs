@@ -667,7 +667,7 @@ public class Constructase : ProgressiveCatalyst
 
     public Constructase() : base("Constructase", 1, "Makes new cells")
     {
-        Attachments[Cell.Slot.Relation.Across] = Feed = new InputAttachment(Molecule.GetMolecule("Structate"));
+        Attachments[Cell.Slot.Relation.Left] = Feed = new InputAttachment(Molecule.GetMolecule("Structate"));
         Attachments[Cell.Slot.Relation.Across] = Extruder = new Extruder();
     }
 
@@ -688,13 +688,13 @@ public class Constructase : ProgressiveCatalyst
         {
             get
             {
-                if ((Catalyst as Constructase).Extruder.GetSlotPointedAt(CatalystSlot) != null)
+                if (Constructase.Extruder.GetSlotPointedAt(CatalystSlot) != null)
                     return false;
 
-                Cell.Slot feed_slot = (Catalyst as Constructase).Feed.GetSlotPointedAt(CatalystSlot);
+                Cell.Slot feed_slot = Constructase.Feed.GetSlotPointedAt(CatalystSlot);
                 if (feed_slot == null ||
                     feed_slot.Compound == null ||
-                    !feed_slot.Compound.Molecule.IsStackable((Catalyst as Constructase).Feed.Molecule))
+                    !feed_slot.Compound.Molecule.IsStackable(Constructase.Feed.Molecule))
                     return false;
 
                 return base.IsLegal;
@@ -702,6 +702,8 @@ public class Constructase : ProgressiveCatalyst
         }
 
         public Compound Feedstock { get; private set; }
+
+        public Constructase Constructase { get { return Catalyst.GetFacet<Constructase>(); } }
 
         public ConstructCell(Cell.Slot catalyst_slot)
             : base(catalyst_slot, 2, -2.0f)
@@ -713,18 +715,15 @@ public class Constructase : ProgressiveCatalyst
         {
             Dictionary<object, List<Compound>> demands = base.GetResourceDemands();
 
-            Constructase constructase = Catalyst as Constructase;
-            demands[constructase.Feed.GetSlotPointedAt(CatalystSlot)]
-                .Add(new Compound(constructase.Feed.Molecule, constructase.RequiredQuantity));
+            Cell.Slot slot = Constructase.Feed.GetSlotPointedAt(CatalystSlot);
+            demands[slot] = Utility.CreateList(new Compound(Constructase.Feed.Molecule, Constructase.RequiredQuantity));
 
             return demands;
         }
 
         public override void Begin()
         {
-            Constructase constructase = Catalyst as Constructase;
-
-            Feedstock = constructase.Feed.Take(CatalystSlot, constructase.RequiredQuantity);
+            Feedstock = Constructase.Feed.Take(CatalystSlot, Constructase.RequiredQuantity);
         }
 
         public override void End()

@@ -97,6 +97,8 @@ public class MoleculeComponent : GoodBehavior
                         attachment_component = Instantiate(Scene.Micro.Prefabs.GrabberComponent);
                     else if (attachment is Extruder)
                         attachment_component = Instantiate(Scene.Micro.Prefabs.ExtruderComponent);
+                    else if (attachment is Separator)
+                        attachment_component = Instantiate(Scene.Micro.Prefabs.SeparatorComponent);
 
                     attachment_component.transform.SetParent(attachment_transform, false);
                     attachment_component.SetAttachment(attachment, catalyst is Ribozyme ? ribozyme_color : enzyme_color);

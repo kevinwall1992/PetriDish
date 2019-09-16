@@ -744,11 +744,13 @@ public class Extruder : Attachment { }
 
 public class Separatase : ProgressiveCatalyst
 {
+    public Separator Separator { get; private set; }
+
     public override int Power { get { return 10; } }
 
     public Separatase() : base("Separatase", 1, "Separates cells from one another")
     {
-
+        Attachments[Cell.Slot.Relation.Across] = Separator = new Separator();
     }
 
     protected override Action GetAction(Cell.Slot slot)
@@ -815,6 +817,9 @@ public class Separatase : ProgressiveCatalyst
         }
     }
 }
+
+public class Separator : Attachment { }
+
 
 public class Pumpase : InstantCatalyst
 {

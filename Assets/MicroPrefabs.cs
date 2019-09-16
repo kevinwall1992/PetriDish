@@ -71,6 +71,10 @@ public class MicroPrefabs : MonoBehaviour
     public AttachmentComponent ExtruderComponent { get { return extruder_component; } }
 
     [SerializeField]
+    AttachmentComponent separator_component;
+    public AttachmentComponent SeparatorComponent { get { return separator_component; } }
+
+    [SerializeField]
     SectorNode sector_node;
     public SectorNode SectorNode { get { return sector_node; } }
 

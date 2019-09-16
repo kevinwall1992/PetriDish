@@ -41,14 +41,6 @@ public class PlayPauseButton : ScalingButton
         base.Update();
 
         IsPaused = Scene.Micro.Visualization.IsPaused;
-
-        if (Input.GetKeyUp(KeyCode.Space))
-        {
-            if (step_button.IsStepping)
-                Scene.Micro.Visualization.TakeOneStep();
-            else
-                IsPlaying = !IsPlaying;
-        }
     }
 
     public override void OnPointerClick(PointerEventData eventData)

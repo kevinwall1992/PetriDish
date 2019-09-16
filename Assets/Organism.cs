@@ -576,7 +576,9 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
             json_deck_array.Add(catalyst.EncodeJson());
 
 
-        return JObject.FromObject(Utility.CreateDictionary<string, object>("Cells", json_cell_array, "Deck", json_deck_array));
+        return JObject.FromObject(Utility.CreateDictionary<string, object>("Cells", json_cell_array, 
+                                                                           "Cytosol", cytosol.EncodeJson(), 
+                                                                           "Deck", json_deck_array));
     }
 
     public void DecodeJson(JObject json_organism_object)
@@ -636,6 +638,9 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
 
             cells[relative_position.x][relative_position.y] = decoded_cells[position];
         }
+
+
+        cytosol.DecodeJson(json_organism_object["Cytosol"] as JObject);
 
 
         foreach (var json_catalyst_token in json_organism_object["Deck"] as JArray)

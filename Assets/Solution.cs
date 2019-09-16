@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
 //Need to add support for arbitrarily large amounts of water/ solvent
-public class Solution : MutableContainer<Compound>, Volume
+public class Solution : MutableContainer<Compound>, Volume, Encodable
 {
     PrecisionSolution precision_solution;
 
@@ -59,7 +60,7 @@ public class Solution : MutableContainer<Compound>, Volume
     }
 
 
-    class PrecisionSolution : Volume
+    class PrecisionSolution : Volume, Encodable
     {
         public class PrecisionCompound
         {
@@ -197,6 +198,32 @@ public class Solution : MutableContainer<Compound>, Volume
                    molecule.AtomCount * GetQuantity(molecule) /
                    MathUtility.Sum(Molecules, (molecule_) => (molecule_.AtomCount * GetQuantity(molecule_)))));
         }
+
+
+        public JObject EncodeJson()
+        {
+            JArray json_compounds_array = new JArray();
+
+            foreach (PrecisionCompound compound in compounds.Values)
+                json_compounds_array.Add(JObject.FromObject(Utility.CreateDictionary<string, object>(
+                    "Molecule", compound.molecule.EncodeJson(),
+                    "Quantity", compound.quantity)));
+
+            return JObject.FromObject(Utility.CreateDictionary<string, object>("Compounds", json_compounds_array));
+        }
+
+        public void DecodeJson(JObject json_solution_object)
+        {
+            compounds.Clear();
+
+            foreach(JToken json_compound_token in json_solution_object["Compounds"])
+            {
+                JObject json_compound_object = json_compound_token as JObject;
+                Molecule molecule = Molecule.DecodeMolecule(json_compound_object["Molecule"] as JObject);
+
+                compounds[molecule] = new PrecisionCompound(molecule, Utility.JTokenToDecimal(json_compound_object["Quantity"]));
+            }
+        }
     }
 
     public override IEnumerable<Compound> Items
@@ -220,5 +247,15 @@ public class Solution : MutableContainer<Compound>, Volume
     public override Compound RemoveItem(Compound compound)
     {
         return RemoveCompound(compound);
+    }
+
+    public JObject EncodeJson()
+    {
+        return precision_solution.EncodeJson();
+    }
+
+    public void DecodeJson(JObject json_solution_object)
+    {
+        precision_solution.DecodeJson(json_solution_object);
     }
 }

@@ -78,6 +78,8 @@ public class MicroVisualization : GoodBehavior
 
             Scene.Micro.Editor.Do();
         }
+        else if (Input.GetKey(KeyCode.RightBracket))
+            FileUtility.Save(OrganismComponent.Organism, "Organisms/saved_organism.json");
 
         if (IsPaused && !take_one_step)
             return;

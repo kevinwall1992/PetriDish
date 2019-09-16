@@ -6,7 +6,7 @@ using System;
 using Newtonsoft.Json.Linq;
 using System.IO;
 
-public class Utility
+public static class Utility
 {
     public static List<T> CreateList<T>(params T[] elements)
     {
@@ -37,6 +37,16 @@ public class Utility
             list.Add(null);
 
         return list;
+    }
+
+    public static bool SetEquality<T>(IEnumerable<T> a, IEnumerable<T> b)
+    {
+        return a.Count() == b.Count() && a.Except(b).Count() == 0;
+    }
+
+    public static bool SetEquality<T, U>(Dictionary<T, U> a, Dictionary<T, U> b)
+    {
+        return a.Count == b.Count && a.Except(b).Count() == 0;
     }
 
     public static T RemoveElement<T>(List<T> list, T element)
@@ -153,6 +163,14 @@ public class Utility
             return default_value;
 
         return Convert.ToSingle(json);
+    }
+
+    public static decimal JTokenToDecimal(JToken json, decimal default_value = 0)
+    {
+        if (json == null)
+            return default_value;
+
+        return Convert.ToDecimal(json);
     }
 
     public static int JTokenToInt(JToken json, int default_value = 0)

@@ -538,6 +538,8 @@ public class Interpretase : ProgressiveCatalyst
 
         public override void End()
         {
+            (ProgramCompound.Molecule as DNA).InsertSequence(0, "LLL");
+
             Catalyst.GetFacet<Interpretase>().AddCofactor(ProgramCompound);
 
             base.End();

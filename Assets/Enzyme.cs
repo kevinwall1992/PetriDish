@@ -56,10 +56,10 @@ public class Enzyme : Polymer, Catalyst
         return null;
     }
 
-    public static Enzyme GetEnzyme(Catalyst catalyst, int length = -1)
+    public static Enzyme GetEnzyme(Catalyst catalyst)
     {
         foreach (Enzyme enzyme in enzymes.Values)
-            if (length < 0 || enzyme.AminoAcidSequence.Count == length && enzyme.Catalyst.Equals(catalyst))
+            if (enzyme.Catalyst.Equals(catalyst))
                 return enzyme;
 
         return null;
@@ -150,11 +150,12 @@ public class Enzyme : Polymer, Catalyst
 
         Catalyst = catalyst_;
 
-        int length = Catalyst.Power / 2;
-        List<AminoAcid> amino_acid_sequence = GenerateAminoAcidSequence(length);
-        Enzyme enzyme = GetEnzyme(Catalyst, length);
+        List<AminoAcid> amino_acid_sequence = null;
+        Enzyme enzyme = GetEnzyme(Catalyst);
         if (enzyme != null)
             amino_acid_sequence = enzyme.AminoAcidSequence;
+        else
+            GenerateAminoAcidSequence(Catalyst.Power / 2);
 
         foreach (AminoAcid amino_acid in amino_acid_sequence)
             AppendMonomer(amino_acid);
@@ -184,16 +185,6 @@ public class Enzyme : Polymer, Catalyst
         return Catalyst.Catalyze(slot, stage);
     }
 
-    public virtual Catalyst Mutate()
-    {
-        Catalyst mutant_catalyst = Catalyst.Mutate();
-
-        if (MathUtility.Roll(0.9f))
-            return new Enzyme(mutant_catalyst);
-        else
-            return new Ribozyme(mutant_catalyst);
-    }
-
     public T GetFacet<T>() where T : class, Catalyst
     {
         if (typeof(T) == typeof(Enzyme))
@@ -212,6 +203,54 @@ public class Enzyme : Polymer, Catalyst
 
     public bool CanAddCofactor(Compound cofactor) { return Catalyst.CanAddCofactor(cofactor); }
     public void AddCofactor(Compound cofactor) { Catalyst.AddCofactor(cofactor); }
+
+    public virtual Catalyst Mutate()
+    {
+        Catalyst mutant_catalyst = Catalyst.Mutate();
+
+        if (MathUtility.Roll(0.9f))
+            return new Enzyme(mutant_catalyst);
+        else
+            return new Ribozyme(mutant_catalyst);
+    }
+
+    public bool IsSame(Catalyst other)
+    {
+        if (!(other is Enzyme))
+            return false;
+
+        Enzyme other_enzyme = other as Enzyme;
+
+        if (!(this as Polymer).IsStackable(other_enzyme as Polymer))
+            return false;
+
+        return Catalyst.IsSame(other_enzyme.Catalyst);
+    }
+
+    public override bool IsStackable(object obj)
+    {
+        if (!(obj is Enzyme))
+            return false;
+
+        Enzyme other = obj as Enzyme;
+
+        if (!IsSame(other))
+            return false;
+
+        return Catalyst.IsStackable(other.Catalyst);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (!IsStackable(obj))
+            return false;
+
+        if (!base.Equals(obj))
+            return false;
+
+        return Catalyst.Equals(obj as Catalyst);
+    }
+
 
     Catalyst Copiable<Catalyst>.Copy() { return Copy() as Ribozyme; }
 

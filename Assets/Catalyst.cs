@@ -37,6 +37,10 @@ public interface Catalyst : Copiable<Catalyst>, Stackable, Encodable
     Action Catalyze(Cell.Slot slot, Action.Stage stage);
 
     Catalyst Mutate();
+
+    //Essentially, .Equals() without state
+    //(We ignore orientation and cofactors)
+    bool IsSame(Catalyst other);
 }
 
 public abstract class Attachment
@@ -268,25 +272,25 @@ public abstract class ProgressiveCatalyst : Catalyst
     }
 
 
-    public virtual bool IsStackable(object obj)
+    public virtual bool IsSame(Catalyst other)
     {
-        if (this == obj)
+        if (this == other)
             return true;
 
-        if (GetType() != obj.GetType())
+        return GetType() == other.GetType();
+    }
+
+    public virtual bool IsStackable(object obj)
+    {
+        if (!(obj is Catalyst))
             return false;
 
         Catalyst other = obj as Catalyst;
 
-        foreach (Compound compound in cofactors)
-            if (!other.Cofactors.Contains(compound))
-                return false;
+        if (!IsSame(other))
+            return false;
 
-        foreach (Compound compound in other.Cofactors)
-            if (!Cofactors.Contains(compound))
-                return false;
-
-        return true;
+        return Utility.SetEquality(Cofactors, other.Cofactors);
     }
 
     public override bool Equals(object obj)
@@ -865,15 +869,15 @@ public class Pumpase : InstantCatalyst
         }
     }
 
-    public override bool IsStackable(object obj)
+    public override bool IsSame(Catalyst other)
     {
-        if (!base.IsStackable(obj))
+        if (!base.IsSame(other))
             return false;
 
-        Pumpase other = obj as Pumpase;
+        Pumpase other_pumpase = other as Pumpase;
 
-        return other.is_isomer == is_isomer &&
-               other.Molecule.Equals(Molecule);
+        return other_pumpase.is_isomer == is_isomer &&
+               other_pumpase.Molecule.Equals(Molecule);
     }
 
     public override Catalyst Copy()

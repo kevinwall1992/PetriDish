@@ -697,6 +697,15 @@ public class Reaction
             return reaction.Mutate().Catalyst;
         }
 
+        public override bool IsSame(Catalyst other)
+        {
+            if (!base.IsSame(other))
+                return false;
+
+            return reaction == (other as ReactionCatalyst).reaction;
+        }
+
+
         public override Catalyst Copy()
         {
             return new ReactionCatalyst(Name, reaction).CopyStateFrom(this);

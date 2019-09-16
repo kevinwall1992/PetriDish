@@ -13,10 +13,10 @@ public class Ribozyme : DNA, Catalyst
         return null;
     }
 
-    public static Ribozyme GetRibozyme(Catalyst catalyst, int codon_count = -1)
+    public static Ribozyme GetRibozyme(Catalyst catalyst)
     {
         foreach (Ribozyme ribozyme in ribozymes.Values)
-            if (codon_count < 0 || ribozyme.CodonCount == codon_count && ribozyme.Catalyst.Equals(catalyst))
+            if (ribozyme.Catalyst.IsSame(catalyst))
                 return ribozyme;
 
         return null;
@@ -47,13 +47,11 @@ public class Ribozyme : DNA, Catalyst
 
     static string GetDNASequence(Catalyst catalyst)
     {
-        int codon_count = catalyst.Power;
-
-        Ribozyme ribozyme = GetRibozyme(catalyst, codon_count);
+        Ribozyme ribozyme = GetRibozyme(catalyst);
         if (ribozyme != null)
             return ribozyme.Sequence;
 
-        return GenerateDNASequence(codon_count);
+        return GenerateDNASequence(catalyst.Power);
     }
 
 
@@ -103,16 +101,6 @@ public class Ribozyme : DNA, Catalyst
         return Catalyst.Catalyze(slot, stage);
     }
 
-    public virtual Catalyst Mutate()
-    {
-        Catalyst mutant_catalyst = Catalyst.Mutate();
-
-        if (MathUtility.Roll(0.9f))
-            return new Ribozyme(mutant_catalyst);
-        else
-            return new Enzyme(mutant_catalyst);
-    }
-
     public T GetFacet<T>() where T : class, Catalyst
     {
         if (typeof(T) == typeof(Ribozyme))
@@ -131,6 +119,54 @@ public class Ribozyme : DNA, Catalyst
 
     public bool CanAddCofactor(Compound cofactor) { return Catalyst.CanAddCofactor(cofactor); }
     public void AddCofactor(Compound cofactor) { Catalyst.AddCofactor(cofactor); }
+
+    public virtual Catalyst Mutate()
+    {
+        Catalyst mutant_catalyst = Catalyst.Mutate();
+
+        if (MathUtility.Roll(0.9f))
+            return new Ribozyme(mutant_catalyst);
+        else
+            return new Enzyme(mutant_catalyst);
+    }
+
+    public bool IsSame(Catalyst other)
+    {
+        if (!(other is Ribozyme))
+            return false;
+
+        Ribozyme other_ribozyme = other as Ribozyme;
+
+        if (!base.IsStackable(other_ribozyme))
+            return false;
+
+        return Catalyst.IsSame(other_ribozyme.Catalyst);
+    }
+
+    public override bool IsStackable(object obj)
+    {
+        if (!(obj is Ribozyme))
+            return false;
+
+        Ribozyme other = obj as Ribozyme;
+
+        if (!IsSame(other))
+            return false;
+
+        return Catalyst.IsStackable(other.Catalyst);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (!IsStackable(obj))
+            return false;
+
+        if (!base.Equals(obj))
+            return false;
+
+        return Catalyst.Equals((obj as Ribozyme).Catalyst);
+    }
+
 
     Catalyst Copiable<Catalyst>.Copy() { return Copy() as Ribozyme; }
 

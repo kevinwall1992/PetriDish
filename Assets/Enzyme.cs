@@ -297,7 +297,7 @@ public class AminoAcid : Polymer.Monomer
     static AminoAcid()
     {
         Phlorodine = new AminoAcid(GetMolecule("Phlorate"), "Phl");
-        Umine = new AminoAcid(GetMolecule("Umamia"), "Umi");
+        Umine = new AminoAcid(GetMolecule("Umomia"), "Umo");
         Aquine = new AminoAcid(Water, "Aqu");
     }
 

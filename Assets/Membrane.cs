@@ -18,12 +18,11 @@ public class Membrane : Interface<Cytosol, Locale>
 
     public override float SurfaceArea{ get{ return organism.SurfaceArea; } }
 
-    public Membrane(Organism organism_, Dictionary<Molecule, float> permeability_)
+    public Membrane(Organism organism_)
     {
         organism = organism_;
 
-        foreach (Molecule molecule in permeability_.Keys)
-            permeability[molecule] = permeability_[molecule];
+        permeability[Molecule.Water] = 1;
     }
 
     float GetPermeability(Molecule molecule)
@@ -31,7 +30,7 @@ public class Membrane : Interface<Cytosol, Locale>
         if (permeability.ContainsKey(molecule))
             return permeability[molecule];
 
-        return 1;
+        return 0;
     }
 
     void SetOutside()

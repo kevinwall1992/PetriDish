@@ -4,6 +4,7 @@ using System.Linq;
 using System;
 using Newtonsoft.Json.Linq;
 
+
 public class Organism : Chronal, Versionable<Organism>, Encodable
 {
     List<List<Cell>> cells= new List<List<Cell>>();
@@ -24,7 +25,7 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
 
     public Organism(Cell cell)
     {
-        membrane = new Membrane(this, new Dictionary<Molecule, float>());
+        membrane = new Membrane(this);
 
         cells.Add(new List<Cell>());
         cells[0].Add(cell);
@@ -34,7 +35,7 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
 
     public Organism()
     {
-        membrane = new Membrane(this, new Dictionary<Molecule, float>());
+        membrane = new Membrane(this);
 
         cells.Add(new List<Cell>());
         cells[0].Add(new Cell(this));

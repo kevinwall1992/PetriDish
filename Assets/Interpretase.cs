@@ -686,6 +686,20 @@ public class Interpretase : ProgressiveCatalyst
 
         public Command Command { get; private set; }
 
+        public override bool IsLegal
+        {
+            get
+            {
+                if (!base.IsLegal)
+                    return false;
+
+                if(Command == null || !Command.IsLegal)
+                    command_has_failed = true;
+
+                return true;
+            }
+        }
+
         public TryCommand(Cell.Slot catalyst_slot, int command_codon_index, Command command, string marker_) 
             : base(catalyst_slot, command_codon_index, command != null ? command.Cost : 0)
         {
@@ -697,9 +711,7 @@ public class Interpretase : ProgressiveCatalyst
         {
             base.Begin();
 
-            if (Command == null || !Command.IsLegal)
-                command_has_failed = true;
-            else
+            if(!command_has_failed)
                 Command.Begin();
         }
 

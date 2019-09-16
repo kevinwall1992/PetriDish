@@ -338,11 +338,10 @@ public class Interpretase : ProgressiveCatalyst
                     break;
 
                 case 'C':
-                    codon_index += Interpretase.GetOperandCount(dna, codon_index);
-                    break;
-
                 case 'L':
-                    break;
+                    length = -1;
+                    return null;
+
             }
         }
 

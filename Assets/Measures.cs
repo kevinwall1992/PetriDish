@@ -5,7 +5,7 @@ public static class Measures
     public static decimal AvogadrosNumber { get { return 6.02m * (decimal)System.Math.Pow(10, 23); } }
 
     public static decimal GramsPerDalton { get { return 1.66m * (decimal)System.Math.Pow(10, -24); } }
-    public static decimal SmolesPerMole { get { return (decimal)System.Math.Pow(10, 18); } }
+    public static decimal SmolesPerMole { get { return (decimal)System.Math.Pow(10, 19); } }
     public static decimal MolesOfWaterPerLiter { get { return 55.56m; } }
     public static decimal SmolesOfWaterPerLiter { get { return MolesToSmoles(MolesOfWaterPerLiter); } }
 

@@ -87,13 +87,19 @@ public class Membrane : Interface<Cytosol, Locale>
     {
         Debug.Assert(organism.Locale is WaterLocale);
 
-        Solution source = transport_out ? organism.Cytosol : (organism.Locale as WaterLocale).Solution;
-        Solution destination = transport_out ? (organism.Locale as WaterLocale).Solution : organism.Cytosol;
+        float locale_quantity = (organism.Locale as WaterLocale).Solution.GetQuantity(molecule);
+        float organism_quantity = organism.Cytosol.GetQuantity(molecule);
+        foreach (Cell cell in organism.GetCells())
+            foreach (Cell.Slot slot in cell.Slots)
+                if (slot.Compound != null && slot.Compound.Molecule.Equals(molecule))
+                    organism_quantity += slot.Compound.Quantity;
 
-        float source_concentration = source.GetConcentration(molecule);
-        float destination_concentration = destination.GetConcentration(molecule);
+        float locale_concentration = (organism.Locale as WaterLocale).Solution.GetConcentration(molecule);
+        float organism_concentration = Measures.SmolesToMoles(organism_quantity) / organism.Cytosol.Liters;
+        float concentration_gradient = transport_out ? (organism_concentration + 0.000001f) / (locale_concentration + 0.000001f) :
+                                                       (locale_concentration + 0.000001f) / (organism_concentration + 0.000001f);
 
-        return source_concentration * 10000000 *
-                Mathf.Min(source_concentration / destination_concentration, 10);
+
+        return 4 / (1 + ((float)molecule.Mass / Molecule.Water.Mass) / concentration_gradient);
     }
 }

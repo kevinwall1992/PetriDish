@@ -2,78 +2,77 @@
 using System.Collections.Generic;
 using System.Linq;
 
-public class Mess : Molecule, Catalyst
+public class Mess : Molecule
 {
     Dictionary<Molecule, Compound> compounds = new Dictionary<Molecule, Compound>();
 
-    public override float Enthalpy { get { return 0; } }
+    public IEnumerable<Compound> Compounds { get { return compounds.Values; } }
 
-    public override Dictionary<Element, int> Elements { get { return new Dictionary<Element, int>(); } }
-
-    public string Description { get { return "A pile of mixed molecules"; } }
-    public int Price { get { return 0; } }
-    public Example Example { get { return null; } }
-    public int Power { get { return 0; } }
-    public Dictionary<Cell.Slot.Relation, Attachment> Attachments
+    public override float Enthalpy
     {
-        get { return new Dictionary<Cell.Slot.Relation, Attachment>(); }
+        get { return MathUtility.Sum(Compounds, (compound) => (compound.Molecule.Enthalpy * compound.Quantity)); }
     }
 
-    public Cell.Slot.Relation Orientation { get { return Cell.Slot.Relation.Across; } set { } }
-
-    public IEnumerable<Compound> Cofactors { get { return compounds.Values; } }
-
-    public Mess(params Compound[] compounds)
+    public override Dictionary<Element, int> Elements
     {
-        foreach (Compound compound in compounds)
-            AddCofactor(compound);
+        get
+        {
+            Dictionary<Element, float> elements = new Dictionary<Element, float>();
+
+            foreach(Compound compound in Compounds)
+                foreach(Element element in compound.Molecule.Elements.Keys)
+                {
+                    if (!elements.ContainsKey(element))
+                        elements[element] = 0;
+
+                    elements[element] += compound.Molecule.Elements[element] * compound.Quantity;
+                }
+
+            Dictionary<Element, int> rounded_elements = new Dictionary<Element, int>();
+            foreach (Element element in elements.Keys)
+                rounded_elements[element] = (int)elements[element];
+
+            return rounded_elements;
+        }
     }
 
-    public void AddCofactor(Compound cofactor)
+    public Mess(params Compound[] compounds_)
     {
-        if (compounds.ContainsKey(cofactor.Molecule))
-            compounds[cofactor.Molecule].Quantity += cofactor.Quantity;
+        foreach (Compound compound in compounds_)
+            AddToMess(compound);
+    }
+
+    public void AddToMess(Compound compound)
+    {
+        if (!compounds.ContainsKey(compound.Molecule))
+            compounds[compound.Molecule] = compound;
         else
-            compounds[cofactor.Molecule] = cofactor.Copy();
+            compounds[compound.Molecule].Quantity += compound.Quantity;
     }
 
-    public bool CanAddCofactor(Compound cofactor) { return true; }
-
-    public void Communicate(Cell.Slot slot, Action.Stage stage) { }
-    public Action Catalyze(Cell.Slot slot, Action.Stage stage) { return null; }
-
-    public Catalyst Mutate() { return null; }
-
-
-    public void Reset() { }
-
-    public T GetFacet<T>() where T : class, Catalyst
+    public override bool IsStackable(object obj)
     {
-        return this as T;
-    }
+        if (!base.IsStackable(obj))
+            return false;
 
-    public Cell.Slot.Relation GetAttachmentDirection(Attachment attachment)
-    {
-        return Cell.Slot.Relation.None;
-    }
+        if (!(obj is Mess))
+            return false;
 
-    public void RotateLeft() { }
-    public void RotateRight() { }
-
-    public void Step(Cell.Slot slot) { }
-
-    Catalyst Copiable<Catalyst>.Copy()
-    {
-        return new Mess(compounds.Values.ToArray());
+        return Utility.SetEquality(Compounds, (obj as Mess).Compounds);
     }
 
     public override JObject EncodeJson()
     {
-        return JObject.FromObject(Utility.CreateDictionary<string, string>("Type", "Mess"));
+        JArray json_compound_array = new JArray();
+        foreach (Compound compound in Compounds)
+            json_compound_array.Add(compound.EncodeJson());
+
+        return JObject.FromObject(Utility.CreateDictionary<string, object>("Type", "Mess", "Compounds", json_compound_array));
     }
 
-    public override void DecodeJson(JObject json_object)
+    public override void DecodeJson(JObject json_mess_object)
     {
-
+        foreach (var json_compound_token in json_mess_object["Compounds"] as JArray)
+            AddToMess(Compound.DecodeCompound(json_compound_token as JObject));
     }
 }

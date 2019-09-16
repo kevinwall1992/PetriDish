@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+﻿using Newtonsoft.Json.Linq;
+using UnityEngine;
 
 
 //Quantities are in "Smoles"
 //See Measures.cs for conversion to Moles
-public class Compound : Copiable<Compound>
+public class Compound : Copiable<Compound>, Encodable
 {
     Molecule molecule;
     float quantity;
@@ -62,5 +63,25 @@ public class Compound : Copiable<Compound>
     public Compound Copy()
     {
         return new Compound(Molecule.Copy(), Quantity);
+    }
+
+
+    public JObject EncodeJson()
+    {
+        return JObject.FromObject(Utility.CreateDictionary<string, object>("Molecule", Molecule.EncodeJson(), "Quantity", Quantity));
+    }
+
+    public void DecodeJson(JObject json_compound_object)
+    {
+        molecule = Molecule.DecodeMolecule(json_compound_object["Molecule"] as JObject);
+        quantity = Utility.JTokenToFloat(json_compound_object["Quantity"]);
+    }
+
+    public static Compound DecodeCompound(JObject json_compound_object)
+    {
+        Compound compound = new Compound(null, 0);
+        compound.DecodeJson(json_compound_object);
+
+        return compound;
     }
 }

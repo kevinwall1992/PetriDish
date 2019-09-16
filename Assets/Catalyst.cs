@@ -325,8 +325,7 @@ public abstract class ProgressiveCatalyst : Catalyst
         JArray json_cofactor_array = new JArray();
 
         foreach (Compound cofactor in Cofactors)
-            json_cofactor_array.Add(JObject.FromObject(Utility.CreateDictionary<string, object>("Molecule", cofactor.Molecule.EncodeJson(), 
-                                                                                                "Quantity", cofactor.Quantity)));
+            json_cofactor_array.Add(cofactor.EncodeJson());
 
         return JObject.FromObject(Utility.CreateDictionary<string, object>(
             "Type", GetType().Name, 
@@ -343,13 +342,8 @@ public abstract class ProgressiveCatalyst : Catalyst
             case "Across": Orientation = Cell.Slot.Relation.Across; break;
         }
 
-        foreach(JToken json_token in json_object["Cofactors"])
-        {
-            JObject json_cofactor_object = json_token as JObject;
-
-            AddCofactor(new Compound(Molecule.DecodeMolecule(json_cofactor_object["Molecule"] as JObject), 
-                                     Utility.JTokenToFloat(json_cofactor_object["Quantity"])));
-        }
+        foreach(JToken json_cofactor_token in json_object["Cofactors"])
+            AddCofactor(Compound.DecodeCompound(json_cofactor_token as JObject));
     }
 
     public static Catalyst DecodeCatalyst(JObject json_object)

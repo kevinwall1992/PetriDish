@@ -559,13 +559,7 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
                 JObject json_slot_object = new JObject();
 
                 if (slot.Compound != null)
-                {
-                    JObject json_compound_object = new JObject();
-                    json_compound_object["Molecule"] = slot.Compound.Molecule.EncodeJson();
-                    json_compound_object["Quantity"] = slot.Compound.Quantity;
-
-                    json_slot_object["Compound"] = json_compound_object;
-                }
+                    json_slot_object["Compound"] = slot.Compound.EncodeJson();
 
                 json_slot_array.Add(json_slot_object);
             }
@@ -617,8 +611,7 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
                 JObject json_slot_object = json_slot_token as JObject;
 
                 if (json_slot_object["Compound"] != null)
-                    cell.Slots[slot_index].AddCompound(Molecule.DecodeMolecule(json_slot_object["Compound"]["Molecule"] as JObject),
-                                                       Utility.JTokenToFloat(json_slot_object["Compound"]["Quantity"]));
+                    cell.Slots[slot_index].AddCompound(Compound.DecodeCompound(json_slot_object["Compound"] as JObject));
 
                 slot_index++;
             }

@@ -795,30 +795,52 @@ public class Separatase : ProgressiveCatalyst
 
 public class Pumpase : InstantCatalyst
 {
-    bool pump_out;
+    bool is_isomer;
 
     public Molecule Molecule { get; private set; }
+
+    public InputAttachment InPump { get; private set; }
+    public OutputAttachment OutPump { get; private set; }
 
     public override int Power { get { return 6; } }
 
 
-    Pumpase(bool pump_out_, Molecule molecule) 
+    Pumpase(Molecule molecule, bool is_isomer_)
         : base()
     {
-        pump_out = pump_out_;
+        is_isomer = is_isomer_;
         Molecule = molecule;
+
+        
 
         DefaultInitialization();
     }
 
     public Pumpase()
     {
+        
+    }
 
+    void InitializeAttachments()
+    {
+        InPump = new InputAttachment(Molecule);
+        OutPump = new OutputAttachment(Molecule);
+
+        if (!is_isomer)
+        {
+            Attachments[Cell.Slot.Relation.Across] = InPump;
+            Attachments[Cell.Slot.Relation.Right] = OutPump;
+        }
+        else
+        {
+            Attachments[Cell.Slot.Relation.Across] = OutPump;
+            Attachments[Cell.Slot.Relation.Right] = InPump;
+        }
     }
 
     void DefaultInitialization()
     {
-        base.Initialize(pump_out ? "Exopumpase" : "Endopumpase", 1, "Draws in compounds from outside");
+        base.Initialize("Pumpase", 1, "Exchanges compounds with environment");
     }
 
     protected override Action GetAction(Cell.Slot slot)
@@ -826,7 +848,14 @@ public class Pumpase : InstantCatalyst
         if (Molecule == null && slot.Compound == null)
             return null;
 
-        return new PumpAction(slot, pump_out, Molecule, 1);
+        Cell.Slot input_slot = InPump.GetSlotPointedAt(slot);
+        Cell.Slot output_slot = OutPump.GetSlotPointedAt(slot);
+
+        object source = input_slot != null ? (object)input_slot : slot.Cell.Organism.Locale;
+        object destination = output_slot != null ? (object)output_slot : slot.Cell.Organism.Locale;
+
+
+        return new PumpAction(slot, Molecule, source, destination, 1);
     }
 
     public override Catalyst Mutate()
@@ -836,9 +865,9 @@ public class Pumpase : InstantCatalyst
         else
         {
             if (MathUtility.Roll(0.9f))
-                return new Pumpase(pump_out, GetRandomMolecule());
+                return new Pumpase(Molecule, !is_isomer);
             else
-                return new Pumpase(!pump_out, Molecule);
+                return new Pumpase(GetRandomMolecule(), is_isomer);
         }
     }
 
@@ -849,20 +878,20 @@ public class Pumpase : InstantCatalyst
 
         Pumpase other = obj as Pumpase;
 
-        return other.pump_out == pump_out &&
+        return other.is_isomer == is_isomer &&
                other.Molecule.Equals(Molecule);
     }
 
     public override Catalyst Copy()
     {
-        return new Pumpase(pump_out, Molecule).CopyStateFrom(this);
+        return new Pumpase(Molecule, is_isomer).CopyStateFrom(this);
     }
 
     public override JObject EncodeJson()
     {
         JObject json_catalyst_object = base.EncodeJson();
 
-        json_catalyst_object["Direction"] = pump_out ? "Out" : "In";
+        json_catalyst_object["Is Isomer"] = is_isomer;
         json_catalyst_object["Molecule"] = Molecule.Name;
 
         return json_catalyst_object;
@@ -872,22 +901,13 @@ public class Pumpase : InstantCatalyst
     {
         base.DecodeJson(json_object);
 
-        pump_out = Utility.JTokenToString(json_object["Direction"]) == "Out";
+        is_isomer = Utility.JTokenToBool(json_object["Is Isomer"]);
         Molecule = Molecule.GetMolecule(Utility.JTokenToString(json_object["Molecule"]));
 
+        InitializeAttachments();
         DefaultInitialization();
     }
 
-
-    public static Pumpase Endo(Molecule molecule)
-    {
-        return new Pumpase(false, molecule);
-    }
-
-    public static Pumpase Exo(Molecule molecule)
-    {
-        return new Pumpase(true, molecule);
-    }
 
     static Molecule GetRandomMolecule()
     {
@@ -907,31 +927,13 @@ public class Pumpase : InstantCatalyst
 
 public class PumpAction : EnergeticAction
 {
-    bool pump_out;
     Molecule molecule;
     float base_quantity;
 
-    Solution Source
-    {
-        get
-        {
-            if (!(Organism.Locale is WaterLocale))
-                throw new System.NotImplementedException();
+    Pumpase Pumpase { get { return Catalyst.GetFacet<Pumpase>(); } }
 
-            return pump_out ? Organism.Cytosol : (Organism.Locale as WaterLocale).Solution;
-        }
-    }
-
-    Solution Destination
-    {
-        get
-        {
-            if (!(Organism.Locale is WaterLocale))
-                throw new System.NotImplementedException();
-
-            return pump_out ? (Organism.Locale as WaterLocale).Solution : Organism.Cytosol;
-        }
-    }
+    public object Source { get; private set; }
+    public object Destination { get; private set; }
 
     public override bool IsLegal
     {
@@ -947,13 +949,16 @@ public class PumpAction : EnergeticAction
     public Compound PumpedCompound { get; private set; }
 
     public PumpAction(Cell.Slot catalyst_slot, 
-                      bool pump_out_, Molecule molecule_, float rate_) 
+                      Molecule molecule_, object source, object destination, float rate) 
         : base(catalyst_slot, 1, 0.1f)
     {
-        pump_out = pump_out_;
         molecule = molecule_;
-        base_quantity = Organism.Membrane.GetTransportRate(molecule, pump_out) * 
-                        CatalystSlot.Compound.Quantity;
+
+        Source = source;
+        Destination = destination;
+
+        base_quantity = Organism.Membrane.GetTransportRate(molecule, Destination is Locale) * 
+                        CatalystSlot.Compound.Quantity * rate;
     }
 
     public override Dictionary<object, List<Compound>> GetResourceDemands()
@@ -971,12 +976,33 @@ public class PumpAction : EnergeticAction
     {
         base.Begin();
 
-        PumpedCompound = Source.RemoveCompound(new Compound(molecule, base_quantity * Scale));
+        float final_quantity = base_quantity * Scale;
+
+        if (Source is Cell.Slot)
+            PumpedCompound = (Source as Cell.Slot).Compound.Split(final_quantity);
+        else
+        {
+            Solution source_solution = Source is Cytosol ? Source as Cytosol : (Source as WaterLocale).Solution;
+            PumpedCompound = source_solution.RemoveCompound(new Compound(molecule, final_quantity));
+        }
     }
 
     public override void End()
     {
-        Destination.AddCompound(PumpedCompound);
+        if (Destination is Cell.Slot)
+        {
+            Cell.Slot destination_slot = Destination as Cell.Slot;
+
+            if (destination_slot.Compound != null && !destination_slot.Compound.Molecule.IsStackable(molecule))
+                destination_slot.AddCompound(new Mess(destination_slot.RemoveCompound(), PumpedCompound), 1);
+            else
+                destination_slot.AddCompound(PumpedCompound);
+        }
+        else
+        {
+            Solution destination_solution = Destination is Cytosol ? Destination as Cytosol : (Destination as WaterLocale).Solution;
+            destination_solution.AddCompound(PumpedCompound);
+        }
     }
 }
 
@@ -1005,7 +1031,19 @@ public class Porin : InstantCatalyst
         float cytosol_concentration = slot.Cell.Organism.Cytosol.GetConcentration(Molecule);
         float locale_concentration = (slot.Cell.Organism.Locale as WaterLocale).Solution.GetConcentration(Molecule);
 
-        return new PumpAction(slot, cytosol_concentration > locale_concentration, Molecule, size);
+        object source, destination;
+        if(cytosol_concentration > locale_concentration)
+        {
+            source = slot.Cell.Organism.Cytosol;
+            destination = slot.Cell.Organism.Locale;
+        }
+        else
+        {
+            source = slot.Cell.Organism.Locale;
+            destination = slot.Cell.Organism.Cytosol;
+        }
+
+        return new PumpAction(slot, Molecule, source, destination, size);
     }
 
     public override Catalyst Copy()

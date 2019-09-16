@@ -450,7 +450,7 @@ public abstract class ProgressiveCatalyst : Catalyst
             Dictionary<object, Dictionary<Molecule, Availability>> availablities =
                 new Dictionary<object, Dictionary<Molecule, Availability>>();
 
-            List<Catalyst> satisfied_claimants = new List<Catalyst>();
+            List<Catalyst> processed_claimants = new List<Catalyst>();
 
             //In in each iteration, sum the demands of remaining claimants, 
             //scale demands down to fit within resource availability,
@@ -458,13 +458,15 @@ public abstract class ProgressiveCatalyst : Catalyst
             //And remove claimants that demanded any now depleted resource.
             while (processed_claimants.Count < claimants.Count)
             {
+                //Clear demands
                 foreach (object source in availablities.Keys)
                     foreach (Molecule molecule in availablities[source].Keys)
                         availablities[source][molecule].demanded_quantity = 0;
 
+                //Set up initial availabilities, set up this iteration's demands
                 foreach (Catalyst claimant in claimants.Keys)
                 {
-                    if (satisfied_claimants.Contains(claimant))
+                    if (processed_claimants.Contains(claimant))
                         continue;
 
                     foreach (Claim claim in claimants[claimant])
@@ -497,31 +499,41 @@ public abstract class ProgressiveCatalyst : Catalyst
                     }
                 }
 
-                List<Catalyst> pissed_off_claimants = new List<Catalyst>();
+                //Remove claimants that must have all their resources at once,
+                //but sharing is required. (their claim yield is therefore 0)
+                //Remove their demands as well. 
                 foreach (Catalyst claimant in claimants.Keys)
                 {
                     if (claimant is InstantCatalyst)
                         continue;
 
+                    bool cannot_execute_action = false;
+
                     foreach (Claim claim in claimants[claimant])
                         if (availablities[claim.Source][claim.Resource.Molecule].UnclaimedToDemandedRatio < 1)
                         {
-                            pissed_off_claimants.Add(claimant);
+                            cannot_execute_action = true;
                             break;
                         }
-                }
-                foreach (Catalyst claimant in pissed_off_claimants)
-                {
-                    foreach (Claim claim in claimants[claimant])
-                        availablities[claim.Source][claim.Resource.Molecule].demanded_quantity -= claim.Resource.Quantity;
 
-                    claimants.Remove(claimant);
+                    if (cannot_execute_action)
+                    {
+                        foreach (Claim claim in claimants[claimant])
+                            availablities[claim.Source][claim.Resource.Molecule].demanded_quantity -= claim.Resource.Quantity;
+
+                        normalized_claim_yields[claimant] = 0;
+                        processed_claimants.Add(claimant);
+                    }
                 }
 
+                //Compute actual demands based on availability
+                //f.e. 1 unit available, 1 unit demanded from 3 claimants:
+                //1/3 unit given to each claimant. If a claimant demands more than
+                //the other claimants, it gets proportionally more of supply. 
                 Dictionary<Claim, float> quantity_claimed = new Dictionary<Claim, float>();
                 foreach (Catalyst claimant in claimants.Keys)
                 {
-                    if (satisfied_claimants.Contains(claimant))
+                    if (processed_claimants.Contains(claimant))
                         continue;
 
                     float smallest_ratio = 1;
@@ -534,32 +546,39 @@ public abstract class ProgressiveCatalyst : Catalyst
                     }
 
                     if (smallest_ratio == 1)
-                        satisfied_claimants.Add(claimant);
+                        processed_claimants.Add(claimant);
 
                     normalized_claim_yields[claimant] = smallest_ratio;
 
                     foreach (Claim claim in claimants[claimant])
-                        quantity_claimed[claim] =
-                            claim.Resource.Quantity *
-                            smallest_ratio *
-                            availablities[claim.Source][claim.Resource.Molecule].UnclaimedToAvailableRatio;
+                    {
+                        if (smallest_ratio == 0)
+                            quantity_claimed[claim] = 0;
+                        else
+                            quantity_claimed[claim] =
+                                claim.Resource.Quantity *
+                                smallest_ratio *
+                                availablities[claim.Source][claim.Resource.Molecule].UnclaimedToAvailableRatio;
+                    }
                 }
 
+                //Remove claimants who got everything they wanted
                 foreach (Catalyst claimant in claimants.Keys)
                 {
-                    if (satisfied_claimants.Contains(claimant))
+                    if (processed_claimants.Contains(claimant))
                         continue;
 
                     foreach (Claim claim in claimants[claimant])
                         availablities[claim.Source][claim.Resource.Molecule].unclaimed_quantity -= quantity_claimed[claim];
 
                     if (normalized_claim_yields[claimant] == 1)
-                        satisfied_claimants.Add(claimant);
+                        processed_claimants.Add(claimant);
                 }
 
+                //Remove claimants who demanded a now depleted resource.
                 foreach (Catalyst claimant in claimants.Keys)
                 {
-                    if (satisfied_claimants.Contains(claimant))
+                    if (processed_claimants.Contains(claimant))
                         continue;
 
                     foreach (Claim claim in claimants[claimant])
@@ -568,7 +587,7 @@ public abstract class ProgressiveCatalyst : Catalyst
 
                         if (availablities[claim.Source][molecule].unclaimed_quantity < 0.0000001f)
                         {
-                            satisfied_claimants.Add(claimant);
+                            processed_claimants.Add(claimant);
                             continue;
                         }
                     }

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class DNA : Polymer
 {
@@ -153,7 +154,21 @@ public class DNA : Polymer
         if (!base.Equals(obj))
             return false;
 
-        return obj is DNA && (obj as DNA).ActiveCodonIndex == ActiveCodonIndex;
+        if (!(obj is DNA))
+            return false;
+
+        DNA other = obj as DNA;
+
+        if (other.ActiveCodonIndex != ActiveCodonIndex)
+            return false;
+
+        if (other.Sectors.Count() != Sectors.Count())
+            return false;
+        for (int i = 0; i < sectors.Count; i++)
+            if (!other.sectors[i].Equals(sectors[i]))
+                return false;
+            
+        return true;
     }
 
     public override Molecule Copy()
@@ -312,6 +327,19 @@ public class DNA : Polymer
 
                 break;
             }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is Sector))
+                return false;
+
+            Sector other = obj as Sector;
+
+            return other.Name == Name && 
+                   other.Description == Description && 
+                   other.FirstCodonIndex == FirstCodonIndex && 
+                   other.LastCodonIndex == LastCodonIndex;
         }
     }
 }

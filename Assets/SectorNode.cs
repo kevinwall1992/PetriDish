@@ -180,9 +180,13 @@ public class SectorNode : DNAPanelNode
         //Positioning of child SectorNode
         if (Depth != MaxDepth)
         {
-            foreach (SectorNode sector_node in GetComponentsInChildren<SectorNode>())
-                if (sector_node != this && !sector_node.IsCollapsed)
+            foreach (Transform child in node_container)
+            {
+                SectorNode sector_node = child.GetComponent<SectorNode>();
+
+                if (sector_node != null && sector_node != this && !sector_node.IsCollapsed)
                     child_sector_node = sector_node;
+            }
 
             if (child_sector_node.transform.parent == node_container)
                 child_sector_node.transform.SetParent(child_sector_node_container, true);
@@ -284,7 +288,6 @@ public class SectorNode : DNAPanelNode
 
         float sector_height = (transform as RectTransform).rect.height;
         float mask_width = (node_container.transform.parent as RectTransform).rect.width;
-        float vertical_offset = 166.0f * Scale;
         float initial_horizontal_offset = Spacing * 2;
 
         int row = 0;
@@ -298,6 +301,8 @@ public class SectorNode : DNAPanelNode
 
         foreach (DNAPanelNode node in new List<DNAPanelNode>(node_order))
         {
+            Vector2 local_mouse_position = node.transform.parent.InverseTransformPoint(Input.mousePosition);
+
             if(insertion_choice.gameObject.activeSelf && node == insertion_choice.ReferenceNode)
             {
                 float insertion_choice_width = (insertion_choice.transform as RectTransform).rect.width + Spacing;
@@ -310,8 +315,8 @@ public class SectorNode : DNAPanelNode
 
                 insertion_choice.transform.position = 
                     Vector3.Lerp(insertion_choice.transform.position,
-                                 new Vector3(horizontal_offset + insertion_choice_width / 2,
-                                             sector_height - (vertical_offset + row * 88 * Scale)),
+                                 node_container.transform.position + new Vector3(horizontal_offset + insertion_choice_width / 2,
+                                                                                -row * 88 * Scale),
                                  Time.deltaTime * LerpSpeed);
 
                 horizontal_offset += insertion_choice_width;
@@ -333,14 +338,14 @@ public class SectorNode : DNAPanelNode
             }
 
             Vector2 target_position = new Vector2(horizontal_offset + width / 2,
-                                                  sector_height - (vertical_offset + row * 88 * Scale));
+                                                  -row * 88 * Scale);
             float adjusted_lerp_speed = LerpSpeed;
 
             if (node == grabbed_node)
             {
                 adjusted_lerp_speed *= 3;
 
-                if ((node.transform.position.y - target_position.y) > 18)
+                if ((node.transform.localPosition.y - target_position.y) > 18)
                 {
                     RemoveNode(node, false);
                     node.transform.SetParent(grabbed_node_container, true);
@@ -348,20 +353,20 @@ public class SectorNode : DNAPanelNode
                 }
                 else
                 {
-                    float target_weight = 0 + (target_position - (Vector2)node.transform.position).magnitude / 1.75f;
-                    target_position = (target_position * target_weight + (Vector2)Input.mousePosition * 4) / (4 + target_weight);
+                    float target_weight = 0 + (target_position - (Vector2)node.transform.localPosition).magnitude / 1.75f;
+                    target_position = (target_position * target_weight + local_mouse_position * 4) / (4 + target_weight);
                 }
             }
 
             int node_index = node_order.IndexOf(node);
             if ((node_index > 0 && node_order[node_index - 1] == grabbed_node) || 
                 ((node_index < node_order.Count - 1) && node_order[node_index + 1] == grabbed_node))
-                target_position = (target_position * 8 + (Vector2)Input.mousePosition) / (1 + 8);
+                target_position = (target_position * 8 + local_mouse_position) / (1 + 8);
 
 
-            node.transform.position = Vector2.Lerp(node.transform.position, 
-                                                   target_position, 
-                                                   Time.deltaTime * adjusted_lerp_speed);
+            node.transform.localPosition = Vector2.Lerp(node.transform.localPosition, 
+                                                       target_position, 
+                                                       Time.deltaTime * adjusted_lerp_speed);
 
             horizontal_offset += width;
         }
@@ -382,9 +387,8 @@ public class SectorNode : DNAPanelNode
                     background_strand.ShowReturnStrand();
 
                 background_strand.transform.SetParent(background_strand_container, false);
-                background_strand.transform.position = 
-                    new Vector3(background_strand.transform.position.x, 
-                                sector_height - (vertical_offset + 88 * i * Scale)) + transform.position - DNAPanel.transform.position;
+
+                background_strand.transform.localPosition = new Vector3(0, -88 * i * Scale);
 
                 background_strand.Length = mask_width;
             }

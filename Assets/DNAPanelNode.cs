@@ -16,7 +16,7 @@ public class DNAPanelNode : GoodBehavior
 
     Vector2 touch_down_position;
 
-    public SectorNode SectorNode { get { return GetComponentInParent<SectorNode>(); } }
+    public SectorNode SectorNode { get { return transform.parent.GetComponentInParent<SectorNode>(); } }
 
     public virtual bool IsCollapsed
     {
@@ -36,8 +36,11 @@ public class DNAPanelNode : GoodBehavior
             }
             else
             {
-                SectorNode.CollapseAllNodes(this);
-                SectorNode.HideInsertionChoice();
+                if (SectorNode != null)
+                {
+                    SectorNode.CollapseAllNodes(this);
+                    SectorNode.HideInsertionChoice();
+                }
 
                 collapsed_form.gameObject.SetActive(false);
                 expanded_form.gameObject.SetActive(true);

@@ -63,7 +63,7 @@ public class DNAPanelNode : GoodBehavior
 
     public virtual string DNASequence
     {
-        get { return SectorNode.Sector.DNA.GetSubsequence(CodonIndex, CodonLength); }
+        get { return GetComponentInParent<SectorNode>().Sector.DNA.GetSubsequence(CodonIndex, CodonLength); }
     }
 
     protected override void Update()

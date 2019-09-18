@@ -36,6 +36,7 @@ public class SectorNode : DNAPanelNode
     DummyNode dummy_node;
 
     DNAPanelNode grabbed_node = null;
+    string grabbed_dna_sequence = "";
 
     SectorNode child_sector_node = null;
 
@@ -249,6 +250,7 @@ public class SectorNode : DNAPanelNode
                 if (node.IsPointedAt)
                 {
                     grabbed_node = node;
+                    grabbed_dna_sequence = node.DNASequence;
                     break;
                 }
         }
@@ -269,7 +271,10 @@ public class SectorNode : DNAPanelNode
                     if (!IsPointedAt)
                         Destroy(grabbed_node.gameObject);
                     else
+                    {
+                        DNAPanel.DNA.InsertSequence(reference_node.CodonIndex, grabbed_dna_sequence);
                         InsertNodeBefore(reference_node, grabbed_node);
+                    }
                 }
 
                 grabbed_node = null;
@@ -347,6 +352,7 @@ public class SectorNode : DNAPanelNode
 
                 if ((node.transform.localPosition.y - target_position.y) > 18)
                 {
+                    DNAPanel.DNA.RemoveSequence(grabbed_node.CodonIndex, grabbed_node.CodonLength);
                     RemoveNode(node, false);
                     node.transform.SetParent(grabbed_node_container, true);
                     continue;

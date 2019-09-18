@@ -20,26 +20,16 @@ public class SectorNodeInsertionChoice : GoodBehavior, Choice<string>
         {
             selection = value;
 
-            DNAPanelNode node = null;
+            string dna_sequence = "";
             switch(Selection.Value)
             {
-                case "Command":
-                    node = CommandNode.CreateInstance("CVVVVV");
-                    break;
-
-                case "Locus":
-                    node = LocusNode.CreateInstance("LLC");
-                    break;
-
-                case "Paste":
-                    SectorNode.InsertDNASequence(GUIUtility.systemCopyBuffer, ReferenceNode);
-                    break;
-
-                default: break;
+                case "Command": dna_sequence = "CVVVVV"; break;
+                case "Locus": dna_sequence = "LLC"; break;
+                case "Paste": dna_sequence = GUIUtility.systemCopyBuffer; break;
             }
 
-            if(node!= null)
-                SectorNode.InsertNodeBefore(ReferenceNode, node);
+            SectorNode.InsertDNASequence(dna_sequence, ReferenceNode);
+
             SectorNode.HideInsertionChoice();
         }
     }

@@ -723,18 +723,20 @@ public class Constructase : ProgressiveCatalyst
 
         public override void Begin()
         {
+            base.Begin();
+
             Feedstock = Constructase.Feed.Take(CatalystSlot, Constructase.RequiredQuantity);
         }
 
         public override void End()
         {
-            base.Begin();
-
             if (Cell.GetAdjacentCell(CatalystSlot.Direction) == null)
                 Organism.AddCell(Cell, CatalystSlot.Direction);
 
             //A cell is unexpectedly in the way
             else;
+
+            base.End();
         }
     }
 }
@@ -1031,6 +1033,8 @@ public class PumpAction : EnergeticAction
             Solution destination_solution = Destination is Cytosol ? Destination as Cytosol : (Destination as WaterLocale).Solution;
             destination_solution.AddCompound(PumpedCompound);
         }
+
+        base.End();
     }
 }
 

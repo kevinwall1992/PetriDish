@@ -563,6 +563,8 @@ public class Interpretase : ProgressiveCatalyst
         public override void End()
         {
             DNA.ActiveCodonIndex = NextCodonIndex;
+
+            base.End();
         }
     }
 

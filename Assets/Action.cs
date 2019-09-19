@@ -372,6 +372,8 @@ public class MoveToSlotAction : MoveAction<Cell.Slot>
 
             Destination.AddCompound(new Compound(mess, 1));
         }
+
+        base.End();
     }
 }
 
@@ -387,6 +389,8 @@ public class MoveToCytosolAction : MoveAction<Cytosol>
     public override void End()
     {
         Destination.AddCompound(MovedCompound);
+
+        base.End();
     }
 }
 
@@ -405,6 +409,8 @@ public class MoveToLocaleAction : MoveAction<Locale>
             throw new System.NotImplementedException();
 
         (Destination as WaterLocale).Solution.AddCompound(MovedCompound);
+
+        base.End();
     }
 }
 
@@ -619,6 +625,8 @@ public class ReactionAction : EnergeticAction
 
         foreach (Compound product in cytosol_products)
             (Organism.Locale as WaterLocale).Solution.AddCompound(product * Scale);
+
+        base.End();
     }
 
     public List<Cell.Slot> GetReactantSlots()

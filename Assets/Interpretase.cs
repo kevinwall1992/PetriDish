@@ -509,9 +509,11 @@ public class Interpretase : ProgressiveCatalyst
             }
         }
 
+        public Interpretase Interpretase { get { return Catalyst.GetFacet<Interpretase>(); } }
+
         public Cell.Slot ProgramSlot
         {
-            get { return Catalyst.GetFacet<Interpretase>().InputAttachment.GetSlotPointedAt(CatalystSlot); }
+            get { return Interpretase.InputAttachment.GetSlotPointedAt(CatalystSlot); }
         }
 
         public Compound ProgramCompound { get; private set; }
@@ -540,7 +542,7 @@ public class Interpretase : ProgressiveCatalyst
         {
             (ProgramCompound.Molecule as DNA).InsertSequence(0, "LLL");
 
-            Catalyst.GetFacet<Interpretase>().AddCofactor(ProgramCompound);
+            Interpretase.AddCofactor(ProgramCompound);
 
             base.End();
         }
@@ -550,9 +552,9 @@ public class Interpretase : ProgressiveCatalyst
     public class Command : EnergeticAction
     {
         protected int CommandCodonIndex { get; set; }
-        protected int NextCodonIndex { get { return CommandCodonIndex + GetOperandCount(DNA, CommandCodonIndex) + 1; } }
+        protected int NextCodonIndex { get { return CommandCodonIndex + GetOperandCount(Interpretase.DNA, CommandCodonIndex) + 1; } }
 
-        public DNA DNA { get { return GetGeneticCofactor(Catalyst); } }
+        public Interpretase Interpretase { get { return Catalyst.GetFacet<Interpretase>(); } }
 
         public Command(Cell.Slot catalyst_slot, int command_codon_index, float cost, float energy_balance = -0.1f) 
             : base(catalyst_slot, cost, energy_balance)
@@ -562,7 +564,7 @@ public class Interpretase : ProgressiveCatalyst
 
         public override void End()
         {
-            DNA.ActiveCodonIndex = NextCodonIndex;
+            Interpretase.DNA.ActiveCodonIndex = NextCodonIndex;
 
             base.End();
         }
@@ -577,7 +579,7 @@ public class Interpretase : ProgressiveCatalyst
 
         public string SequenceToBeCopied
         {
-            get { return GetMarkedSequence(DNA, start_marker, stop_marker, CommandCodonIndex); }
+            get { return GetMarkedSequence(Interpretase.DNA, start_marker, stop_marker, CommandCodonIndex); }
         }
 
         public override float Scale
@@ -640,7 +642,7 @@ public class Interpretase : ProgressiveCatalyst
 
         public override void End()
         {
-            Catalyst.GetFacet<Interpretase>().Grabber.Grab();
+            Interpretase.Grabber.Grab();
 
             base.End();
         }
@@ -656,7 +658,7 @@ public class Interpretase : ProgressiveCatalyst
 
         public override void End()
         {
-            Catalyst.GetFacet<Interpretase>().Grabber.Release();
+            Interpretase.Grabber.Release();
 
             base.End();
         }
@@ -677,7 +679,7 @@ public class Interpretase : ProgressiveCatalyst
         public override void End()
         {
             for (int i = 0; i < seek_count; i++)
-                SeekToMarker(DNA, Marker, seek_count < 0);
+                SeekToMarker(Interpretase.DNA, Marker, seek_count < 0);
         }
     }
 
@@ -725,7 +727,7 @@ public class Interpretase : ProgressiveCatalyst
                 base.End();
             }
             else
-                SeekToMarker(DNA, marker);
+                SeekToMarker(Interpretase.DNA, marker);
         }
     }
 
@@ -832,7 +834,7 @@ public class Interpretase : ProgressiveCatalyst
             //Dragging grabbed compound behind us
             MoveToSlotAction move_action = null;
             Cell.Slot grab_slot = catalyst_slot.GetAdjacentSlot(Catalyst.Orientation);
-            if ((Catalyst.GetFacet<Interpretase>().Grabber.IsGrabbing || IsTake) &&
+            if ((Interpretase.Grabber.IsGrabbing || IsTake) &&
                 grab_slot != null &&
                 grab_slot.Compound != null &&
                 Catalyst.Orientation != direction &&
@@ -879,7 +881,7 @@ public class Interpretase : ProgressiveCatalyst
             direction = direction_;
 
             Cell.Slot grab_slot = catalyst_slot.GetAdjacentSlot(Catalyst.Orientation);
-            if (Catalyst.GetFacet<Interpretase>().Grabber.IsGrabbing)
+            if (Interpretase.Grabber.IsGrabbing)
             {
                 List<Action> actions = new List<Action>();
 
@@ -906,16 +908,17 @@ public class Interpretase : ProgressiveCatalyst
         {
             base.End();
 
-            for (int i = 0; i < 3; i++)
-            {
-                Compound compound = CatalystSlot.GetAdjacentSlot((Cell.Slot.Relation)i).Compound;
+            if(Interpretase.Grabber.IsGrabbing)
+                for (int i = 0; i < 3; i++)
+                {
+                    Compound compound = CatalystSlot.GetAdjacentSlot((Cell.Slot.Relation)i).Compound;
 
-                if (compound == null || !(compound.Molecule is Catalyst))
-                    continue;
+                    if (compound == null || !(compound.Molecule is Catalyst))
+                        continue;
 
-                Catalyst catalyst = (compound.Molecule as Catalyst);
-                catalyst.Orientation = Cell.Slot.RotateRelation(catalyst.Orientation, IsRightSpin);
-            }
+                    Catalyst catalyst = (compound.Molecule as Catalyst);
+                    catalyst.Orientation = Cell.Slot.RotateRelation(catalyst.Orientation, IsRightSpin);
+                }
 
             Catalyst.Orientation = Cell.Slot.RotateRelation(Catalyst.Orientation, IsRightSpin);
         }

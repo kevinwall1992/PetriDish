@@ -116,9 +116,9 @@ public class DNA : Polymer
             if (sector == MainSector)
                 continue;
 
-            if (sector.FirstCodonIndex > index)
+            if (sector.FirstCodonIndex >= index)
                 sector.FirstCodonIndex += length;
-            else if (sector.LastCodonIndex >= index)
+            if (sector.LastCodonIndex >= index)
                 sector.LastCodonIndex += length;
         }
     }
@@ -140,10 +140,12 @@ public class DNA : Polymer
         }
 
         foreach (Sector sector in Sectors)
+        {
             if (sector.FirstCodonIndex > starting_index)
                 sector.FirstCodonIndex -= length;
-            else if (sector.LastCodonIndex >= starting_index)
+            if (sector.LastCodonIndex >= starting_index)
                 sector.LastCodonIndex = Mathf.Max(sector.LastCodonIndex - length, starting_index);
+        }
 
         return removed_dna;
     }

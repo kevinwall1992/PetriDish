@@ -510,12 +510,13 @@ public class ReactionAction : EnergeticAction
         {
             foreach (Cell.Slot destination in slot_products.Keys)
                 if (destination.Compound != null &&
-                    destination.Compound.Molecule != slot_products[destination].Molecule)
+                    !destination.Compound.Molecule.IsStackable(slot_products[destination].Molecule))
                     return false;
 
             foreach (Cell.Slot source in slot_reactants.Keys)
-                if (source.Compound != null && (source.Compound.Molecule != slot_reactants[source].Molecule ||
-                                                source.Compound.Quantity < slot_reactants[source].Quantity))
+                if (source.Compound == null || 
+                    source.Compound.Quantity < slot_reactants[source].Quantity || 
+                    !source.Compound.Molecule.IsStackable(slot_reactants[source].Molecule))
                     return false;
 
             foreach (Compound reactant in cytosol_reactants)

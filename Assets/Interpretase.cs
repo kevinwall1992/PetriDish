@@ -739,7 +739,7 @@ public class Interpretase : ProgressiveCatalyst
         {
             get
             {
-                if (!Action.IsLegal)
+                if (Action != null && !Action.IsLegal)
                     return false;
 
                 return base.IsLegal;
@@ -762,17 +762,37 @@ public class Interpretase : ProgressiveCatalyst
                 BaseCost += Action.Cost;
         }
 
+        public override Dictionary<object, List<Compound>> GetResourceDemands()
+        {
+            Dictionary<object, List<Compound>> resource_demands = base.GetResourceDemands();
+
+            if (Action != null)
+            {
+                Dictionary<object, List<Compound>> action_resource_demands = Action.GetResourceDemands();
+                foreach (object source in action_resource_demands.Keys)
+                {
+                    if (!resource_demands.ContainsKey(source))
+                        resource_demands[source] = new List<Compound>();
+
+                    resource_demands[source].AddRange(action_resource_demands[source]);
+                }
+            }
+
+            return resource_demands;
+        }
+
         public override void Begin()
         {
             base.Begin();
 
-            if(HasBegun)
+            if(HasBegun && Action != null)
                 Action.Begin();
         }
 
         public override void End()
         {
-            Action.End();
+            if(Action != null)
+                Action.End();
 
             base.End();
         }

@@ -7,14 +7,22 @@ using Newtonsoft.Json.Linq;
 
 public class Reaction
 {
-    static Dictionary<string, Reaction> reactions= new Dictionary<string, Reaction>();
+    static Dictionary<string, List<Reaction>> reactions= new Dictionary<string, List<Reaction>>();
 
     public static List<Reaction> Reactions
     {
-        get { return new List<Reaction>(reactions.Values); }
+        get
+        {
+            List<Reaction> reaction_list = new List<Reaction>();
+
+            foreach (string name in reactions.Keys)
+                reaction_list.AddRange(reactions[name]);
+
+            return reaction_list;
+        }
     }
 
-    public static Reaction GetReaction(string name)
+    public static List<Reaction> GetReactions(string name)
     {
         return reactions[name];
     }
@@ -281,8 +289,9 @@ public class Reaction
         get
         {
             foreach (string name in reactions.Keys)
-                if (reactions[name] == this)
-                    return name;
+                foreach(Reaction reaction in reactions[name])
+                    if (reaction == this)
+                        return name;
 
             Debug.Assert(false, "Reaction not found in dictionary");
             return "Unnamed";
@@ -354,7 +363,9 @@ public class Reaction
         productivity = new Attribute(new ProductivityFunction(productivity_), 0);
 
 
-        reactions[name] = this;
+        if (!reactions.ContainsKey(name))
+            reactions[name] = new List<Reaction>();
+        reactions[name].Add(this);
     }
 
     public Reaction()
@@ -747,7 +758,7 @@ public class Reaction
         {
             base.DecodeJson(json_object);
 
-            reaction = Reaction.GetReaction(Utility.JTokenToString(json_object["Name"])).Mutate();
+            reaction = Reaction.GetReactions(Utility.JTokenToString(json_object["Name"]))[0].Mutate();
 
             foreach (var molecule_pair in json_object["Inhibitors"] as JObject)
                 reaction.inhibitors[Molecule.GetMolecule(molecule_pair.Key)].Percentile = Utility.JTokenToFloat(molecule_pair.Value);
@@ -856,6 +867,7 @@ public class Reaction
             foreach (Attribute attribute in mutant.GetCompetingAttributes())
                 attribute.Weight /= mutant_total_weight / mutant_potential;
 
+        reactions[Name].Add(mutant);
         return mutant;
     }
 

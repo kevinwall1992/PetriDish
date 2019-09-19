@@ -167,7 +167,7 @@ public abstract class ProgressiveCatalyst : Catalyst
     public virtual void Communicate(Cell.Slot slot, Action.Stage stage)
     {
         Action action = GetAction(slot);
-        if (action == null || !stage.Includes(action) || !action.IsLegal)
+        if (action == null || !stage.Includes(action) || !action.IsLegal || action.Cost > Progress)
             return;
 
         Dictionary<object, List<Compound>> demands = action.GetResourceDemands();

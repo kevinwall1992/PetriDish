@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 
-
 public class Reaction
 {
     static Dictionary<string, List<Reaction>> reactions= new Dictionary<string, List<Reaction>>();
@@ -74,11 +73,11 @@ public class Reaction
                     else
                         failed = true;
 
-            Dictionary<Molecule, float> cofactors = new Dictionary<Molecule, float>();
-            if (reaction["Cofactors"] != null)
-                foreach (var cofactor in reaction["Cofactors"] as JObject)
+            Dictionary<Molecule, float> activators = new Dictionary<Molecule, float>();
+            if (reaction["Activators"] != null)
+                foreach (var cofactor in reaction["Activators"] as JObject)
                     if (Molecule.DoesMoleculeExist(cofactor.Key))
-                        cofactors[Molecule.GetMolecule(cofactor.Key)] = Utility.JTokenToFloat(cofactor.Value);
+                        activators[Molecule.GetMolecule(cofactor.Key)] = Utility.JTokenToFloat(cofactor.Value);
                     else
                         failed = true;
 
@@ -98,7 +97,7 @@ public class Reaction
                          Utility.JTokenToFloat(reaction     ["Potential"],              1),
                          Utility.JTokenToFloat(reaction     ["Flexibility"],            1),
                          Utility.JTokenToFloat(reaction     ["Productivity"],           1), 
-                         inhibitors, cofactors);
+                         inhibitors, activators);
         }
     }
 
@@ -271,7 +270,7 @@ public class Reaction
     float cost;
 
     Dictionary<Molecule, Attribute> inhibitors = new Dictionary<Molecule, Attribute>();
-    Dictionary<Molecule, Attribute> cofactors = new Dictionary<Molecule, Attribute>();
+    Dictionary<Molecule, Attribute> activators = new Dictionary<Molecule, Attribute>();
 
     Dictionary<Cell.Slot.Relation, Attribute> direction_precedence = new Dictionary<Cell.Slot.Relation, Attribute>();
 
@@ -313,7 +312,7 @@ public class Reaction
                      float flexibility, 
                      float productivity_,
                      Dictionary<Molecule, float> inhibitors_= null, 
-                     Dictionary<Molecule, float> cofactors_= null)
+                     Dictionary<Molecule, float> activators_= null)
     {
         catalyst_name = catalyst_name_;
 
@@ -354,8 +353,8 @@ public class Reaction
         foreach (Molecule molecule in inhibitors_.Keys)
             inhibitors[molecule] = new Attribute(new SkewedNormalDistribution(inhibitors_[molecule], inhibitors_[molecule]/ 2, 2), 2);
 
-        foreach (Molecule molecule in cofactors_.Keys)
-            cofactors[molecule] = new Attribute(new SkewedNormalDistribution(inhibitors_[molecule], inhibitors_[molecule]/ 2, 2), 2);
+        foreach (Molecule molecule in activators_.Keys)
+            activators[molecule] = new Attribute(new SkewedNormalDistribution(inhibitors_[molecule], inhibitors_[molecule]/ 2, 2), 2);
 
 
         potential = new Attribute(new PotentialFunction(potential_, flexibility, this), 0);
@@ -386,7 +385,7 @@ public class Reaction
             if (attribute.Percentile > 0.5f)
                 attributes.Add(attribute);
 
-        foreach (Attribute attribute in cofactors.Values)
+        foreach (Attribute attribute in activators.Values)
             if (attribute.Percentile < 0.5f)
                 attributes.Add(attribute);
 
@@ -646,8 +645,8 @@ public class Reaction
 
             foreach (Molecule molecule in reaction.inhibitors.Keys)
                 activity_functions.Add(new InhibitionFunction(molecule, reaction.inhibitors[molecule].Value));
-            foreach (Molecule molecule in reaction.cofactors.Keys)
-                activity_functions.Add(new CofactorActivityFunction(molecule, reaction.cofactors[molecule].Value));
+            foreach (Molecule molecule in reaction.activators.Keys)
+                activity_functions.Add(new CofactorActivityFunction(molecule, reaction.activators[molecule].Value));
 
             activity_function = new CompoundActivityFunction(activity_functions);
         }
@@ -733,10 +732,10 @@ public class Reaction
                 inhibitors_json_object[molecule.Name] = reaction.inhibitors[molecule].Percentile;
             json_reaction_object["Inhibitors"] = inhibitors_json_object;
 
-            JObject cofactors_json_object = new JObject();
-            foreach (Molecule molecule in reaction.cofactors.Keys)
-                cofactors_json_object[molecule.Name] = reaction.cofactors[molecule].Percentile;
-            json_reaction_object["Cofactors"] = cofactors_json_object;
+            JObject activators_json_object = new JObject();
+            foreach (Molecule molecule in reaction.activators.Keys)
+                activators_json_object[molecule.Name] = reaction.activators[molecule].Percentile;
+            json_reaction_object["Activators"] = activators_json_object;
 
             JObject directions_json_object = new JObject();
             foreach (Cell.Slot.Relation direction in reaction.direction_precedence.Keys)
@@ -763,8 +762,8 @@ public class Reaction
             foreach (var molecule_pair in json_object["Inhibitors"] as JObject)
                 reaction.inhibitors[Molecule.GetMolecule(molecule_pair.Key)].Percentile = Utility.JTokenToFloat(molecule_pair.Value);
 
-            foreach (var molecule_pair in json_object["Cofactors"] as JObject)
-                reaction.cofactors[Molecule.GetMolecule(molecule_pair.Key)].Percentile = Utility.JTokenToFloat(molecule_pair.Value);
+            foreach (var molecule_pair in json_object["Activators"] as JObject)
+                reaction.activators[Molecule.GetMolecule(molecule_pair.Key)].Percentile = Utility.JTokenToFloat(molecule_pair.Value);
 
             foreach (var direction_pair in json_object["Directions"] as JObject)
             {
@@ -824,7 +823,7 @@ public class Reaction
         mutant.pH_tolerance = pH_tolerance.Copy();
 
         mutant.inhibitors = new Dictionary<Molecule, Attribute>(inhibitors);
-        mutant.cofactors = new Dictionary<Molecule, Attribute>(cofactors);
+        mutant.activators = new Dictionary<Molecule, Attribute>(activators);
 
         mutant.direction_precedence = new Dictionary<Cell.Slot.Relation, Attribute>(direction_precedence);
 
@@ -843,7 +842,7 @@ public class Reaction
                                                         mutant.productivity,
                                                         mutant.potential);
         genes.AddRange(new List<Attribute>(mutant.inhibitors.Values).Cast<object>());
-        genes.AddRange(new List<Attribute>(mutant.cofactors.Values).Cast<object>());
+        genes.AddRange(new List<Attribute>(mutant.activators.Values).Cast<object>());
         genes.Add(new List<Attribute>(mutant.direction_precedence.Values));
 
         //Select primary mutant and apply mutation

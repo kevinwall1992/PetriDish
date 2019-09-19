@@ -128,6 +128,7 @@ public class MoleculeComponent : GoodBehavior
             case "Umomia": name = "ammonia"; break;
             case "Hindenburgium Stankide": name = "hydrogen_sulfide"; break;
             case "NRG": name = (molecule as ChargeableMolecule).IsCharged ? "battery" : "empty_battery"; break;
+            case "Genes": name = "genes"; break;
         }
 
         if (name == null)

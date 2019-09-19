@@ -26,8 +26,8 @@
 
       "Products":
       {
-        "Water": "1",
-        "Structate": "1"
+        "Structate": "1",
+        "Water": "1"
       },
 
       "Optimal Temperature": 298,
@@ -46,8 +46,8 @@
 
       "Reactants":
       {
-        "Water": "1",
-        "Umamium Gas": "1"
+        "Umamium Gas": "1",
+        "Water": "1"
       },
 
       "Productivity": 1.0,
@@ -113,8 +113,8 @@
 
       "Reactants":
       {
-        "Phlorate": "1",
-        "Genes": "1"
+        "Genes": "1",
+        "Phlorate": "1"
       },
 
       "Productivity": 1.0,

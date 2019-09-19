@@ -170,7 +170,7 @@ public class Solution : MutableContainer<Compound>, Volume, Encodable
         public PrecisionCompound RemoveCompound(PrecisionCompound compound)
         {
             PrecisionCompound removed_compound = GetCompound(compound.molecule).Split(compound.quantity);
-            heat -= removed_compound.molecule.Mass * removed_compound.quantity;
+            heat -= 298 * removed_compound.molecule.Mass * removed_compound.quantity;
 
             return removed_compound;
         }

@@ -168,16 +168,16 @@ public class Cell
 
         //The relationship between adjacent Slots.
         //Right means clockwise, Left counter clockwise
-        //(Righty tight lefty loosey)
-        public enum Relation { None = -1, Right, Left, Across }
+        //(Righty tighty lefty loosey)
+        public enum Relation { None = -1, Across, Left, Right }
 
         public Slot GetAdjacentSlot(Relation relation)
         {
             switch(relation)
             {
-                case Relation.Right: return NextSlot;
-                case Relation.Left: return PreviousSlot;
                 case Relation.Across: return AcrossSlot;
+                case Relation.Left: return PreviousSlot;
+                case Relation.Right: return NextSlot;
 
                 default: return null;
             }

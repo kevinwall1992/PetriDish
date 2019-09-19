@@ -248,7 +248,7 @@ public abstract class ProgressiveCatalyst : Catalyst
 
     public Cell.Slot.Relation ApplyOrientation(Cell.Slot.Relation direction)
     {
-        return (Cell.Slot.Relation)MathUtility.Mod((int)direction - (int)Orientation, 3);
+        return (Cell.Slot.Relation)MathUtility.Mod((int)direction + (int)Orientation, 3);
     }
 
     public virtual bool CanAddCofactor(Compound cofactor)

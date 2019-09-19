@@ -48,7 +48,7 @@ public class MoleculeComponent : GoodBehavior
             molecule_copy = molecule.Copy();
 
             if (molecule is Catalyst)
-                transform.localRotation = Quaternion.Euler(0, 0, ((int)(molecule as Catalyst).Orientation - 2) * -120);
+                transform.localRotation = Quaternion.Euler(0, 0, ((int)(molecule as Catalyst).Orientation) * 120);
         }
     }
 

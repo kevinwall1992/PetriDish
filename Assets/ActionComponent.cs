@@ -203,7 +203,7 @@ public class ActionComponent : MonoBehaviour
             if (action is Interpretase.MoveCommand)
             {
                 Interpretase.MoveCommand move_command = action as Interpretase.MoveCommand;
-                float radians = -(((int)move_command.FinalOrientation + 1) % 3) * 2 * Mathf.PI / 3;
+                float radians = (((int)move_command.FinalOrientation + 0) % 3) * 2 * Mathf.PI / 3;
 
                 compound_rotations[move_command.MovingCompound] = radians;
             }
@@ -212,24 +212,26 @@ public class ActionComponent : MonoBehaviour
             {
                 Interpretase.SpinCommand spin_command = action as Interpretase.SpinCommand;
 
-                float radians = 2 * Mathf.PI / 3 * (spin_command.IsRightSpin ? -1 : 1);
+                float radians = 2 * Mathf.PI / 3 * (spin_command.IsRightSpin ? 1 : -1);
 
-                SlotComponent.CompoundComponent.MoleculeComponent.gameObject.AddComponent<RotationAnimation>()
-                    .SetParameters(radians)
+                MoleculeComponent molecule_component = SlotComponent.CompoundComponent.MoleculeComponent;
+                molecule_component.gameObject.AddComponent<RotationAnimation>()
+                    .SetParameters(MathUtility.DegreesToRadians(molecule_component.transform.eulerAngles.z) + radians)
                     .SetLength(1.0f * length)
                     .Smooth();
 
-                foreach (Action component_action in (spin_command.Action as CompositeAction).Actions)
-                {
-                    Compound compound;
+                if(spin_command.Action != null)
+                    foreach (Action component_action in (spin_command.Action as CompositeAction).Actions)
+                    {
+                        Compound compound;
 
-                    if (component_action is MoveToSlotAction)
-                        compound = (component_action as MoveToSlotAction).MovedCompound;
-                    else
-                        compound = (component_action as MoveToLocaleAction).MovedCompound;
+                        if (component_action is MoveToSlotAction)
+                            compound = (component_action as MoveToSlotAction).MovedCompound;
+                        else
+                            compound = (component_action as MoveToLocaleAction).MovedCompound;
 
-                    compound_rotations[compound] = radians;
-                }
+                        compound_rotations[compound] = radians;
+                    }
             }
 
             if (action is MoveToSlotAction ||

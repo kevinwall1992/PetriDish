@@ -322,9 +322,10 @@ public class Reaction
 
         cost = cost_;
 
-        List<Cell.Slot.Relation> directions = Utility.CreateList(Cell.Slot.Relation.Right, 
-                                                                 Cell.Slot.Relation.Left, 
-                                                                 Cell.Slot.Relation.Across);
+        List<Cell.Slot.Relation> directions = Utility.CreateList(Cell.Slot.Relation.Across,
+                                                                 Cell.Slot.Relation.Left,
+                                                                 Cell.Slot.Relation.Right);
+
         foreach (Cell.Slot.Relation direction in directions)
             direction_precedence[direction] = new Attribute(new UniformDistribution(), 0);
 
@@ -606,8 +607,8 @@ public class Reaction
                     slot_reactants[compound] = direction;
                     Attachments[direction] = new InputAttachment(compound.Molecule);
                 }
-                
-                enthalpy += compound.Molecule.Enthalpy;
+
+                enthalpy += compound.Molecule.Enthalpy * compound.Quantity;
             }
 
             foreach (Compound compound in reaction.products)
@@ -622,24 +623,24 @@ public class Reaction
                     Attachments[direction] = new OutputAttachment(compound.Molecule);
                 }
 
-                enthalpy -= compound.Molecule.Enthalpy;
+                enthalpy -= compound.Molecule.Enthalpy * compound.Quantity;
             }
 
             float efficiency = 0.7f;
 
             float kJ_lost = Mathf.Abs(enthalpy * (1 - efficiency)) + Molecule.ChargedNRG.kJPerMole * reaction.cost;
-            enthalpy += kJ_lost;
+            enthalpy -= kJ_lost;
 
             NRG_balance = enthalpy / Molecule.ChargedNRG.kJPerMole;
 
             List<ActivityFunction> activity_functions = Utility.CreateList<ActivityFunction>(new ConstantActivityFunction(reaction.productivity.Value));
 
             activity_functions.Add(new NormalActivityFunction(reaction.optimal_temperature.Value,
-                                                                4 * (0.5f + Mathf.Abs(reaction.temperature_tolerance.Value)) * (reaction.is_ribozyme.IsTrue ? 0.7f : 1),
+                                                                (5.0f + Mathf.Abs(reaction.temperature_tolerance.Value)) * (reaction.is_ribozyme.IsTrue ? 0.7f : 1),
                                                                 0.15f,
                                                                 (solution) => (solution.Temperature)));
             activity_functions.Add(new NormalActivityFunction(reaction.optimal_pH.Value,
-                                                                1.0f * (0.25f + Mathf.Abs(reaction.pH_tolerance.Value)) * (reaction.is_ribozyme.IsTrue ? 0.7f : 1),
+                                                                (0.25f + Mathf.Abs(reaction.pH_tolerance.Value)) * (reaction.is_ribozyme.IsTrue ? 0.7f : 1),
                                                                 1,
                                                                 (solution) => (solution.pH)));
 
@@ -664,6 +665,8 @@ public class Reaction
         protected override Action GetAction(Cell.Slot slot)
         {
             float activity = GetActivity(slot.Cell.Organism.Cytosol);
+            if (activity == 0)
+                return null;
 
             Dictionary<Cell.Slot, Compound> slot_reactants = new Dictionary<Cell.Slot, Compound>();
             List<Compound> locale_reactants = new List<Compound>();

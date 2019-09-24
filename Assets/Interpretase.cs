@@ -131,7 +131,7 @@ public class Interpretase : ProgressiveCatalyst
                                                 command_codon_index,
                                                 else_marker);
                     else
-                        return new Command(slot, command_codon_index, 0);
+                        return new PassCommand(slot, command_codon_index);
                 }
                 else
                     return new TryCommand(slot,
@@ -494,7 +494,7 @@ public class Interpretase : ProgressiveCatalyst
     }
 
 
-    public class LoadProgram : Action
+    public class LoadProgram : EnergeticAction
     {
         public override bool IsLegal
         {
@@ -518,9 +518,9 @@ public class Interpretase : ProgressiveCatalyst
 
         public Compound ProgramCompound { get; private set; }
 
-        public LoadProgram(Cell.Slot catalyst_slot) : base(catalyst_slot, 1)
+        public LoadProgram(Cell.Slot catalyst_slot) : base(catalyst_slot, 1, -0.1f)
         {
-
+            Cost = Interpretase.InputAttachment.GetSlotPointedAt(catalyst_slot).Compound.Quantity;
         }
 
         public override Dictionary<object, List<Compound>> GetResourceDemands()
@@ -556,7 +556,7 @@ public class Interpretase : ProgressiveCatalyst
 
         public Interpretase Interpretase { get { return Catalyst.GetFacet<Interpretase>(); } }
 
-        public Command(Cell.Slot catalyst_slot, int command_codon_index, float cost, float energy_balance = -0.1f) 
+        public Command(Cell.Slot catalyst_slot, int command_codon_index, float cost, float energy_balance) 
             : base(catalyst_slot, cost, energy_balance)
         {
             CommandCodonIndex = command_codon_index;
@@ -610,11 +610,13 @@ public class Interpretase : ProgressiveCatalyst
 
         public CopyCommand(Cell.Slot catalyst_slot, int command_codon_index, Cell.Slot output_slot, 
                            string start_marker_, string stop_marker_) 
-            : base(catalyst_slot, command_codon_index, 1)
+            : base(catalyst_slot, command_codon_index, 1, -0.5f)
         {
             Destination = output_slot;
             start_marker = start_marker_;
             stop_marker = stop_marker_;
+
+            Cost = SequenceToBeCopied.Length / 10.0f;
         }
 
         public override void Begin()
@@ -635,7 +637,7 @@ public class Interpretase : ProgressiveCatalyst
     public class GrabCommand : Command
     {
         public GrabCommand(Cell.Slot catalyst_slot, int command_codon_index)
-            : base(catalyst_slot, command_codon_index, 1)
+            : base(catalyst_slot, command_codon_index, 0.1f, -0.1f)
         {
 
         }
@@ -651,7 +653,7 @@ public class Interpretase : ProgressiveCatalyst
     public class ReleaseCommand : Command
     {
         public ReleaseCommand(Cell.Slot catalyst_slot, int command_codon_index)
-            : base(catalyst_slot, command_codon_index, 1)
+            : base(catalyst_slot, command_codon_index, 0.1f, 0.1f)
         {
 
         }
@@ -671,7 +673,7 @@ public class Interpretase : ProgressiveCatalyst
         public string Marker { get; private set; }
 
         public GoToCommand(Cell.Slot catalyst_slot, int command_codon_index, string marker) 
-            : base(catalyst_slot, command_codon_index, 0)
+            : base(catalyst_slot, command_codon_index, 0, 0)
         {
             Marker = marker;
         }
@@ -705,7 +707,7 @@ public class Interpretase : ProgressiveCatalyst
         }
 
         public TryCommand(Cell.Slot catalyst_slot, int command_codon_index, Command command, string marker_) 
-            : base(catalyst_slot, command_codon_index, command != null ? command.Cost : 0)
+            : base(catalyst_slot, command_codon_index, command != null ? command.Cost : 0, 0)
         {
             Command = command;
             marker = marker_;
@@ -746,8 +748,9 @@ public class Interpretase : ProgressiveCatalyst
             }
         }
 
-        public ActionCommand(Cell.Slot catalyst_slot, int command_codon_index, Action action = null, float command_cost = 0) 
-            : base(catalyst_slot, command_codon_index, command_cost, command_cost * 0.1f)
+        public ActionCommand(Cell.Slot catalyst_slot, int command_codon_index, Action action, 
+                             float command_cost, float energy_balance) 
+            : base(catalyst_slot, command_codon_index, command_cost, energy_balance)
         {
             SetAction(action);
         }
@@ -839,7 +842,7 @@ public class Interpretase : ProgressiveCatalyst
 
         public MoveCommand(Cell.Slot catalyst_slot, 
                            int command_codon_index, Cell.Slot.Relation direction, float quantity = -1) 
-            : base(catalyst_slot, command_codon_index)
+            : base(catalyst_slot, command_codon_index, null, 0, 0)
         {
             Direction = direction;
 
@@ -896,7 +899,7 @@ public class Interpretase : ProgressiveCatalyst
         }
 
         public SpinCommand(Cell.Slot catalyst_slot, int command_codon_index, Direction direction_)
-            : base(catalyst_slot, command_codon_index)
+            : base(catalyst_slot, command_codon_index, null, 1, 0.1f)
         {
             direction = direction_;
 
@@ -922,6 +925,8 @@ public class Interpretase : ProgressiveCatalyst
 
                 SetAction(new CompositeAction(catalyst_slot, actions.ToArray()));                
             }
+
+            Cost = CatalystSlot.Compound.Quantity;
         }
 
         public override void End()
@@ -960,9 +965,9 @@ public class Interpretase : ProgressiveCatalyst
     public class PassCommand : Command
     {
         public PassCommand(Cell.Slot catalyst_slot, int command_codon_index) 
-            : base(catalyst_slot, command_codon_index, 0)
+            : base(catalyst_slot, command_codon_index, catalyst_slot.Compound.Quantity, 0)
         {
-
+            
         }
     }
 }

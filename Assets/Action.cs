@@ -119,6 +119,8 @@ public abstract class Action
 }
 
 
+//This implementation assumes that component 
+//actions do not change cost after creation.
 public class CompositeAction : Action
 {
     List<Action> actions= new List<Action>();
@@ -209,18 +211,12 @@ public class CompositeAction : Action
 
 public class EnergeticAction : Action
 {
-    float nrg_balance_per_cost;
+    float base_nrg_balance;
 
     public float EnergyBalance
     {
-        get { return nrg_balance_per_cost * Cost; }
-        protected set
-        {
-            if (value == 0 || Cost == 0)
-                nrg_balance_per_cost = value;
-            else
-                nrg_balance_per_cost = value / Cost;
-        }
+        get { return base_nrg_balance * Scale; }
+        protected set { base_nrg_balance = value; }
     }
 
     bool IsExergonic { get { return EnergyBalance > 0; } }

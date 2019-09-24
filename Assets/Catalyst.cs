@@ -863,8 +863,9 @@ public class Pumpase : InstantCatalyst
         }
         else
         {
-            Attachments[Cell.Slot.Relation.Across] = OutPump;
-            Attachments[Cell.Slot.Relation.Right] = InPump;
+            Attachments[Cell.Slot.Relation.Across] = InPump;
+            Attachments[Cell.Slot.Relation.Left] = OutPump;
+            
         }
     }
 
@@ -980,7 +981,7 @@ public class PumpAction : EnergeticAction
 
     public PumpAction(Cell.Slot catalyst_slot, 
                       Molecule molecule_, object source, object destination, float rate) 
-        : base(catalyst_slot, 1, 0.1f)
+        : base(catalyst_slot, 1, -0.1f)
     {
         molecule = molecule_;
 
@@ -988,7 +989,9 @@ public class PumpAction : EnergeticAction
         Destination = destination;
 
         base_quantity = Organism.Membrane.GetTransportRate(molecule, Destination is Locale) * 
-                        CatalystSlot.Compound.Quantity * rate;
+                        CatalystSlot.Compound.Quantity;
+
+        Scale *= rate;
     }
 
     public override Dictionary<object, List<Compound>> GetResourceDemands()

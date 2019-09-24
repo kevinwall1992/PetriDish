@@ -7,7 +7,11 @@ public class ChargeableMolecule : Molecule
 {
     Molecule molecule;
 
-    public override float Enthalpy { get { return molecule.Enthalpy; } }
+    public override float Enthalpy
+    {
+        get { return molecule.Enthalpy + (IsCharged ? kJPerUnit : 0); }
+    }
+
     public override Dictionary<Element, int> Elements { get { return molecule.Elements; } }
 
     public bool IsCharged { get; private set; }

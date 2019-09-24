@@ -550,9 +550,9 @@ public class Reaction
                 Cell cell = organism.GetCells()[0];
 
                 if (NRG_balance > 0)
-                    organism.Cytosol.AddCompound(Molecule.NRG.Discharged(), NRG_balance * 10);
+                    organism.Cytosol.AddCompound(Molecule.DischargedNRG, NRG_balance * 10);
                 else
-                    organism.Cytosol.AddCompound(Molecule.NRG, -NRG_balance * 10);
+                    organism.Cytosol.AddCompound(Molecule.ChargedNRG, -NRG_balance * 10);
 
                 foreach (Compound compound in cytosol_reactants)
                     organism.Cytosol.AddCompound(compound.Molecule, compound.Quantity * 10);
@@ -591,8 +591,8 @@ public class Reaction
 
             System.Predicate<Molecule> IsCytosolMolecule = 
                 molecule => molecule.Equals(Molecule.Water) ||
-                            molecule.Equals(Molecule.GetMolecule("NRG")) ||
-                            molecule.Equals((Molecule.GetMolecule("NRG") as ChargeableMolecule).Discharged());
+                            molecule.Equals(Molecule.ChargedNRG) ||
+                            molecule.Equals(Molecule.DischargedNRG);
 
             float enthalpy = 0;
             foreach (Compound compound in reaction.reactants)
@@ -627,10 +627,10 @@ public class Reaction
 
             float efficiency = 0.7f;
 
-            float kJ_lost = Mathf.Abs(enthalpy * (1 - efficiency)) - Molecule.NRG.kJPerMole * reaction.cost;
+            float kJ_lost = Mathf.Abs(enthalpy * (1 - efficiency)) + Molecule.ChargedNRG.kJPerMole * reaction.cost;
             enthalpy += kJ_lost;
 
-            NRG_balance = enthalpy / Molecule.NRG.kJPerMole;
+            NRG_balance = enthalpy / Molecule.ChargedNRG.kJPerMole;
 
             List<ActivityFunction> activity_functions = Utility.CreateList<ActivityFunction>(new ConstantActivityFunction(reaction.productivity.Value));
 

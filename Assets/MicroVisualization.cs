@@ -48,7 +48,6 @@ public class MicroVisualization : GoodBehavior
 
         OrganismComponent.LoadOrganism("Organisms/test_organism");
         water_locale.AddOrganism(OrganismComponent.Organism);
-        OrganismComponent.Organism.Cytosol.AddCompound(Molecule.NRG, 5);
 
         Scene.Micro.Editor.TrackThis(OrganismComponent.Organism);
 

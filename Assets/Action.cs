@@ -233,7 +233,7 @@ public class EnergeticAction : Action
 
     public override Dictionary<object, List<Compound>> GetResourceDemands()
     {
-        Compound compound = new Compound(EnergyBalance < 0 ? Molecule.NRG : Molecule.NRG.Discharged(), Mathf.Abs(EnergyBalance));
+        Compound compound = new Compound(EnergyBalance < 0 ? Molecule.ChargedNRG : Molecule.DischargedNRG, Mathf.Abs(EnergyBalance));
 
         return Utility.CreateDictionary<object, List<Compound>>(
             Organism.Cytosol, Utility.CreateList(compound));
@@ -243,17 +243,17 @@ public class EnergeticAction : Action
     {
         if (IsExergonic)
         {
-            if (Cytosol.GetQuantity(Molecule.NRG.Discharged()) < EnergyBalance)
+            if (Cytosol.GetQuantity(Molecule.DischargedNRG) < EnergyBalance)
                 return;
 
-            Cytosol.RemoveCompound(Molecule.NRG.Discharged(), EnergyBalance);
+            Cytosol.RemoveCompound(Molecule.DischargedNRG, EnergyBalance);
         }
         else
         {
-            if (Cytosol.GetQuantity(Molecule.NRG) < -EnergyBalance)
+            if (Cytosol.GetQuantity(Molecule.ChargedNRG) < -EnergyBalance)
                 return;
 
-            Cytosol.RemoveCompound(Molecule.NRG, -EnergyBalance);
+            Cytosol.RemoveCompound(Molecule.ChargedNRG, -EnergyBalance);
         }
 
         base.Begin();
@@ -262,9 +262,9 @@ public class EnergeticAction : Action
     public override void End()
     {
         if (IsExergonic)
-            Cytosol.AddCompound(Molecule.NRG, EnergyBalance);
+            Cytosol.AddCompound(Molecule.ChargedNRG, EnergyBalance);
         else
-            Cytosol.AddCompound(Molecule.NRG.Discharged(), -EnergyBalance);
+            Cytosol.AddCompound(Molecule.DischargedNRG, -EnergyBalance);
 
         base.End();
     }

@@ -11,7 +11,8 @@ public abstract class Molecule : Copiable<Molecule>, Stackable, Encodable
     public static IEnumerable<Molecule> Molecules { get { return molecules.Values; } }
 
     public static Molecule Water { get; private set; }
-    public static ChargeableMolecule NRG { get; private set; }
+    public static ChargeableMolecule ChargedNRG { get; private set; }
+    public static ChargeableMolecule DischargedNRG { get; private set; }
 
     static void LoadMolecules(string filename)
     {
@@ -31,7 +32,9 @@ public abstract class Molecule : Copiable<Molecule>, Stackable, Encodable
         LoadMolecules("default");
 
         Water = GetMolecule("Water");
-        NRG = RegisterNamedMolecule("NRG", new ChargeableMolecule(GetMolecule("NRG"), 1000));
+
+        RegisterNamedMolecule("Charged NRG", ChargedNRG = new ChargeableMolecule(GetMolecule("NRG"), 1000).Charged());
+        RegisterNamedMolecule("Discharged NRG", DischargedNRG = ChargedNRG.Discharged());
 
         RegisterNamedMolecule("Valanine", Nucleotide.Valanine);
         RegisterNamedMolecule("Comine", Nucleotide.Comine);

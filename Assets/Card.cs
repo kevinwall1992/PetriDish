@@ -68,14 +68,14 @@ public class Card : GoodBehavior, IPointerClickHandler, Spawner
                 GetComponent<Image>().sprite = Resources.Load<Sprite>("card_ribozyme");
                 code_text.color = Color.Lerp(Color.green, dark_gray, 0.8f);
             }
-            else if(catalyst is Enzyme)
+            else if(catalyst is Protein)
             {
-                Enzyme enzyme = catalyst as Enzyme;
+                Protein protein = catalyst as Protein;
 
-                foreach (Polymer.Monomer monomer in enzyme.Monomers)
+                foreach (Polymer.Monomer monomer in protein.Monomers)
                     code += (monomer as AminoAcid).Abbreviation + " ";
 
-                GetComponent<Image>().sprite = Resources.Load<Sprite>("card_enzyme");
+                GetComponent<Image>().sprite = Resources.Load<Sprite>("card_protein");
                 code_text.color = Color.Lerp(Color.Lerp(Color.yellow, Color.red, 0.5f), dark_gray, 0.8f);
             }
 

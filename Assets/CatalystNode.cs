@@ -41,7 +41,7 @@ public class CatalystNode : DNAPanelNode
             if (Catalyst is Ribozyme)
                 return (Catalyst as Ribozyme).CodonCount;
             else
-                return (Catalyst as Enzyme).DNASequence.Length / 3;
+                return (Catalyst as Protein).DNASequence.Length / 3;
         }
     }
 
@@ -66,7 +66,7 @@ public class CatalystNode : DNAPanelNode
     {
         CatalystNode catalyst_node = Instantiate(Scene.Micro.Prefabs.CatalystNode);
         catalyst_node.Catalyst = catalyst;
-        catalyst_node.image.sprite = Resources.Load<Sprite>(catalyst is Ribozyme ? "ribozyme" : "enzyme");
+        catalyst_node.image.sprite = Resources.Load<Sprite>(catalyst is Ribozyme ? "ribozyme" : "protein");
 
         return catalyst_node;
     }

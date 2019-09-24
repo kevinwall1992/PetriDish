@@ -185,9 +185,9 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
                 }
                 else
                 {
-                    Enzyme enzyme = catalyst as Enzyme;
-                    foreach (Enzyme other_enzyme in deck.Where((other_catalyst) => (other_catalyst is Enzyme)))
-                        if (other_enzyme.DNASequence == enzyme.DNASequence)
+                    Protein protein = catalyst as Protein;
+                    foreach (Protein other_protein in deck.Where((other_catalyst) => (other_catalyst is Protein)))
+                        if (other_protein.DNASequence == protein.DNASequence)
                             return true;
                 }
 

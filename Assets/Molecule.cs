@@ -170,7 +170,7 @@ public abstract class Molecule : Copiable<Molecule>, Stackable, Encodable
             case "Simple Molecule": molecule = new SimpleMolecule("", 0); break;
             case "Chargeable Molecule": molecule = new ChargeableMolecule(null, 0); break;
             case "Ribozyme": molecule = new Ribozyme(null); break;
-            case "Enzyme": molecule = new Enzyme(null); break;
+            case "Protein": molecule = new Protein(null); break;
             case "DNA": molecule = new DNA(); break;
             case "Nucleotide": molecule = new Nucleotide(); break;
             case "Amino Acid": molecule = new AminoAcid(null, ""); break;

@@ -323,16 +323,16 @@ public class Interpretase : ProgressiveCatalyst
                     catalyst_sequence += codon;
 
                     Ribozyme ribozyme = Ribozyme.GetRibozyme(catalyst_sequence);
-                    Enzyme enzyme = Enzyme.GetEnzyme(Enzyme.DNASequenceToAminoAcidSequence(catalyst_sequence));
+                    Protein protein = Protein.GetProtein(Protein.DNASequenceToAminoAcidSequence(catalyst_sequence));
 
-                    if (ribozyme != null || enzyme != null)
+                    if (ribozyme != null || protein != null)
                     {
                         length = catalyst_sequence.Length / 3;
 
                         if (ribozyme != null)
                             return ribozyme;
                         else
-                            return enzyme;
+                            return protein;
                     }
 
                     break;

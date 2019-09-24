@@ -127,7 +127,7 @@ public class Ribozyme : DNA, Catalyst
         if (MathUtility.Roll(0.9f))
             return new Ribozyme(mutant_catalyst);
         else
-            return new Enzyme(mutant_catalyst);
+            return new Protein(mutant_catalyst);
     }
 
     public bool IsSame(Catalyst other)

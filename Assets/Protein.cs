@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 
 
-public class Enzyme : Polymer, Catalyst
+public class Protein : Polymer, Catalyst
 {
-    static Dictionary<string, Enzyme> enzymes = new Dictionary<string, Enzyme>();
+    static Dictionary<string, Protein> proteins = new Dictionary<string, Protein>();
 
     static Dictionary<string, AminoAcid> amino_acid_codon_map = new Dictionary<string, AminoAcid>();
 
-    static Enzyme()
+    static Protein()
     {
         amino_acid_codon_map["VFC"] = AminoAcid.Phlorodine;
         amino_acid_codon_map["VLC"] = AminoAcid.Umine;
@@ -38,29 +38,29 @@ public class Enzyme : Polymer, Catalyst
             for (int i = 0; i < length; i++)
                 amino_acid_sequence.Add(MathUtility.RandomElement(amino_acids));
         }
-        while (enzymes.ContainsKey(AminoAcidSequenceToString(amino_acid_sequence)));
+        while (proteins.ContainsKey(AminoAcidSequenceToString(amino_acid_sequence)));
 
         return amino_acid_sequence;
     }
 
-    public static Enzyme GetEnzyme(List<AminoAcid> amino_acid_sequence)
+    public static Protein GetProtein(List<AminoAcid> amino_acid_sequence)
     {
         if (amino_acid_sequence == null)
             return null;
 
         string amino_acid_sequence_string = AminoAcidSequenceToString(amino_acid_sequence);
 
-        if (enzymes.ContainsKey(amino_acid_sequence_string))
-            return enzymes[amino_acid_sequence_string];
+        if (proteins.ContainsKey(amino_acid_sequence_string))
+            return proteins[amino_acid_sequence_string];
 
         return null;
     }
 
-    public static Enzyme GetEnzyme(Catalyst catalyst)
+    public static Protein GetProtein(Catalyst catalyst)
     {
-        foreach (Enzyme enzyme in enzymes.Values)
-            if (enzyme.Catalyst.Equals(catalyst))
-                return enzyme;
+        foreach (Protein protein in proteins.Values)
+            if (protein.Catalyst.Equals(catalyst))
+                return protein;
 
         return null;
     }
@@ -143,7 +143,7 @@ public class Enzyme : Polymer, Catalyst
 
     public string DNASequence { get { return AminoAcidSequenceToDNASequence(AminoAcidSequence); } }
 
-    public Enzyme(Catalyst catalyst_)
+    public Protein(Catalyst catalyst_)
     {
         if (catalyst_ == null)
             return;
@@ -151,17 +151,17 @@ public class Enzyme : Polymer, Catalyst
         Catalyst = catalyst_;
 
         List<AminoAcid> amino_acid_sequence = null;
-        Enzyme enzyme = GetEnzyme(Catalyst);
-        if (enzyme != null)
-            amino_acid_sequence = enzyme.AminoAcidSequence;
+        Protein protein = GetProtein(Catalyst);
+        if (protein != null)
+            amino_acid_sequence = protein.AminoAcidSequence;
         else
             GenerateAminoAcidSequence(Catalyst.Power / 2);
 
         foreach (AminoAcid amino_acid in amino_acid_sequence)
             AppendMonomer(amino_acid);
 
-        if (!enzymes.ContainsKey(DNASequence))
-            enzymes[DNASequence] = this;
+        if (!proteins.ContainsKey(DNASequence))
+            proteins[DNASequence] = this;
     }
 
     public override void InsertMonomer(Monomer monomer, int index)
@@ -187,7 +187,7 @@ public class Enzyme : Polymer, Catalyst
 
     public T GetFacet<T>() where T : class, Catalyst
     {
-        if (typeof(T) == typeof(Enzyme))
+        if (typeof(T) == typeof(Protein))
             return this as T;
 
         return Catalyst.GetFacet<T>();
@@ -209,30 +209,30 @@ public class Enzyme : Polymer, Catalyst
         Catalyst mutant_catalyst = Catalyst.Mutate();
 
         if (MathUtility.Roll(0.9f))
-            return new Enzyme(mutant_catalyst);
+            return new Protein(mutant_catalyst);
         else
             return new Ribozyme(mutant_catalyst);
     }
 
     public bool IsSame(Catalyst other)
     {
-        if (!(other is Enzyme))
+        if (!(other is Protein))
             return false;
 
-        Enzyme other_enzyme = other as Enzyme;
+        Protein other_protein = other as Protein;
 
-        if (!(this as Polymer).IsStackable(other_enzyme as Polymer))
+        if (!base.IsStackable(other_protein))
             return false;
 
-        return Catalyst.IsSame(other_enzyme.Catalyst);
+        return Catalyst.IsSame(other_protein.Catalyst);
     }
 
     public override bool IsStackable(object obj)
     {
-        if (!(obj is Enzyme))
+        if (!(obj is Protein))
             return false;
 
-        Enzyme other = obj as Enzyme;
+        Protein other = obj as Protein;
 
         if (!IsSame(other))
             return false;
@@ -248,7 +248,7 @@ public class Enzyme : Polymer, Catalyst
         if (!base.Equals(obj))
             return false;
 
-        return Catalyst.Equals(obj as Catalyst);
+        return Catalyst.Equals((obj as Protein).Catalyst);
     }
 
 
@@ -256,19 +256,19 @@ public class Enzyme : Polymer, Catalyst
 
     public override Molecule Copy()
     {
-        return new Enzyme(Catalyst.Copy());
+        return new Protein(Catalyst.Copy());
     }
 
     public override JObject EncodeJson()
     {
-        JObject json_enzyme_object = new JObject();
+        JObject json_protein_object = new JObject();
 
-        json_enzyme_object["Type"] = "Enzyme";
-        json_enzyme_object["DNA Sequence"] = DNASequence;
-        json_enzyme_object["Catalyst"] = Catalyst.EncodeJson();
+        json_protein_object["Type"] = "Protein";
+        json_protein_object["DNA Sequence"] = DNASequence;
+        json_protein_object["Catalyst"] = Catalyst.EncodeJson();
         
 
-        return json_enzyme_object;
+        return json_protein_object;
     }
 
     public override void DecodeJson(JObject json_object)
@@ -281,7 +281,7 @@ public class Enzyme : Polymer, Catalyst
 
         Catalyst = ProgressiveCatalyst.DecodeCatalyst(json_object["Catalyst"] as JObject);
 
-        enzymes[DNASequence] = this;
+        proteins[DNASequence] = this;
     }
 }
 

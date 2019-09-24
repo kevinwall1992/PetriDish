@@ -133,7 +133,7 @@ public class CompoundTile : GoodBehavior
                     if (Compound.Molecule is Ribozyme)
                         dna_sequence = (Compound.Molecule as Ribozyme).Sequence;
                     else
-                        dna_sequence = (Compound.Molecule as Enzyme).DNASequence;
+                        dna_sequence = (Compound.Molecule as Protein).DNASequence;
 
                     dna_panel.SectorNode.GetDeepestVisibleSectorNode().InsertDNASequence(dna_sequence);
                 }

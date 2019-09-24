@@ -15,7 +15,7 @@ public class MoleculeComponent : GoodBehavior
 
     [SerializeField]
     Color ribozyme_color, 
-          enzyme_color;
+          protein_color;
 
     public AttachmentComponent AcrossAttachmentComponent
     { get { return across_transform.GetComponentInChildren<AttachmentComponent>(); } }
@@ -101,7 +101,7 @@ public class MoleculeComponent : GoodBehavior
                         attachment_component = Instantiate(Scene.Micro.Prefabs.SeparatorComponent);
 
                     attachment_component.transform.SetParent(attachment_transform, false);
-                    attachment_component.SetAttachment(attachment, catalyst is Ribozyme ? ribozyme_color : enzyme_color);
+                    attachment_component.SetAttachment(attachment, catalyst is Ribozyme ? ribozyme_color : protein_color);
                 }
             }
         }
@@ -135,8 +135,8 @@ public class MoleculeComponent : GoodBehavior
         {
             if (molecule is Ribozyme)
                 name = "ribozyme";
-            else if (molecule is Enzyme)
-                name = "enzyme";
+            else if (molecule is Protein)
+                name = "protein";
             else if (molecule is AminoAcid)
                 name = "amino_acid";
             else if (molecule is DNA)

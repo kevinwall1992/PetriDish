@@ -272,7 +272,7 @@ public class SectorNode : DNAPanelNode
                         Destroy(grabbed_node.gameObject);
                     else
                     {
-                        DNAPanel.DNA.InsertSequence(reference_node.CodonIndex, grabbed_dna_sequence);
+                        DNAPanel.DNA.InsertSequence(reference_node.CodonIndex, grabbed_dna_sequence, Sector);
                         InsertNodeBefore(reference_node, grabbed_node);
                     }
                 }
@@ -447,9 +447,6 @@ public class SectorNode : DNAPanelNode
             foreach (SectorNodeInsertionButton insertion_button in GetComponentsInChildren<SectorNodeInsertionButton>())
                 insertion_button.IsHighlighted = false;
         }
-
-
-        
     }
 
     void Clear()
@@ -563,7 +560,7 @@ public class SectorNode : DNAPanelNode
         if (reference_node == null)
             reference_node = GetReferenceNodeFromMousePosition();
 
-        Sector.DNA.InsertSequence(reference_node.CodonIndex, dna_sequence);
+        Sector.DNA.InsertSequence(reference_node.CodonIndex, dna_sequence, Sector);
         Scene.Micro.Editor.Do();
 
         IntegrateNewDNASequence(reference_node, dna_sequence.Length / 3);

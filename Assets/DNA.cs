@@ -95,7 +95,7 @@ public class DNA : Polymer
     }
 
 
-    public void InsertSequence(int index, string sequence)
+    public void InsertSequence(int index, string sequence, Sector receiving_sector = null)
     {
         int monomer_index = index * 3;
 
@@ -116,10 +116,20 @@ public class DNA : Polymer
             if (sector == MainSector)
                 continue;
 
-            if (sector.FirstCodonIndex >= index)
-                sector.FirstCodonIndex += length;
-            if (sector.LastCodonIndex >= index)
-                sector.LastCodonIndex += length;
+            if (sector == receiving_sector)
+            {
+                if (sector.FirstCodonIndex > index)
+                    sector.FirstCodonIndex += length;
+                if ((sector.LastCodonIndex + 1) >= index)
+                    sector.LastCodonIndex += length;
+            }
+            else
+            {
+                if (sector.FirstCodonIndex >= index)
+                    sector.FirstCodonIndex += length;
+                if (sector.LastCodonIndex >= index)
+                    sector.LastCodonIndex += length;
+            }
         }
     }
 
@@ -144,7 +154,7 @@ public class DNA : Polymer
             if (sector.FirstCodonIndex > starting_index)
                 sector.FirstCodonIndex -= length;
             if (sector.LastCodonIndex >= starting_index)
-                sector.LastCodonIndex = Mathf.Max(sector.LastCodonIndex - length, starting_index);
+                sector.LastCodonIndex = Mathf.Max(sector.LastCodonIndex - length, starting_index - 1);
         }
 
         return removed_dna;

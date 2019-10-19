@@ -67,7 +67,7 @@ public class CommandNodeElement : GoodBehavior
                      
                 case "CLF": operands = "LVVVVV"; break; 
             }
-            dna.InsertSequence(codon_index, value + operands);
+            dna.InsertSequence(codon_index, value + operands, CommandNode.SectorNode.Sector);
             Scene.Micro.Editor.Do();
 
             CommandNode.UpdateCommandIcon();

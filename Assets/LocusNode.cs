@@ -28,7 +28,7 @@ public class LocusNode : DNAPanelNode, Choice<string>
             selection = value;
 
             SectorNode.Sector.DNA.RemoveSequence(CodonIndex, 1);
-            SectorNode.Sector.DNA.InsertSequence(CodonIndex, selection.Value);
+            SectorNode.Sector.DNA.InsertSequence(CodonIndex, selection.Value, SectorNode.Sector);
             Scene.Micro.Editor.Do();
 
             icon.Codon = selection.Value;

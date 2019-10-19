@@ -39,7 +39,7 @@ public class CompoundTile : GoodBehavior
                 else
                     name_text.text = compound.Molecule.Name;
 
-                quantity_text.text = compound.Quantity.ToString("n1");
+                quantity_text.text = Measures.GetVisualQuantity(compound).ToString("n1");
                 image.sprite = MoleculeComponent.GetSprite(compound.Molecule);
             }
         }

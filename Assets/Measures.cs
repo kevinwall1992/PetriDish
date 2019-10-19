@@ -68,4 +68,14 @@ public static class Measures
     {
         return PPMToMoles(MolesOfWaterPerLiter, ppm);
     }
+
+    public static float GetVisualQuantity(Compound compound)//larger compounds should be harder to move****
+    {
+        if (compound.Molecule is Polymer)
+            return (compound.Quantity * 100);
+        else if (compound.Molecule is ChargeableMolecule)
+            return compound.Quantity * 10;
+
+        return compound.Quantity;
+    }
 }

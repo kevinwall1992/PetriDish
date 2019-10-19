@@ -8,7 +8,6 @@ public class Interpretase : ProgressiveCatalyst
     public override int Power { get { return 10; } }
 
     public Grabber Grabber { get; private set; }
-    public InputAttachment InputAttachment { get; private set; }
     public OutputAttachment OutputAttachment { get; private set; }
 
     public DNA DNA { get { return GetGeneticCofactor(this); } }
@@ -16,7 +15,6 @@ public class Interpretase : ProgressiveCatalyst
     public Interpretase() : base("Interpretase", 3, "Interprets DNA programs")
     {
         Attachments[Cell.Slot.Relation.Across] = Grabber = new Grabber();
-        Attachments[Cell.Slot.Relation.Left] = InputAttachment = new InputAttachment();
         Attachments[Cell.Slot.Relation.Right] = OutputAttachment = new OutputAttachment();
     }
 
@@ -29,7 +27,7 @@ public class Interpretase : ProgressiveCatalyst
     {
         if (DNA == null)
         {
-            Cell.Slot input_slot = InputAttachment.GetSlotPointedAt(slot);
+            Cell.Slot input_slot = Grabber.GetSlotPointedAt(slot);
             if (input_slot.Compound != null && input_slot.Compound.Molecule is DNA)
                 return new LoadProgram(slot);
 
@@ -98,7 +96,7 @@ public class Interpretase : ProgressiveCatalyst
                 return new CopyCommand(slot,
                                          command_codon_index,
                                          slot.GetAdjacentSlot(Orientation),
-                                         start_marker as string, 
+                                         start_marker as string,
                                          stop_marker as string);
 
             case "CLV":
@@ -513,14 +511,14 @@ public class Interpretase : ProgressiveCatalyst
 
         public Cell.Slot ProgramSlot
         {
-            get { return Interpretase.InputAttachment.GetSlotPointedAt(CatalystSlot); }
+            get { return Interpretase.Grabber.GetSlotPointedAt(CatalystSlot); }
         }
 
         public Compound ProgramCompound { get; private set; }
 
         public LoadProgram(Cell.Slot catalyst_slot) : base(catalyst_slot, 1, -0.1f)
         {
-            Cost = Interpretase.InputAttachment.GetSlotPointedAt(catalyst_slot).Compound.Quantity;
+            Cost = Interpretase.Grabber.GetSlotPointedAt(catalyst_slot).Compound.Quantity;
         }
 
         public override Dictionary<object, List<Compound>> GetResourceDemands()

@@ -46,7 +46,7 @@ public abstract class InstantCatalyst : ProgressiveCatalyst
         float claim_yield = GetNormalizedClaimYield();
         if (claim_yield == 0)
             return null;
-        action.Scale *= claim_yield;
+        action.ScaleByFactor(claim_yield);
 
         if (!action.IsLegal)
             return null;

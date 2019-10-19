@@ -547,17 +547,7 @@ public class ReactionAction : EnergeticAction
 
             foreach (Cell.Slot source in slot_reactants.Keys)
                 if (source.Compound == null || 
-                    source.Compound.Quantity < slot_reactants[source].Quantity || 
                     !source.Compound.Molecule.IsStackable(slot_reactants[source].Molecule))
-                    return false;
-
-            foreach (Compound reactant in cytosol_reactants)
-                if (Organism.Cytosol.GetQuantity(reactant.Molecule) < reactant.Quantity)
-                    return false;
-
-            Debug.Assert(Organism.Locale is WaterLocale);
-            foreach (Compound reactant in locale_reactants)
-                if ((Organism.Locale as WaterLocale).Solution.GetQuantity(reactant.Molecule) < reactant.Quantity)
                     return false;
 
             return base.IsLegal;

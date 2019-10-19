@@ -528,7 +528,8 @@ public class Interpretase : ProgressiveCatalyst
 
         public Compound ProgramCompound { get; private set; }
 
-        public LoadProgram(Cell.Slot catalyst_slot) : base(catalyst_slot, 1, -0.1f)
+        public LoadProgram(Cell.Slot catalyst_slot) 
+            : base(catalyst_slot, Balance.Actions.CompoundMovement.Cost, Balance.Actions.CompoundMovement.EnergyChange)
         {
             ScaleByFactor(Interpretase.Grabber.GetSlotPointedAt(catalyst_slot).Compound.Quantity);
         }
@@ -637,7 +638,7 @@ public class Interpretase : ProgressiveCatalyst
     public class GrabCommand : Command
     {
         public GrabCommand(Cell.Slot catalyst_slot, int command_codon_index)
-            : base(catalyst_slot, command_codon_index, 0.1f, -0.1f)
+            : base(catalyst_slot, command_codon_index, Balance.Actions.Grabbing.Cost, Balance.Actions.Grabbing.EnergyChange)
         {
 
         }
@@ -653,7 +654,7 @@ public class Interpretase : ProgressiveCatalyst
     public class ReleaseCommand : Command
     {
         public ReleaseCommand(Cell.Slot catalyst_slot, int command_codon_index)
-            : base(catalyst_slot, command_codon_index, 0.1f, 0.1f)
+            : base(catalyst_slot, command_codon_index, Balance.Actions.Grabbing.Cost, Balance.Actions.Grabbing.EnergyChange)
         {
 
         }
@@ -899,7 +900,7 @@ public class Interpretase : ProgressiveCatalyst
         }
 
         public SpinCommand(Cell.Slot catalyst_slot, int command_codon_index, Direction direction_)
-            : base(catalyst_slot, command_codon_index, null, 1, 0.1f)
+            : base(catalyst_slot, command_codon_index, null, Balance.Actions.Spinning.Cost, Balance.Actions.Spinning.EnergyChange)
         {
             direction = direction_;
 

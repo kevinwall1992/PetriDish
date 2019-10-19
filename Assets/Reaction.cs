@@ -86,7 +86,7 @@ public class Reaction
 
             new Reaction(reaction_name, reaction["Catalyst Name"].ToString(), 
                          reactants, products,
-                         Utility.JTokenToFloat(reaction     ["Cost"],                   0.0f),
+                         Utility.JTokenToFloat(reaction     ["Cost"],                   0.0f),//****Change "cost" to "loss', action.cost to "work"
                          Utility.JTokenToFloat(reaction     ["Ribozyme"],               0.3f),
                          Utility.JTokenToFloat(reaction     ["Optimal Temperature"],    298),
                          Utility.JTokenToFloat(reaction     ["Temperature Tolerance"],  1),

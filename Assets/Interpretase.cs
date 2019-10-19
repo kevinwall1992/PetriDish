@@ -530,7 +530,7 @@ public class Interpretase : ProgressiveCatalyst
 
         public LoadProgram(Cell.Slot catalyst_slot) : base(catalyst_slot, 1, -0.1f)
         {
-            Cost = Interpretase.Grabber.GetSlotPointedAt(catalyst_slot).Compound.Quantity;
+            ScaleByFactor(Interpretase.Grabber.GetSlotPointedAt(catalyst_slot).Compound.Quantity);
         }
 
         public override Dictionary<object, List<Compound>> GetResourceDemands()
@@ -592,16 +592,6 @@ public class Interpretase : ProgressiveCatalyst
             get { return GetMarkedSequence(Interpretase.DNA, start_marker, stop_marker, CommandCodonIndex); }
         }
 
-        public override float Scale
-        {
-            get
-            {
-                base.Scale = CatalystSlot.Compound.Quantity;
-
-                return base.Scale;
-            }
-        }
-
         public override bool IsLegal
         {
             get
@@ -626,7 +616,7 @@ public class Interpretase : ProgressiveCatalyst
             start_marker = start_marker_;
             stop_marker = stop_marker_;
 
-            Cost = SequenceToBeCopied.Length / 10.0f;
+            ScaleByFactor(SequenceToBeCopied.Length / 10.0f);
         }
 
         public override void Begin()
@@ -936,7 +926,7 @@ public class Interpretase : ProgressiveCatalyst
                 SetAction(new CompositeAction(catalyst_slot, actions.ToArray()));                
             }
 
-            Cost = CatalystSlot.Compound.Quantity;
+            ScaleByFactor(CatalystSlot.Compound.Quantity);
         }
 
         public override void End()

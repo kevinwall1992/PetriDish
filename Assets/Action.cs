@@ -13,6 +13,7 @@ public abstract class Action
         set
         {
             base_cost = value;
+
             Scale = 1;
         }
     }
@@ -24,16 +25,40 @@ public abstract class Action
     public Organism Organism { get { return Cell.Organism; } }
     public Cytosol Cytosol { get { return Organism.Cytosol; } }
 
-    public virtual float Scale { get; set; }
-
-    public float Cost
+    float base_scale = 1;
+    public virtual float Scale
     {
-        get { return Scale * BaseCost; }
+        get { return base_scale * StackScale; }
+        protected set { base_scale = value; }
+    }
+
+    public virtual float Cost
+    {
+        get { return BaseCost * Scale / StackScale; }
 
         set
         {
             if(BaseCost != 0)
                 Scale = value / BaseCost;
+        }
+    }
+
+    public float StackScale
+    {
+        get
+        {
+            Dictionary<Cell.Slot, float> stack_increases = GetStackIncreases();
+
+            float max_ratio = 1;
+            foreach (Cell.Slot slot in stack_increases.Keys)
+            {
+                float current_stack_size = slot.Compound == null ? 0 : slot.Compound.Quantity;
+                float adjusted_stack_increase = Mathf.Pow(300 * stack_increases[slot] * base_scale + Mathf.Pow(current_stack_size, 3), 0.333333f) - current_stack_size;
+
+                max_ratio = Mathf.Min(max_ratio, adjusted_stack_increase / stack_increases[slot]);
+            }
+
+            return max_ratio;
         }
     }
 
@@ -59,6 +84,17 @@ public abstract class Action
     public virtual Dictionary<object, List<Compound>> GetResourceDemands()
     {
         return new Dictionary<object, List<Compound>>();
+    }
+
+    //Quantities returned should be unscaled.
+    protected virtual Dictionary<Cell.Slot, float> GetStackIncreases()
+    {
+        return new Dictionary<Cell.Slot, float>();
+    }
+
+    public void ScaleByFactor(float factor)
+    {
+        base_scale *= factor;
     }
 
     public virtual void Begin() { HasBegun = true; }
@@ -127,14 +163,14 @@ public class CompositeAction : Action
 
     public override float Scale
     {
-        set
+        protected set
         {
             float ratio = value / Scale;
 
             base.Scale = value;
 
             foreach (Action action in actions)
-                action.Scale *= ratio;
+                action.ScaleByFactor(ratio);
         }
     }
 
@@ -307,7 +343,7 @@ public abstract class MoveAction<T> : EnergeticAction
 
         if (quantity < 0)
             quantity = source.Compound.Quantity;
-        Cost = source.Compound == null ? 0 : Mathf.Min(quantity, source.Compound.Quantity);
+        ScaleByFactor(source.Compound == null ? 0 : Mathf.Min(quantity, source.Compound.Quantity));
     }
 
     public override void Begin()
@@ -529,9 +565,9 @@ public class ReactionAction : EnergeticAction
     }
 
     public ReactionAction(Cell.Slot catalyst_slot,
-                    Dictionary<Cell.Slot, Compound> slot_reactants_, 
-                    Dictionary<Cell.Slot, Compound> slot_products_, 
-                    List<Compound> cytosol_reactants_, 
+                    Dictionary<Cell.Slot, Compound> slot_reactants_,
+                    Dictionary<Cell.Slot, Compound> slot_products_,
+                    List<Compound> cytosol_reactants_,
                     List<Compound> cytosol_products_,
                     List<Compound> locale_reactants_,
                     List<Compound> locale_products_,
@@ -554,7 +590,7 @@ public class ReactionAction : EnergeticAction
         if (locale_products == null) locale_products = new List<Compound>();
 
 
-        //This adjusts Action.Scale based on transport rates of 
+        //This adjusts Action.BaseScale based on transport rates of 
         //compounds being moved across the membrane.
         float max_ratio = 1;
 
@@ -571,12 +607,12 @@ public class ReactionAction : EnergeticAction
         };
 
         foreach (Compound compound in locale_reactants)
-            max_ratio = Mathf.Min(max_ratio, GetTransportRate(compound, false) / compound.Quantity);
+            max_ratio = Mathf.Min(max_ratio, GetTransportRate(compound, false) / (compound.Quantity * Scale));
 
         foreach (Compound compound in locale_products)
-            max_ratio = Mathf.Min(max_ratio, GetTransportRate(compound, true) / compound.Quantity);
+            max_ratio = Mathf.Min(max_ratio, GetTransportRate(compound, true) / (compound.Quantity * Scale));
 
-        Scale *= max_ratio;
+        ScaleByFactor(max_ratio);
     }
 
     public override Dictionary<object, List<Compound>> GetResourceDemands()
@@ -595,6 +631,16 @@ public class ReactionAction : EnergeticAction
             demands[Organism.Cytosol].Add(compound);
 
         return demands;
+    }
+
+    protected override Dictionary<Cell.Slot, float> GetStackIncreases()
+    {
+        Dictionary<Cell.Slot, float> stack_increases = new Dictionary<Cell.Slot, float>();
+
+        foreach (Cell.Slot slot in slot_products.Keys)
+            stack_increases[slot] = slot_products[slot].Quantity;
+
+        return stack_increases;
     }
 
     public override void Begin()

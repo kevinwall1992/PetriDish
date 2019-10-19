@@ -169,7 +169,7 @@ public class PumpAction : EnergeticAction
         base_quantity = Organism.Membrane.GetTransportRate(molecule, Destination is Locale) *
                         CatalystSlot.Compound.Quantity;
 
-        Scale *= rate;
+        ScaleByFactor(rate);
     }
 
     public override Dictionary<object, List<Compound>> GetResourceDemands()
@@ -181,6 +181,15 @@ public class PumpAction : EnergeticAction
         demands[Source].Add(new Compound(molecule, base_quantity * Scale));
 
         return demands;
+    }
+
+    protected override Dictionary<Cell.Slot, float> GetStackIncreases()
+    {
+        Dictionary<Cell.Slot, float> stack_increases = new Dictionary<Cell.Slot, float>();
+        if (Destination is Cell.Slot)
+            stack_increases[Destination as Cell.Slot] = base_quantity;
+
+        return stack_increases;
     }
 
     public override void Begin()

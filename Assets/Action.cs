@@ -334,7 +334,7 @@ public abstract class MoveAction<T> : EnergeticAction
     }
 
     protected MoveAction(Cell.Slot catalyst_slot, Cell.Slot source, T destination, float quantity)
-        : base(catalyst_slot, 1, -0.5f)
+        : base(catalyst_slot, Balance.Actions.CompoundMovement.Cost, Balance.Actions.CompoundMovement.EnergyChange)
     {
         Source = source;
         source_compound_copy = source.Compound.Copy();

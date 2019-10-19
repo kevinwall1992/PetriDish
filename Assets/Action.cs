@@ -612,11 +612,19 @@ public class ReactionAction : EnergeticAction
             if (!demands.ContainsKey(slot))
                 demands[slot] = new List<Compound>();
 
-            demands[slot].Add(slot_reactants[slot]);
+            demands[slot].Add(slot_reactants[slot] * Scale);
         }
 
         foreach (Compound compound in cytosol_reactants)
-            demands[Organism.Cytosol].Add(compound);
+            demands[Organism.Cytosol].Add(compound * Scale);
+
+        foreach (Compound compound in locale_reactants)
+        {
+            if (!demands.ContainsKey(Organism.Locale))
+                demands[Organism.Locale] = new List<Compound>();
+
+            demands[Organism.Locale].Add(compound * Scale);
+        }
 
         return demands;
     }

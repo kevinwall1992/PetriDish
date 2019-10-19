@@ -63,7 +63,7 @@ public class CommandNodeElement : GoodBehavior
 
                 case "CLC": operands = "VVC"; break;
 
-                case "CLL": operands = "LVVCVFVVV"; break;
+                case "CLL": operands = "LVVCVVVVV"; break;
                      
                 case "CLF": operands = "LVVVVV"; break; 
             }

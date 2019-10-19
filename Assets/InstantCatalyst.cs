@@ -41,15 +41,15 @@ public abstract class InstantCatalyst : ProgressiveCatalyst
         if (!stage.Includes(action))
             return null;
 
-        if (!action.IsLegal)
-            return null;
-
         action.Cost = slot.Compound.Quantity;
 
         float claim_yield = GetNormalizedClaimYield();
         if (claim_yield == 0)
             return null;
         action.Scale *= claim_yield;
+
+        if (!action.IsLegal)
+            return null;
 
         return action;
     }

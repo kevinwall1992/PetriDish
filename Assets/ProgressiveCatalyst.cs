@@ -464,8 +464,7 @@ public abstract class ProgressiveCatalyst : Catalyst
                         else
                             quantity_claimed[claim] =
                                 claim.Resource.Quantity *
-                                smallest_ratio *
-                                availablities[claim.Source][claim.Resource.Molecule].UnclaimedToAvailableRatio;
+                                smallest_ratio;
                     }
                 }
 

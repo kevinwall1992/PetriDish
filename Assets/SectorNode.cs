@@ -142,7 +142,7 @@ public class SectorNode : DNAPanelNode
         }
     }
 
-    void Start()
+    protected override void Start()
     {
         name_input_field.onValueChanged.AddListener(
             delegate

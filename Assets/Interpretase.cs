@@ -957,8 +957,11 @@ public class Interpretase : ProgressiveCatalyst
             if(Interpretase.Grabber.IsGrabbing)
                 for (int i = 0; i < 3; i++)
                 {
-                    Compound compound = CatalystSlot.GetAdjacentSlot((Cell.Slot.Relation)i).Compound;
+                    Cell.Slot slot = CatalystSlot.GetAdjacentSlot((Cell.Slot.Relation)i);
+                    if (slot == null)
+                        continue;
 
+                    Compound compound = slot.Compound;
                     if (compound == null || !(compound.Molecule is Catalyst))
                         continue;
 

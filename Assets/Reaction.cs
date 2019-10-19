@@ -817,6 +817,8 @@ public class Reaction
         mutant.reactants = reactants;
         mutant.products = products;
 
+        mutant.cost = cost;
+
         mutant.is_ribozyme = is_ribozyme.Copy();
         mutant.optimal_temperature = optimal_temperature.Copy();
         mutant.temperature_tolerance = temperature_tolerance.Copy();

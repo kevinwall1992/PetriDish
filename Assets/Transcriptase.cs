@@ -15,17 +15,17 @@ public class Transcriptase : InstantCatalyst
     protected override Action GetAction(Cell.Slot slot)
     {
         DNA dna = Transcriptor.GetDNA(slot);
-        float cost = dna.Monomers.Count / (100.0f);
+        float length_units = dna.Monomers.Count / Balance.Actions.Transcription.UnitLength;
 
         return new ReactionAction(
-                slot,
-                Utility.CreateDictionary<Cell.Slot, Compound>(Feed.GetSlotPointedAt(slot), new Compound(Feed.Molecule, dna.Monomers.Count / 100.0f)),
-                Utility.CreateDictionary<Cell.Slot, Compound>(Transcriptor.GetSlotPointedAt(slot), new Compound(dna, 1)),
-                null,
-                Utility.CreateList(new Compound(Molecule.Water, (dna.Monomers.Count - 1) / 100.0f)),
-                null, null,
-                cost * 3,
-                cost);
+            slot,
+            Utility.CreateDictionary<Cell.Slot, Compound>(Feed.GetSlotPointedAt(slot), new Compound(Feed.Molecule, dna.Monomers.Count)),
+            Utility.CreateDictionary<Cell.Slot, Compound>(Transcriptor.GetSlotPointedAt(slot), new Compound(dna, 1)),
+            null,
+            Utility.CreateList(new Compound(Molecule.Water, dna.Monomers.Count - 1)),
+            null, null,
+            Balance.Actions.Transcription.Cost * length_units,
+            Balance.Actions.Transcription.EnergyChange * length_units);
     }
 
     public override Catalyst Copy()

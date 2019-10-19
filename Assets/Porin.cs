@@ -36,7 +36,7 @@ public class Porin : InstantCatalyst
             destination = slot.Cell.Organism.Cytosol;
         }
 
-        return new PumpAction(slot, Molecule, source, destination, size);
+        return new PumpAction(slot, Molecule, source, destination, size, true);
     }
 
     public override Catalyst Copy()

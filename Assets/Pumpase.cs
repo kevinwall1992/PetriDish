@@ -158,8 +158,10 @@ public class PumpAction : EnergeticAction
     public Compound PumpedCompound { get; private set; }
 
     public PumpAction(Cell.Slot catalyst_slot,
-                      Molecule molecule_, object source, object destination, float rate)
-        : base(catalyst_slot, 1, -0.1f)
+                      Molecule molecule_, object source, object destination, float rate, bool is_passive = false)
+        : base(catalyst_slot, 
+               Balance.Actions.MembraneTransport.Cost, 
+               is_passive ? 0 : Balance.Actions.MembraneTransport.EnergyChange)
     {
         molecule = molecule_;
 
@@ -167,7 +169,7 @@ public class PumpAction : EnergeticAction
         Destination = destination;
 
         base_quantity = Organism.Membrane.GetTransportRate(molecule, Destination is Locale) *
-                        CatalystSlot.Compound.Quantity;
+                        Balance.Actions.MembraneTransport.RateMultipliers[molecule];
 
         ScaleByFactor(rate);
     }

@@ -571,8 +571,8 @@ public class ReactionAction : EnergeticAction
                     List<Compound> cytosol_products_,
                     List<Compound> locale_reactants_,
                     List<Compound> locale_products_,
-                    float nrg_balance,
-                    float cost = 1) : base(catalyst_slot, cost, nrg_balance)
+                    float nrg_balance, 
+                    float cost = 1) : base(catalyst_slot, cost * Balance.Actions.Reaction.Cost, nrg_balance)
     {
         slot_reactants = slot_reactants_;
         slot_products = slot_products_;

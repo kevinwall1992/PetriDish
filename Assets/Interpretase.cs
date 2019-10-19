@@ -566,8 +566,8 @@ public class Interpretase : ProgressiveCatalyst
 
         public Interpretase Interpretase { get { return Catalyst.GetFacet<Interpretase>(); } }
 
-        public Command(Cell.Slot catalyst_slot, int command_codon_index, float cost, float energy_balance) 
-            : base(catalyst_slot, cost, energy_balance)
+        public Command(Cell.Slot catalyst_slot, int command_codon_index, float cost, float energy_change) 
+            : base(catalyst_slot, cost, energy_change)
         {
             CommandCodonIndex = command_codon_index;
         }
@@ -770,8 +770,8 @@ public class Interpretase : ProgressiveCatalyst
         }
 
         public ActionCommand(Cell.Slot catalyst_slot, int command_codon_index, Action action, 
-                             float command_cost, float energy_balance) 
-            : base(catalyst_slot, command_codon_index, command_cost, energy_balance)
+                             float command_cost, float energy_change) 
+            : base(catalyst_slot, command_codon_index, command_cost, energy_change)
         {
             SetAction(action);
         }

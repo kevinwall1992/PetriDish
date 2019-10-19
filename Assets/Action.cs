@@ -247,25 +247,25 @@ public class CompositeAction : Action
 
 public class EnergeticAction : Action
 {
-    float base_nrg_balance;
+    float base_energy_change;
 
-    public float EnergyBalance
+    public float EnergyChange
     {
-        get { return base_nrg_balance * Scale; }
-        protected set { base_nrg_balance = value; }
+        get { return base_energy_change * Scale; }
+        protected set { base_energy_change = value; }
     }
 
-    bool IsExergonic { get { return EnergyBalance > 0; } }
+    bool IsExergonic { get { return EnergyChange > 0; } }
 
-    public EnergeticAction(Cell.Slot catalyst_slot, float cost, float energy_balance)
+    public EnergeticAction(Cell.Slot catalyst_slot, float cost, float energy_change)
         : base(catalyst_slot, cost)
     {
-        EnergyBalance = energy_balance;
+        EnergyChange = energy_change;
     }
 
     public override Dictionary<object, List<Compound>> GetResourceDemands()
     {
-        Compound compound = new Compound(EnergyBalance < 0 ? Molecule.ChargedNRG : Molecule.DischargedNRG, Mathf.Abs(EnergyBalance));
+        Compound compound = new Compound(EnergyChange < 0 ? Molecule.ChargedNRG : Molecule.DischargedNRG, Mathf.Abs(EnergyChange));
 
         return Utility.CreateDictionary<object, List<Compound>>(
             Organism.Cytosol, Utility.CreateList(compound));
@@ -275,17 +275,17 @@ public class EnergeticAction : Action
     {
         if (IsExergonic)
         {
-            if (Cytosol.GetQuantity(Molecule.DischargedNRG) < EnergyBalance)
+            if (Cytosol.GetQuantity(Molecule.DischargedNRG) < EnergyChange)
                 return;
 
-            Cytosol.RemoveCompound(Molecule.DischargedNRG, EnergyBalance);
+            Cytosol.RemoveCompound(Molecule.DischargedNRG, EnergyChange);
         }
         else
         {
-            if (Cytosol.GetQuantity(Molecule.ChargedNRG) < -EnergyBalance)
+            if (Cytosol.GetQuantity(Molecule.ChargedNRG) < -EnergyChange)
                 return;
 
-            Cytosol.RemoveCompound(Molecule.ChargedNRG, -EnergyBalance);
+            Cytosol.RemoveCompound(Molecule.ChargedNRG, -EnergyChange);
         }
 
         base.Begin();
@@ -294,9 +294,9 @@ public class EnergeticAction : Action
     public override void End()
     {
         if (IsExergonic)
-            Cytosol.AddCompound(Molecule.ChargedNRG, EnergyBalance);
+            Cytosol.AddCompound(Molecule.ChargedNRG, EnergyChange);
         else
-            Cytosol.AddCompound(Molecule.DischargedNRG, -EnergyBalance);
+            Cytosol.AddCompound(Molecule.DischargedNRG, -EnergyChange);
 
         base.End();
     }
@@ -561,8 +561,8 @@ public class ReactionAction : EnergeticAction
                     List<Compound> cytosol_products_,
                     List<Compound> locale_reactants_,
                     List<Compound> locale_products_,
-                    float nrg_balance, 
-                    float cost = 1) : base(catalyst_slot, cost * Balance.Actions.Reaction.Cost, nrg_balance)
+                    float energy_change, 
+                    float cost = 1) : base(catalyst_slot, cost * Balance.Actions.Reaction.Cost, energy_change)
     {
         slot_reactants = slot_reactants_;
         slot_products = slot_products_;
@@ -668,34 +668,32 @@ public class ReactionAction : EnergeticAction
         base.End();
     }
 
-    public List<Cell.Slot> GetReactantSlots()
-    {
-        return slot_reactants.Keys.ToList();
-    }
-
-    public List<Cell.Slot> GetProductSlots()
-    {
-        return slot_products.Keys.ToList();
-    }
-
     public Compound GetReactant(Cell.Slot catalyst_slot)
     {
-        return slot_reactants[catalyst_slot];
+        return slot_reactants[catalyst_slot] * Scale;
     }
 
     public Compound GetProduct(Cell.Slot catalyst_slot)
     {
-        return slot_products[catalyst_slot];
+        return slot_products[catalyst_slot] * Scale;
     }
 
     //Want to make these two immutable/readonly lists somehow
     public List<Compound> GetCytosolReactants()
     {
-        return cytosol_reactants;
+        List<Compound> scaled_cytosol_reactants = new List<Compound>();
+        foreach (Compound compound in cytosol_reactants)
+            scaled_cytosol_reactants.Add(compound * Scale);
+
+        return scaled_cytosol_reactants;
     }
 
     public List<Compound> GetCytosolProducts()
     {
-        return cytosol_products;
+        List<Compound> scaled_cytosol_products = new List<Compound>();
+        foreach (Compound compound in cytosol_products)
+            scaled_cytosol_products.Add(compound * Scale);
+
+        return scaled_cytosol_products;
     }
 }

@@ -541,7 +541,7 @@ public class Reaction
                        cytosol_products= new List<Compound>();
         ActivityFunction activity_function;
 
-        float NRG_balance;
+        float energy_change;
 
         public override Example Example
         {
@@ -550,10 +550,10 @@ public class Reaction
                 Organism organism = new Organism();
                 Cell cell = organism.GetCells()[0];
 
-                if (NRG_balance > 0)
-                    organism.Cytosol.AddCompound(Molecule.DischargedNRG, NRG_balance * 10);
+                if (energy_change > 0)
+                    organism.Cytosol.AddCompound(Molecule.DischargedNRG, energy_change * 10);
                 else
-                    organism.Cytosol.AddCompound(Molecule.ChargedNRG, -NRG_balance * 10);
+                    organism.Cytosol.AddCompound(Molecule.ChargedNRG, -energy_change * 10);
 
                 foreach (Compound compound in cytosol_reactants)
                     organism.Cytosol.AddCompound(compound.Molecule, compound.Quantity * 10);
@@ -629,7 +629,7 @@ public class Reaction
             float kJ_lost = reaction.cost;
             enthalpy -= kJ_lost;
 
-            NRG_balance = enthalpy / Molecule.ChargedNRG.kJPerMole;
+            energy_change = enthalpy / Molecule.ChargedNRG.kJPerMole;
 
             List<ActivityFunction> activity_functions = Utility.CreateList<ActivityFunction>(new ConstantActivityFunction(reaction.productivity.Value));
 
@@ -700,7 +700,7 @@ public class Reaction
                                       slot_reactants, slot_products,
                                       cytosol_reactants, cytosol_products,
                                       locale_reactants, locale_products,
-                                      NRG_balance * activity);
+                                      energy_change * activity);
         }
 
         public override Catalyst Mutate()
@@ -802,7 +802,7 @@ public class Reaction
             cytosol_reactants = new List<Compound>(other.cytosol_reactants);
             cytosol_products = new List<Compound>(other.cytosol_products);
             activity_function = other.activity_function;
-            NRG_balance = other.NRG_balance;
+            energy_change = other.energy_change;
 
             foreach (Cell.Slot.Relation direction in other.Attachments.Keys)
                 Attachments[direction] = other.Attachments[direction];

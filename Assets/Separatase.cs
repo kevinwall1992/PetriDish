@@ -33,7 +33,7 @@ public class Separatase : ProgressiveCatalyst
                 if (CatalystSlot.AdjacentCell == null)
                     return false;
 
-                if (Cytosol.GetQuantity(ChargeableMolecule.ChargedNRG) < (EnergyBalance + Balance.Actions.CellSeparation.Endowment))
+                if (Cytosol.GetQuantity(ChargeableMolecule.ChargedNRG) < (EnergyChange + Balance.Actions.CellSeparation.Endowment))
                     return false;
 
                 return base.IsLegal;

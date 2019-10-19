@@ -86,7 +86,7 @@ public class Reaction
 
             new Reaction(reaction_name, reaction["Catalyst Name"].ToString(), 
                          reactants, products,
-                         Utility.JTokenToFloat(reaction     ["Cost"],                   0.1f),
+                         Utility.JTokenToFloat(reaction     ["Cost"],                   0.0f),
                          Utility.JTokenToFloat(reaction     ["Ribozyme"],               0.3f),
                          Utility.JTokenToFloat(reaction     ["Optimal Temperature"],    298),
                          Utility.JTokenToFloat(reaction     ["Temperature Tolerance"],  1),
@@ -626,9 +626,7 @@ public class Reaction
                 enthalpy -= compound.Molecule.Enthalpy * compound.Quantity;
             }
 
-            float efficiency = 0.7f;
-
-            float kJ_lost = Mathf.Abs(enthalpy * (1 - efficiency)) + Molecule.ChargedNRG.kJPerMole * reaction.cost;
+            float kJ_lost = reaction.cost;
             enthalpy -= kJ_lost;
 
             NRG_balance = enthalpy / Molecule.ChargedNRG.kJPerMole;

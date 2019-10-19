@@ -204,6 +204,8 @@ public class DNA : Polymer
 
         json_dna_object["Type"] = "DNA";
         json_dna_object["Sequence"] = Sequence;
+        if(ActiveCodonIndex != 0)
+            json_dna_object["Active Codon Index"] = ActiveCodonIndex;
 
         if (sectors.Count > 1 || 
             MainSector.Name != default_main_sector_name || 
@@ -230,6 +232,8 @@ public class DNA : Polymer
     {
         Monomers.Clear();
         AppendSequence(Utility.JTokenToString(json_dna_object["Sequence"]));
+        if (json_dna_object.ContainsKey("Active Codon Index"))
+            ActiveCodonIndex =  Utility.JTokenToInt(json_dna_object["Active Codon Index"]);
 
         if (json_dna_object.ContainsKey("Sectors"))
         {

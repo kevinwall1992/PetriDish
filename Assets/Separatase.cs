@@ -33,7 +33,7 @@ public class Separatase : ProgressiveCatalyst
                 if (CatalystSlot.AdjacentCell == null)
                     return false;
 
-                if (Cytosol.GetQuantity(ChargeableMolecule.ChargedNRG) < (EnergyBalance + 10))
+                if (Cytosol.GetQuantity(ChargeableMolecule.ChargedNRG) < (EnergyBalance + Balance.Actions.CellSeparation.Endowment))
                     return false;
 
                 return base.IsLegal;
@@ -41,7 +41,7 @@ public class Separatase : ProgressiveCatalyst
         }
 
         public SeparateCell(Cell.Slot catalyst_slot)
-            : base(catalyst_slot, 4, -4)
+            : base(catalyst_slot, Balance.Actions.CellSeparation.Cost, Balance.Actions.CellSeparation.EnergyChange)
         {
 
         }
@@ -50,7 +50,7 @@ public class Separatase : ProgressiveCatalyst
         {
             Dictionary<object, List<Compound>> demands = base.GetResourceDemands();
 
-            demands[Cytosol].Add(new Compound(Molecule.ChargedNRG, 10));
+            demands[Cytosol].Add(new Compound(Molecule.ChargedNRG, Balance.Actions.CellSeparation.Endowment));
 
             return demands;
         }
@@ -62,7 +62,7 @@ public class Separatase : ProgressiveCatalyst
 
             base.Begin();
 
-            SeedCompound = Cytosol.RemoveCompound(Molecule.ChargedNRG, 10);
+            SeedCompound = Cytosol.RemoveCompound(Molecule.ChargedNRG, Balance.Actions.CellSeparation.Endowment);
         }
 
         public override void End()

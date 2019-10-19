@@ -1,0 +1,71 @@
+{
+  "Actions" :
+  {
+    "Cost Multiplier" : 0.01,
+    
+    "Membrane Transport" :
+    {
+      "Cost" : 1,
+      "Energy Change" : -0.01,
+
+      "Rate Multipliers" :
+      {
+        "Hindenburgium Gas" : 2,
+        "Karbon Diaeride" : 1,
+        "Phlorate" : 1
+      },
+    },
+
+    "Compound Movement" :
+    {
+      "Cost" : 0.3,
+      "Energy Change" : -0.05,
+    },
+
+    "Cell Construction" :
+    {
+      "Cost" : 4,
+      "Energy Change" : -0.3,
+
+      "Materials" :
+      {
+        "Structate" : 4
+      }
+    },
+    
+    "Cell Separation" :
+    {
+      "Cost" : 3,
+      "Energy Change" : -0.2,
+
+      "Endowment" : 1.2
+    },
+
+    "Transcription" :
+    {
+      "Cost" : 100,
+      "Energy Change" : -14,
+
+      "Unit Length" : 40,
+      "Interpretase Cost Multiplier" : 2
+    },
+
+    "Cofactor Binding" :
+    {
+      "Cost" : 1,
+      "Energy Change" : -0.05,
+    },
+
+    "Grabbing" : 
+    {
+      "Cost" : 0.2,
+      "Energy Change" : -0.01,
+    },
+
+    "Spinning" : 
+    {
+      "Cost" : 1,
+      "Energy Change" : -0.02,
+    }
+  }
+}

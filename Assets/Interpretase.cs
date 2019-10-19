@@ -196,6 +196,7 @@ public class Interpretase : ProgressiveCatalyst
 
                         case "FVC":
                         case "FVG":
+                        case "FVF":
                         case "FVL":
                         case "FCV":
                         case "FCC":

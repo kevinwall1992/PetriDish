@@ -82,13 +82,12 @@ public class CommandNodeElement : GoodBehavior
     {
         get
         {
-            switch (Codon[0])
-            {
-                case 'C':
-                case 'F': return operand_container.childCount + 1;
+            int operand_count = 0;
 
-                default: return 1;
-            }
+            foreach (Transform child in operand_container)
+                operand_count += child.GetComponent<CommandNodeElement>().CodonLength;
+
+            return operand_count + 1;
         }
     }
 
@@ -280,7 +279,7 @@ public class CommandNodeElement : GoodBehavior
 
         int operand_count = Interpretase.GetOperandCount(CommandNode.SectorNode.Sector.DNA, CodonIndex);
 
-        for (int i = 0; i < operand_count; i++)
+        for (int i = 0; i < operand_count;)
         {
             CommandNodeElement element = Instantiate(CommandNode.CommandNodeElementPrefab);
             element.transform.SetParent(operand_container.transform);
@@ -290,6 +289,7 @@ public class CommandNodeElement : GoodBehavior
             element_rect_transform.sizeDelta = new Vector2((transform as RectTransform).rect.width, element_rect_transform.sizeDelta.y);
 
             element.Initialize(codon_index_offset + i + 1);
+            i += element.CodonLength;
         }
 
         UpdateLayout();

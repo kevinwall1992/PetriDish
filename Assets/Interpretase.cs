@@ -94,10 +94,9 @@ public class Interpretase : ProgressiveCatalyst
                     return null;
 
                 return new CopyCommand(slot,
-                                         command_codon_index,
-                                         slot.GetAdjacentSlot(Orientation),
-                                         start_marker as string,
-                                         stop_marker as string);
+                                       command_codon_index,
+                                       start_marker as string,
+                                       stop_marker as string);
 
             case "CLV":
                 return new PassCommand(slot, command_codon_index);
@@ -583,9 +582,16 @@ public class Interpretase : ProgressiveCatalyst
 
     public class CopyCommand : Command
     {
+        static float quantity = 0.01f;
+
         string start_marker, stop_marker;
 
-        public Cell.Slot Destination { get; private set; }
+        float RequiredNucleotideQuantity { get { return SequenceToBeCopied.Length * quantity; } }
+
+        public Cell.Slot Source { get { return Interpretase.Grabber.GetSlotPointedAt(CatalystSlot); } }
+        public Cell.Slot Destination { get { return Interpretase.OutputAttachment.GetSlotPointedAt(CatalystSlot); } }
+
+        public Compound UsedCompound { get; private set; }
         public Compound CopiedCompound { get; private set; }
 
         public string SequenceToBeCopied
@@ -605,26 +611,40 @@ public class Interpretase : ProgressiveCatalyst
                         return false;
                 }
 
+
+                if (Source.Compound == null ||
+                   !(Source.Compound.Molecule is Nucleotide) ||
+                   Source.Compound.Quantity < RequiredNucleotideQuantity)
+                    return false;
+
                 return base.IsLegal;
             }
         }
 
-        public CopyCommand(Cell.Slot catalyst_slot, int command_codon_index, Cell.Slot output_slot, 
+        public CopyCommand(Cell.Slot catalyst_slot, int command_codon_index, 
                            string start_marker_, string stop_marker_) 
-            : base(catalyst_slot, command_codon_index, 1, -0.5f)
+            : base(catalyst_slot, 
+                   command_codon_index, 
+                   Balance.Actions.Transcription.Cost * Balance.Actions.Transcription.InterpretaseCostMultiplier, 
+                   Balance.Actions.Transcription.EnergyChange)
         {
-            Destination = output_slot;
             start_marker = start_marker_;
             stop_marker = stop_marker_;
 
-            ScaleByFactor(SequenceToBeCopied.Length / 10.0f);
+            ScaleByFactor(quantity * SequenceToBeCopied.Length / Balance.Actions.Transcription.UnitLength);
         }
 
         public override void Begin()
         {
             base.Begin();
 
-            CopiedCompound = new Compound(new DNA(SequenceToBeCopied), 1);
+            UsedCompound = Source.Compound.Split(RequiredNucleotideQuantity);
+
+            Ribozyme ribozyme = Ribozyme.GetRibozyme(SequenceToBeCopied);
+            if (ribozyme != null)
+                CopiedCompound = new Compound(ribozyme, quantity);
+            else
+                CopiedCompound = new Compound(new DNA(SequenceToBeCopied), quantity);
         }
 
         public override void End()

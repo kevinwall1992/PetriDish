@@ -49,7 +49,7 @@ public class Constructase : ProgressiveCatalyst
         public Constructase Constructase { get { return Catalyst.GetFacet<Constructase>(); } }
 
         public ConstructCell(Cell.Slot catalyst_slot)
-            : base(catalyst_slot, 2, -2.0f)
+            : base(catalyst_slot, Balance.Actions.CellConstruction.Cost, Balance.Actions.CellConstruction.EnergyChange)
         {
 
         }

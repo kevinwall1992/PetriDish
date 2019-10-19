@@ -489,6 +489,20 @@ public class Interpretase : ProgressiveCatalyst
         return other.CopyStateFrom(this);
     }
 
+    public override JObject EncodeJson()
+    {
+        JObject json_interpretase_object = base.EncodeJson();
+        json_interpretase_object["Is Grabbing"] = Grabber.IsGrabbing;
+
+        return json_interpretase_object;
+    }
+
+    public override void DecodeJson(JObject json_interpretase_object)
+    {
+        base.DecodeJson(json_interpretase_object);
+        Grabber.IsGrabbing = Utility.JTokenToBool(json_interpretase_object["Is Grabbing"]);
+    }
+
 
     public class LoadProgram : EnergeticAction
     {

@@ -430,11 +430,8 @@ public class Interpretase : ProgressiveCatalyst
         switch (function_codon)
         {
             case "FVV":
-                Cell.Slot.Relation direction = CodonToDirection(slot, dna, next_codon_index, out next_codon_index);
-                if (direction == Cell.Slot.Relation.None)
-                    return 0;
-
-                Cell.Slot query_slot = slot.GetAdjacentSlot(direction);
+                Interpretase interpretase = (slot.Compound.Molecule as Catalyst).GetFacet<Interpretase>();
+                Cell.Slot query_slot = interpretase.Grabber.GetSlotPointedAt(slot);
                 return query_slot.Compound == null ? 0 : (int)query_slot.Compound.Quantity;
 
             case "FVC":

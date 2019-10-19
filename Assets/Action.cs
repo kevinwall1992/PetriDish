@@ -589,9 +589,7 @@ public class ReactionAction : EnergeticAction
             Molecule molecule = compound.Molecule;
             float quantity = compound.Quantity * Scale;
 
-            float max_rate = Organism.Membrane.GetTransportRate(molecule, false) *
-                             quantity *
-                             CatalystSlot.Compound.Quantity;
+            float max_rate = Organism.Membrane.GetTransportRate(molecule, false) * quantity;
 
             return Mathf.Min(quantity, max_rate);
         };

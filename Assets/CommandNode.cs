@@ -88,6 +88,11 @@ public class CommandNode : DNAPanelNode
         UpdateLayout();
     }
 
+    public void Invalidate()
+    {
+        codon_length = -1;
+    }
+
     public void UpdateCommandIcon()
     {
         string icon_filename = "";

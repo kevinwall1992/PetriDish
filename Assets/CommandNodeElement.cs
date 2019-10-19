@@ -293,6 +293,8 @@ public class CommandNodeElement : GoodBehavior
         }
 
         UpdateLayout();
+
+        CommandNode.Invalidate();
     }
 
     string GetLogicalCodon()

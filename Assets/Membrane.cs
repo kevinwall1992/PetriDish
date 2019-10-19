@@ -80,9 +80,11 @@ public class Membrane : Interface<Cytosol, Locale>
     }
 
 
-    //1 unit would be transferred at a concentration of 10ppb and 
-    //1:1 concentration across membrane. 2 units at 20ppb, 0.5 units 
-    //if destination 2x concentrated, etc. up to 10 units maximum
+    //At max concentration gradient, 1 unit transferred. 
+    //As concentration gradient equalizes, value slowly falls towards zero.
+    //Based on formula found here:
+    //http://www.nimbios.org/~gross/bioed/webmodules/diffusion.htm
+    //Also, uses molecule mass as crude approximation for permeability.
     public float GetTransportRate(Molecule molecule, bool transport_out)
     {
         Debug.Assert(organism.Locale is WaterLocale);
@@ -100,6 +102,6 @@ public class Membrane : Interface<Cytosol, Locale>
                                                        (locale_concentration + 0.000001f) / (organism_concentration + 0.000001f);
 
 
-        return 4 / (1 + ((float)molecule.Mass / Molecule.Water.Mass) / concentration_gradient);
+        return 1.0f / (1 + ((float)molecule.Mass / Molecule.Water.Mass) / concentration_gradient);
     }
 }

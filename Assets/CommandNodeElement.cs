@@ -275,7 +275,10 @@ public class CommandNodeElement : GoodBehavior
 
         foreach (CommandNodeElement element in GetComponentsInChildren<CommandNodeElement>())
             if (element != this)
+            {
+                element.transform.SetParent(null);
                 Destroy(element.gameObject);
+            }
 
         int operand_count = Interpretase.GetOperandCount(CommandNode.SectorNode.Sector.DNA, CodonIndex);
 

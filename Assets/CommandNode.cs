@@ -56,7 +56,10 @@ public class CommandNode : DNAPanelNode
             if (!IsCollapsed)
             {
                 if (command_node_element != null)
+                {
+                    command_node_element.transform.SetParent(null);
                     Destroy(command_node_element.gameObject);
+                }
 
                 string codon = SectorNode.Sector.DNA.GetCodon(CodonIndex);
 

@@ -148,6 +148,36 @@ public static class Utility
         return a;
     }
 
+    public static System.Func<T, U> CreateLookup<T, U>(System.Func<T, U> Function, IEnumerable<T> domain)
+    {
+        Dictionary<T, U> dictionary = new Dictionary<T, U>();
+
+        foreach (T t in domain)
+            dictionary[t] = Function(t);
+
+        return (t) => (dictionary[t]);
+    }
+
+    public static System.Func<U, T> CreateInverseLookup<T, U>(System.Func<T, U> Function, IEnumerable<T> domain)
+    {
+        Dictionary<U, T> inverse_dictionary = new Dictionary<U, T>();
+
+        foreach (T t in domain) 
+            inverse_dictionary[Function(t)] = t;
+
+        return (u) => (inverse_dictionary[u]);
+    }
+
+
+    public static IEnumerable<T> GetEnumValues<T>()
+    {
+        //Need this because this version of C# doesn't have enum type constraint
+        if (!typeof(T).IsEnum)
+            throw new ArgumentException("Type T must be an Enum");
+
+        return (T[])System.Enum.GetValues(typeof(T));
+    }
+
 
     public static string JTokenToString(JToken json, string default_value = "")
     {

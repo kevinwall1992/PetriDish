@@ -19,8 +19,6 @@ public class Pumpase : InstantCatalyst
         is_isomer = is_isomer_;
         Molecule = molecule;
 
-
-
         DefaultInitialization();
     }
 
@@ -49,6 +47,7 @@ public class Pumpase : InstantCatalyst
 
     void DefaultInitialization()
     {
+        InitializeAttachments();
         base.Initialize("Pumpase", 1, "Exchanges compounds with environment");
     }
 
@@ -113,7 +112,6 @@ public class Pumpase : InstantCatalyst
         is_isomer = Utility.JTokenToBool(json_object["Is Isomer"]);
         Molecule = Molecule.GetMolecule(Utility.JTokenToString(json_object["Molecule"]));
 
-        InitializeAttachments();
         DefaultInitialization();
     }
 

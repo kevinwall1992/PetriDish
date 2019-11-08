@@ -31,6 +31,7 @@ public interface Catalyst : Copiable<Catalyst>, Stackable, Encodable
 
     bool CanAddCofactor(Compound cofactor);
     void AddCofactor(Compound cofactor);
+    Compound RemoveCofactor(Compound cofactor);
 
     void ClearState();
 

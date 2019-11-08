@@ -178,6 +178,12 @@ public abstract class ProgressiveCatalyst : Catalyst
         cofactors.Add(cofactor);
     }
 
+    public Compound RemoveCofactor(Compound cofactor)
+    {
+        cofactors.Remove(cofactor);
+        return cofactor;
+    }
+
 
     public void ClearState()
     {

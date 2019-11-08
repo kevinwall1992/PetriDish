@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 public class CompoundTile : GoodBehavior
 {
@@ -127,15 +128,17 @@ public class CompoundTile : GoodBehavior
             {
                 DNAPanel dna_panel = DetailPanel.Left as DNAPanel;
 
-                if (dna_panel.IsPointedAt)
+                if (dna_panel.IsPointedAt && Compound.Molecule is Catalyst)
                 {
-                    string dna_sequence;
-                    if (Compound.Molecule is Ribozyme)
-                        dna_sequence = (Compound.Molecule as Ribozyme).Sequence;
-                    else
-                        dna_sequence = (Compound.Molecule as Protein).DNASequence;
+                    SectorNode sector_node = dna_panel.SectorNode.GetDeepestVisibleSectorNode();
 
-                    dna_panel.SectorNode.GetDeepestVisibleSectorNode().InsertDNASequence(dna_sequence);
+                    string dna_sequence;
+                    if (compound.Molecule is Ribozyme)
+                        dna_sequence = (compound.Molecule as Ribozyme).Sequence;
+                    else
+                        dna_sequence = (compound.Molecule as Protein).DNASequence;
+
+                    sector_node.InsertCodes(Program.DNASequenceToTokens(dna_sequence).ConvertAll((token) => ((Program.Code)token)));//****Replace these things with Utility function
                 }
             }
         }

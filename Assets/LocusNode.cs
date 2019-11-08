@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class LocusNode : DNAPanelNode, Choice<string>
 {
@@ -9,15 +10,9 @@ public class LocusNode : DNAPanelNode, Choice<string>
     [SerializeField]
     Transform options;
 
-    Option<string> selection = null;
+    Program.LocusToken token;
 
-    public override string DNASequence
-    {
-        get
-        {
-            return icon.Codon;
-        }
-    }
+    Option<string> selection = null;
 
     public Option<string> Selection
     {
@@ -27,14 +22,17 @@ public class LocusNode : DNAPanelNode, Choice<string>
         {
             selection = value;
 
-            SectorNode.Sector.DNA.RemoveSequence(CodonIndex, 1);
-            SectorNode.Sector.DNA.InsertSequence(CodonIndex, selection.Value, SectorNode.Sector);
-            Scene.Micro.Editor.Do();
+            token.Location = Interpretase.CodonToValue(selection.Value) - 48;
 
             icon.Codon = selection.Value;
 
             IsCollapsed = true;
         }
+    }
+
+    public override IEnumerable<Program.Code> Codes
+    {
+        get { return Utility.CreateList<Program.Code>(token); }
     }
 
     protected override void Start()
@@ -51,10 +49,11 @@ public class LocusNode : DNAPanelNode, Choice<string>
         base.Update();
     }
 
-    public static LocusNode CreateInstance(string codon)
+    public static LocusNode CreateInstance(Program.LocusToken token)
     {
         LocusNode locus_node = Instantiate(Scene.Micro.Prefabs.LocusNode);
-        locus_node.icon.Codon = codon;
+        locus_node.token = token;
+        locus_node.icon.Codon = token.Codon;
 
         return locus_node;
     }

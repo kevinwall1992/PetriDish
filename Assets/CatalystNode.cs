@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using System.Collections.Generic;
+using System.Linq;
 
 public class CatalystNode : DNAPanelNode
 {
@@ -12,6 +14,8 @@ public class CatalystNode : DNAPanelNode
 
     [SerializeField]
     RectTransform card_container;
+
+    List<Program.Token> tokens;
 
     public override bool IsCollapsed
     {
@@ -34,18 +38,12 @@ public class CatalystNode : DNAPanelNode
         }
     }
 
-    public override int CodonLength
-    {
-        get
-        {
-            if (Catalyst is Ribozyme)
-                return (Catalyst as Ribozyme).CodonCount;
-            else
-                return (Catalyst as Protein).DNASequence.Length / 3;
-        }
-    }
-
     public Catalyst Catalyst { get; private set; }
+
+    public override IEnumerable<Program.Code> Codes
+    {
+        get { return tokens.ConvertAll((token) => ((Program.Code)token)); }
+    }
 
     protected override void Start()
     {
@@ -62,11 +60,12 @@ public class CatalystNode : DNAPanelNode
         card.RestPosition = card_container.position;
     }
 
-    public static CatalystNode CreateInstance(Catalyst catalyst)
+    public static CatalystNode CreateInstance(IEnumerable<Program.Token> tokens)
     {
         CatalystNode catalyst_node = Instantiate(Scene.Micro.Prefabs.CatalystNode);
-        catalyst_node.Catalyst = catalyst;
-        catalyst_node.image.sprite = Resources.Load<Sprite>(catalyst is Ribozyme ? "ribozyme" : "protein");
+        catalyst_node.tokens = new List<Program.Token>(tokens);
+        catalyst_node.Catalyst = Interpretase.GetCatalyst(new DNA(Program.TokensToDNASequence(tokens)), 0);
+        catalyst_node.image.sprite = Resources.Load<Sprite>(catalyst_node.Catalyst is Ribozyme ? "ribozyme" : "protein");
 
         return catalyst_node;
     }

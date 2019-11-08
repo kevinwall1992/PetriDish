@@ -18,19 +18,23 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
     public Membrane Membrane { get { return membrane; } }
     public Locale Locale { get; set; }
 
+    public float SurfaceArea { get { return GetSurfaceArea(); } }
+
+
     public Deck Deck { get { return GetDeck(); } }
 
-    public float SurfaceArea { get { return GetSurfaceArea(); } }
+    List<Program> Programs { get; set; }
 
 
     public Organism(Cell cell)
     {
+        Programs = new List<Program>(cell.Organism.Programs);
+
         membrane = new Membrane(this);
 
         cells.Add(new List<Cell>());
         cells[0].Add(cell);
         cell.Organism = this;
-
     }
 
     public Organism()
@@ -39,6 +43,8 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
 
         cells.Add(new List<Cell>());
         cells[0].Add(new Cell(this));
+
+        Programs = new List<Program>();
     }
 
     //Would like to make this private, 
@@ -201,18 +207,20 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
                 if (slot.Compound == null)
                     continue;
 
+                DNA dna = null;
                 if (slot.Compound.Molecule is Catalyst && slot.Compound.Molecule is Ribozyme)
                 {
                     Catalyst catalyst = slot.Compound.Molecule as Catalyst;
                     if(!IsAlreadyInDeck(catalyst))
                         deck.Add(catalyst);
+
+                    dna = Interpretase.GetGeneticCofactor(catalyst);
                 }
                 else if (slot.Compound.Molecule is DNA)
+                    dna = slot.Compound.Molecule as DNA;
+
+                if(dna != null)
                 {
-                    DNA dna = slot.Compound.Molecule as DNA;
-
-                    string catalyst_sequence = "";
-
                     for (int codon_index = 0; codon_index < dna.CodonCount; codon_index++)
                     {
                         string codon = dna.GetCodon(codon_index);
@@ -331,12 +339,15 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
             foreach (Cell.Relation direction in System.Enum.GetValues(typeof(Cell.Relation)))
             {
                 Cell neighbor = cell.GetAdjacentCell(direction);
+                if (neighbor == null)
+                    continue;
 
-                cell_queue.Enqueue(cell.GetAdjacentCell(direction));
+                cell_queue.Enqueue(neighbor);
                 host_cells[neighbor] = cell;
                 directions[neighbor] = direction;
             }
 
+            RemoveCell(cell);
             rebel_organism.AddCell(host_cells[cell], directions[cell], cell);
         }
 
@@ -423,6 +434,19 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
             foreach (Action action in actions) if(action.HasBegun) action.End();
         }
     }
+
+    public Program GetProgram(string dna_sequence)
+    {
+        foreach (Program program in Programs)
+            if (program.GenerateDNASequence() == dna_sequence)
+                return program;
+
+        Program new_program = new Program(dna_sequence);
+        Programs.Add(new_program);
+
+        return new_program;
+    }
+
 
     public Organism Copy()
     {
@@ -574,7 +598,6 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
         Deck deck = GetDeck();
         foreach (Catalyst catalyst in deck)
         {
-            //This is already a thing: archetypes. Should I be using those? (even though its more code...?)****
             Catalyst blank_copy = catalyst.Copy();
             blank_copy.ClearState();
 
@@ -582,13 +605,18 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
         }
 
 
+        JArray json_program_array = new JArray();
+        foreach (Program program in Programs)
+            json_program_array.Add(program.EncodeJson());
+
 
         return JObject.FromObject(Utility.CreateDictionary<string, object>("Cells", json_cell_array, 
                                                                            "Cytosol", cytosol.EncodeJson(), 
-                                                                           "Deck", json_deck_array));
+                                                                           "Deck", json_deck_array,
+                                                                           "Programs", json_program_array));
     }
 
-    public void DecodeJson(JObject json_organism_object)
+    public void DecodeJson(JObject json_object)
     {
         Dictionary<Vector2Int, Cell> decoded_cells = new Dictionary<Vector2Int, Cell>();
 
@@ -596,7 +624,7 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
                    max = Vector2Int.zero;
         bool is_min_max_initialized = false;
 
-        foreach (var json_cell_token in json_organism_object["Cells"] as JArray)
+        foreach (var json_cell_token in json_object["Cells"] as JArray)
         {
             JObject json_cell_object = json_cell_token as JObject;
 
@@ -647,11 +675,19 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
         }
 
 
-        cytosol.DecodeJson(json_organism_object["Cytosol"] as JObject);
+        cytosol.DecodeJson(json_object["Cytosol"] as JObject);
 
 
-        foreach (var json_catalyst_token in json_organism_object["Deck"] as JArray)
+        foreach (var json_catalyst_token in json_object["Deck"] as JArray)
             Molecule.DecodeMolecule(json_catalyst_token as JObject);
+
+        foreach(var json_program_token in json_object["Programs"] as JArray)
+        {
+            Program program = new Program();
+            program.DecodeJson(json_program_token as JObject);
+
+            Programs.Add(program);
+        }
     }
 }
 

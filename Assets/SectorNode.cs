@@ -3,7 +3,8 @@ using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
-
+using System.Linq;
+using Newtonsoft.Json.Linq;
 
 public class SectorNode : DNAPanelNode
 {
@@ -36,7 +37,6 @@ public class SectorNode : DNAPanelNode
     DummyNode dummy_node;
 
     DNAPanelNode grabbed_node = null;
-    string grabbed_dna_sequence = "";
 
     SectorNode child_sector_node = null;
 
@@ -47,28 +47,7 @@ public class SectorNode : DNAPanelNode
 
     public DNAPanel DNAPanel { get { return GetComponentInParent<DNAPanel>(); } }
 
-    public DNA.Sector Sector { get; private set; }
-
-    public override int CodonLength
-    {
-        get { return Sector.LastCodonIndex - Sector.FirstCodonIndex + 1; }
-    }
-
-    public override string DNASequence
-    {
-        get
-        {
-            if(IsCollapsed)
-                return base.DNASequence;
-
-            string dna_sequence = "";
-
-            foreach (DNAPanelNode node in node_order)
-                dna_sequence += node.DNASequence;
-
-            return dna_sequence;
-        }
-    }
+    public Program.Sector Sector { get; private set; }
 
     public override bool IsCollapsed
     {
@@ -96,7 +75,14 @@ public class SectorNode : DNAPanelNode
             }
             else
                 GetComponent<Image>().raycastTarget = true;
+
+            insertion_choice.gameObject.SetActive(false);
         }
+    }
+
+    public override IEnumerable<Program.Code> Codes
+    {
+        get { return Utility.CreateList<Program.Code>(Sector); }
     }
 
     DNAPanelNode selection_start_node, selection_stop_node;
@@ -205,35 +191,7 @@ public class SectorNode : DNAPanelNode
 
 
         //Check if DNA has changed (generally, due to Undo/Redo)
-        if(Sector.DNA != DNAPanel.DNA)
-        {
-            foreach (DNA.Sector sector in DNAPanel.DNA.Sectors)
-                if (Sector.Identity == sector.Identity)
-                    Sector = sector;
-
-            if (Sector.DNA != DNAPanel.DNA)
-                IsCollapsed = true;
-            else
-            {
-                bool must_reload = false;
-
-                if (Sector.Sequence != DNASequence)
-                    must_reload = true;
-                else
-                {
-                    foreach (DNAPanelNode node in node_order)
-                    {
-                        if (Sector.DNA.GetSector(node.CodonIndex) != Sector)
-                            must_reload = true;
-                        else if (node is SectorNode && (node as SectorNode).Sector.DNA != DNAPanel.DNA)
-                            must_reload = true;
-                    }
-                }
-
-                if (must_reload)
-                    Reload();
-            }
-        }
+        //TODO
 
 
         //Update name, description
@@ -250,7 +208,6 @@ public class SectorNode : DNAPanelNode
                 if (node.IsPointedAt)
                 {
                     grabbed_node = node;
-                    grabbed_dna_sequence = node.DNASequence;
                     break;
                 }
         }
@@ -272,7 +229,7 @@ public class SectorNode : DNAPanelNode
                         Destroy(grabbed_node.gameObject);
                     else
                     {
-                        DNAPanel.DNA.InsertSequence(reference_node.CodonIndex, grabbed_dna_sequence, Sector);
+                        Sector.InsertBefore(reference_node.Codes.First(), grabbed_node.Codes);
                         InsertNodeBefore(reference_node, grabbed_node);
                     }
                 }
@@ -352,7 +309,6 @@ public class SectorNode : DNAPanelNode
 
                 if ((node.transform.localPosition.y - target_position.y) > 18)
                 {
-                    DNAPanel.DNA.RemoveSequence(grabbed_node.CodonIndex, grabbed_node.CodonLength);
                     RemoveNode(node, false);
                     node.transform.SetParent(grabbed_node_container, true);
                     continue;
@@ -451,8 +407,18 @@ public class SectorNode : DNAPanelNode
 
     void Clear()
     {
+        node_order.Clear();
+
         foreach (DNAPanelNode node in node_container.GetComponentsInChildren<DNAPanelNode>())
-            RemoveNode(node);
+        {
+            node.transform.SetParent(null);
+            Destroy(node.gameObject);
+        }
+        foreach(SectorNodeInsertionButton insertion_button in insertion_button_container.GetComponentsInChildren<SectorNodeInsertionButton>())
+        {
+            insertion_button.transform.SetParent(null);
+            Destroy(insertion_button.gameObject);
+        }
 
         foreach (SectorNodeBackgroundStrand background_strand in GetComponentsInChildren<SectorNodeBackgroundStrand>())
             Destroy(background_strand.gameObject);
@@ -467,10 +433,58 @@ public class SectorNode : DNAPanelNode
 
         InsertNodeBefore(null, dummy_node = DummyNode.CreateInstance());
 
-        IntegrateNewDNASequence(dummy_node, CodonLength);
+        IntegrateCodes(Sector.Codes.First(), Sector.Codes.Last());
+    }
 
-        foreach (DNAPanelNode node in node_container.GetComponentsInChildren<DNAPanelNode>())
-            node.transform.position = transform.position;
+    void IntegrateCodes(Program.Code first, Program.Code last)
+    {
+        int first_index = Sector.Codes.IndexOf(first);
+        int last_index = Sector.Codes.IndexOf(last);
+
+        DNAPanelNode reference_node = dummy_node;
+        if ((last_index + 1) < Sector.Codes.Count)
+            foreach (DNAPanelNode node in node_order)
+                if (node != dummy_node && node.Codes.First() == Sector.Codes[last_index + 1])
+                    reference_node = node;
+
+        List < Program.Code> codes_to_integrate = Sector.Codes.GetRange(first_index, last_index - first_index + 1);
+        DNA mock_dna_strand = new DNA(Program.CodesToDNASequence(codes_to_integrate));
+
+        for (int i = 0; i < codes_to_integrate.Count;)
+        {
+            Program.Code code = codes_to_integrate[i];
+
+            DNAPanelNode node = null;
+
+            if (code is Program.Sector)
+                node = SectorNode.CreateInstance(code as Program.Sector);
+            else
+            {
+                Program.Token token = code as Program.Token;
+
+                List<Program.Token> tokens = new List<Program.Token>(Sector.Tokens);
+                int codon_index = tokens.IndexOf(token) - tokens.IndexOf(codes_to_integrate.First().Tokens.First());
+
+                if (token is Program.CommandToken)
+                {
+                    int operand_count = Interpretase.GetOperandCount(mock_dna_strand, codon_index);
+
+                    node = CommandNode.CreateInstance(codes_to_integrate.GetRange(i, operand_count + 1).ConvertAll((code_) => ((Program.Token)code_)));
+                }
+                else if (token is Program.LocusToken)
+                    node = LocusNode.CreateInstance(token as Program.LocusToken);
+                else
+                {
+                    int length;
+                    Interpretase.GetCatalyst(mock_dna_strand, codon_index, out length);
+
+                    node = CatalystNode.CreateInstance(codes_to_integrate.GetRange(i, length).ConvertAll((code_) => ((Program.Token)code_)));
+                }
+            }
+
+            InsertNodeBefore(reference_node, node);
+            i += node.Codes.Count();
+        }
     }
 
     public void AddNode(DNAPanelNode node)
@@ -478,7 +492,7 @@ public class SectorNode : DNAPanelNode
         InsertNodeBefore(dummy_node, node);
     }
 
-    public void InsertNodeBefore(DNAPanelNode reference_node, DNAPanelNode node)
+    void InsertNodeBefore(DNAPanelNode reference_node, DNAPanelNode node)
     {
         node.transform.SetParent(node_container);
         node.transform.position = Input.mousePosition;
@@ -491,8 +505,10 @@ public class SectorNode : DNAPanelNode
         is_blank = false;
     }
 
-    public void RemoveNode(DNAPanelNode node, bool destroy_node = true)
+    void RemoveNode(DNAPanelNode node, bool destroy_node = true)
     {
+        Sector.Remove(node.Codes);
+
         node_order.Remove(node);
         node.transform.SetParent(null);
         if(destroy_node)
@@ -503,67 +519,29 @@ public class SectorNode : DNAPanelNode
                 Destroy(insertion_button.gameObject);
     }
 
-    void IntegrateNewDNASequence(DNAPanelNode reference_node, int length)
+    public void InsertCodesBefore(DNAPanelNode reference_node, IEnumerable<Program.Code> codes)
     {
-        int codon_index = reference_node.CodonIndex;
-        int last_codon_index = reference_node.CodonIndex + length - 1;
+        Program.Code reference_code = null;
+        if (reference_node != dummy_node)
+            reference_code = reference_node.Codes.First();
 
-        while (codon_index <= last_codon_index)
-        {
-            DNAPanelNode node = null;
-
-            if (Sector.DNA.GetSector(codon_index) == Sector)
-            {
-                string codon = Sector.DNA.GetCodon(codon_index);
-
-                switch (codon[0])
-                {
-                    case 'V':
-                    case 'F':
-                        node = CatalystNode.CreateInstance(Interpretase.GetCatalyst(Sector.DNA, codon_index));
-                        break;
-
-                    case 'C':
-                        node = CommandNode.CreateInstance(
-                            Sector.DNA.GetSubsequence(codon_index, Interpretase.GetOperandCount(Sector.DNA, codon_index) + 1));
-
-                        break;
-
-                    case 'L':
-                        node = LocusNode.CreateInstance(codon);
-
-                        break;
-
-                    default:
-                        Image image = new GameObject("error_image").AddComponent<Image>();
-                        image.sprite = Resources.Load<Sprite>("error");
-                        image.transform.SetParent(node_container);
-
-                        break;
-                }
-            }
-            else
-                node = SectorNode.CreateInstance(Sector.DNA.GetSector(codon_index));
-
-            InsertNodeBefore(reference_node, node);
-            codon_index += node.CodonLength;
-        }
+        Sector.InsertBefore(reference_code, codes);
+        IntegrateCodes(codes.First(), codes.Last());
     }
 
-    public void AddDNASequence(string dna_sequence)
+    public void InsertCodes(IEnumerable<Program.Code> codes)
     {
-        InsertDNASequence(dna_sequence, dummy_node);
+        InsertCodesBefore(GetReferenceNodeFromMousePosition(), codes);
     }
 
-    public void InsertDNASequence(string dna_sequence, DNAPanelNode reference_node = null)
+    public void InsertCodeBefore(DNAPanelNode reference_node, Program.Code code)
     {
-        if (reference_node == null)
-            reference_node = GetReferenceNodeFromMousePosition();
+        InsertCodesBefore(reference_node, Utility.CreateList(code));
+    }
 
-        Sector.DNA.InsertSequence(reference_node.CodonIndex, dna_sequence, Sector);
-        Scene.Micro.Editor.Do();
-
-        IntegrateNewDNASequence(reference_node, dna_sequence.Length / 3);
+    public void InsertCode(Program.Code code)
+    {
+        InsertCodes(Utility.CreateList(code));
     }
 
     public void BeginSelect(DNAPanelNode node)
@@ -574,39 +552,41 @@ public class SectorNode : DNAPanelNode
 
     public void MakeSectorFromSelection()
     {
-        int first_codon_index = selection_start_node.CodonIndex;
-        int last_codon_index = selection_stop_node.CodonIndex - 1;
+        List<DNAPanelNode> selected_nodes = GetSelectedNodes();
+        DNAPanelNode reference_node = node_order[node_order.IndexOf(selected_nodes.Last()) + 1];
 
-        DNA.Sector new_sector = Sector.DNA.AddSector("Unnamed Sector", "", first_codon_index, last_codon_index);
-        Scene.Micro.Editor.Do();
-
-        SectorNode sector_node = SectorNode.CreateInstance(new_sector);
-        InsertNodeBefore(selection_start_node, sector_node);
-
-
-        foreach(DNAPanelNode node in GetSelectedDNANodes())
+        List<Program.Code> codes = new List<Program.Code>();
+        foreach (DNAPanelNode node in selected_nodes)
+        {
+            codes.AddRange(node.Codes);
             RemoveNode(node);
-
+        }
 
         selection_start_node = null;
+        
+        Program.Sector new_sector = new Program.Sector("New Sector", "", codes);
+        Sector.InsertBefore(reference_node is DummyNode ? null : reference_node.Codes.First(), new_sector);
+        InsertNodeBefore(reference_node, SectorNode.CreateInstance(new_sector));
     }
 
     public void CopySelection()
     {
-        string dna_sequence = "";
+        JArray json_selection_array = new JArray();
 
-        foreach(DNAPanelNode node in GetSelectedDNANodes())
-            dna_sequence += node.DNASequence;
+        foreach (DNAPanelNode node in GetSelectedNodes())
+            foreach (Program.Code code in node.Codes)
+                json_selection_array.Add(code.EncodeJson());
 
-        GUIUtility.systemCopyBuffer = dna_sequence;
+        GUIUtility.systemCopyBuffer = json_selection_array.ToString();
     }
 
     public void DeleteSelection()
     {
-        foreach (DNAPanelNode node in GetSelectedDNANodes())
+        List<DNAPanelNode> nodes = GetSelectedNodes();
+        foreach (DNAPanelNode node in nodes)
         {
-            Sector.DNA.RemoveSequence(node.CodonIndex, node.CodonLength);
-            Scene.Micro.Editor.Do();
+            foreach (Program.Code code in node.Codes)
+                Sector.Remove(code);
 
             RemoveNode(node);
         }
@@ -627,21 +607,7 @@ public class SectorNode : DNAPanelNode
         insertion_choice.gameObject.SetActive(false);
     }
 
-    public int NodeToCodonIndex(DNAPanelNode node)
-    {
-        int offset = 0;
-        foreach(DNAPanelNode other_node in node_order)
-        {
-            if (other_node == node)
-                break;
-
-            offset += other_node.CodonLength;
-        }
-
-        return Sector.FirstCodonIndex + offset;
-    }
-
-    List<DNAPanelNode> GetSelectedDNANodes()
+    List<DNAPanelNode> GetSelectedNodes()
     {
         List<DNAPanelNode> selected_nodes = new List<DNAPanelNode>();
 
@@ -688,10 +654,11 @@ public class SectorNode : DNAPanelNode
     }
 
 
-    public static SectorNode CreateInstance(DNA.Sector sector)
+    public static SectorNode CreateInstance(Program.Sector sector)
     {
         SectorNode sector_node = Instantiate(Scene.Micro.Prefabs.SectorNode);
         sector_node.Sector = sector;
+        sector_node.Reload();
 
         return sector_node;
     }
@@ -699,11 +666,9 @@ public class SectorNode : DNAPanelNode
 
     class DummyNode : DNAPanelNode
     {
-        public override int CodonLength { get { return 0; } }
-
-        public override string DNASequence
+        public override IEnumerable<Program.Code> Codes
         {
-            get { return ""; }
+            get { return new List<Program.Code>(); }
         }
 
         public static DummyNode CreateInstance()

@@ -36,12 +36,11 @@ public class DNA : Polymer
     public DNA(string sequence)
     {
         AppendSequence(sequence);
-        AddMainSector();
     }
 
     public DNA()
     {
-        AddMainSector();
+
     }
 
 
@@ -95,7 +94,7 @@ public class DNA : Polymer
     }
 
 
-    public void InsertSequence(int index, string sequence, Sector receiving_sector = null)
+    public void InsertSequence(int index, string sequence)
     {
         int monomer_index = index * 3;
 
@@ -108,29 +107,6 @@ public class DNA : Polymer
                 case 'L': InsertMonomer(Nucleotide.Locomine, monomer_index++); break;
                 default: break;
             }
-       
-        int length = sequence.Length / 3;
-
-        foreach (Sector sector in Sectors)
-        {
-            if (sector == MainSector)
-                continue;
-
-            if (sector == receiving_sector)
-            {
-                if (sector.FirstCodonIndex > index)
-                    sector.FirstCodonIndex += length;
-                if ((sector.LastCodonIndex + 1) >= index)
-                    sector.LastCodonIndex += length;
-            }
-            else
-            {
-                if (sector.FirstCodonIndex >= index)
-                    sector.FirstCodonIndex += length;
-                if (sector.LastCodonIndex >= index)
-                    sector.LastCodonIndex += length;
-            }
-        }
     }
 
     public void AppendSequence(string sequence)
@@ -147,14 +123,6 @@ public class DNA : Polymer
             removed_dna.AppendMonomer(RemoveMonomer(starting_index * 3));
             removed_dna.AppendMonomer(RemoveMonomer(starting_index * 3));
             removed_dna.AppendMonomer(RemoveMonomer(starting_index * 3));
-        }
-
-        foreach (Sector sector in Sectors)
-        {
-            if (sector.FirstCodonIndex > starting_index)
-                sector.FirstCodonIndex -= length;
-            if (sector.LastCodonIndex >= starting_index)
-                sector.LastCodonIndex = Mathf.Max(sector.LastCodonIndex - length, starting_index - 1);
         }
 
         return removed_dna;
@@ -174,12 +142,6 @@ public class DNA : Polymer
         if (other.ActiveCodonIndex != ActiveCodonIndex)
             return false;
 
-        if (other.Sectors.Count() != Sectors.Count())
-            return false;
-        for (int i = 0; i < sectors.Count; i++)
-            if (!other.sectors[i].Equals(sectors[i]))
-                return false;
-            
         return true;
     }
 
@@ -191,10 +153,6 @@ public class DNA : Polymer
         DNA copy = new DNA(Sequence);
         copy.ActiveCodonIndex = ActiveCodonIndex;
 
-        copy.sectors.Clear();
-        foreach (Sector sector in Sectors)
-            copy.AddSector(sector.Name, sector.Description, sector.FirstCodonIndex, sector.LastCodonIndex);
-
         return copy;
     }
 
@@ -204,26 +162,8 @@ public class DNA : Polymer
 
         json_dna_object["Type"] = "DNA";
         json_dna_object["Sequence"] = Sequence;
-        if(ActiveCodonIndex != 0)
+        if (ActiveCodonIndex != 0)
             json_dna_object["Active Codon Index"] = ActiveCodonIndex;
-
-        if (sectors.Count > 1 || 
-            MainSector.Name != default_main_sector_name || 
-            MainSector.Description != default_main_sector_description)
-        {
-            JArray json_sector_array = new JArray();
-            foreach (Sector sector in Sectors)
-            {
-                JObject json_sector_object = new JObject();
-                json_sector_object["Name"] = sector.Name;
-                json_sector_object["Description"] = sector.Description;
-                json_sector_object["First Codon Index"] = sector.FirstCodonIndex;
-                json_sector_object["Last Codon Index"] = sector.LastCodonIndex;
-
-                json_sector_array.Add(json_sector_object);
-            }
-            json_dna_object["Sectors"] = json_sector_array;
-        }
 
         return json_dna_object;
     }
@@ -233,130 +173,7 @@ public class DNA : Polymer
         Monomers.Clear();
         AppendSequence(Utility.JTokenToString(json_dna_object["Sequence"]));
         if (json_dna_object.ContainsKey("Active Codon Index"))
-            ActiveCodonIndex =  Utility.JTokenToInt(json_dna_object["Active Codon Index"]);
-
-        if (json_dna_object.ContainsKey("Sectors"))
-        {
-            sectors.Clear();
-
-            foreach (JToken json_token in json_dna_object["Sectors"])
-            {
-                JObject json_sector_object = json_token as JObject;
-
-                AddSector(Utility.JTokenToString(json_sector_object["Name"]),
-                            Utility.JTokenToString(json_sector_object["Description"]),
-                            Utility.JTokenToInt(json_sector_object["First Codon Index"]),
-                            Utility.JTokenToInt(json_sector_object["Last Codon Index"]));
-            }
-        }
-    }
-
-
-    List<Sector> sectors = new List<Sector>();
-    public IEnumerable<Sector> Sectors
-    {
-        get { return sectors; }
-    }
-
-    public Sector MainSector
-    {
-        get
-        {
-            Sector main_sector = null;
-
-            foreach (Sector sector in Sectors)
-                if (sector.FirstCodonIndex == 0 && (main_sector == null || sector.LastCodonIndex > main_sector.LastCodonIndex))
-                    main_sector = sector;
-
-            main_sector.LastCodonIndex = CodonCount - 1;
-            return main_sector;
-        }
-    }
-    const string default_main_sector_name = "Main Sector";
-    const string default_main_sector_description = "Describe this DNA strand here";
-    void AddMainSector() { AddSector(default_main_sector_name, default_main_sector_description, 0, CodonCount - 1); }
-
-    public Sector AddSector(string name , string description, int first_codon_index, int last_codon_index)
-    {
-        Sector sector = new Sector(this, name, description, first_codon_index, last_codon_index);
-        sectors.Add(sector);
-
-        return sector;
-    }
-
-    public void RemoveSector(Sector sector)
-    {
-        if (sector == MainSector)
-            return;
-
-        sectors.Remove(sector);
-    }
-
-    public Sector GetSector(int codon_index)
-    {
-        Sector deepest_sector = null;
-
-        foreach (Sector sector in Sectors)
-            if (sector.FirstCodonIndex <= codon_index &&
-                sector.LastCodonIndex >= codon_index)
-                if (deepest_sector == null || (deepest_sector.FirstCodonIndex <= sector.FirstCodonIndex &&
-                                               deepest_sector.LastCodonIndex >= sector.LastCodonIndex))
-                    deepest_sector = sector;
-
-        return deepest_sector;
-    }
-
-    public class Sector
-    {
-        public DNA DNA { get; private set; }
-
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public int FirstCodonIndex { get; set; }
-        public int LastCodonIndex { get; set; }
-
-        public int Identity { get; private set; }
-
-        public int Length { get { return LastCodonIndex - FirstCodonIndex + 1; } }
-
-        public string Sequence { get { return DNA.GetSubsequence(FirstCodonIndex, Length); } }
-
-        public Sector(DNA dna, string name, string description, int first_codon_index, int last_codon_index)
-        {
-            DNA = dna;
-
-            Name = name;
-            Description = description;
-            FirstCodonIndex = first_codon_index;
-            LastCodonIndex = last_codon_index;
-
-            Identity = 0;
-
-            while (true)
-            {
-                foreach (Sector sector in DNA.Sectors)
-                    if (Identity == sector.Identity)
-                    {
-                        Identity++;
-                        continue;
-                    }
-
-                break;
-            }
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (!(obj is Sector))
-                return false;
-
-            Sector other = obj as Sector;
-
-            return other.Name == Name && 
-                   other.Description == Description && 
-                   other.FirstCodonIndex == FirstCodonIndex && 
-                   other.LastCodonIndex == LastCodonIndex;
-        }
+            ActiveCodonIndex = Utility.JTokenToInt(json_dna_object["Active Codon Index"]);
     }
 }
 
@@ -403,13 +220,13 @@ public class Nucleotide : Polymer.Monomer
 
     public override JObject EncodeJson()
     {
-        return JObject.FromObject(Utility.CreateDictionary<string, string>("Type", "Nucleotide", 
+        return JObject.FromObject(Utility.CreateDictionary<string, string>("Type", "Nucleotide",
                                                                            "Nucleotide Type", type.ToString()));
     }
 
     public override void DecodeJson(JObject json_object)
     {
-        switch(Utility.JTokenToString(json_object["Nucleotide Type"]))
+        switch (Utility.JTokenToString(json_object["Nucleotide Type"]))
         {
             case "Valanine": type = Type.Valanine; break;
             case "Comine": type = Type.Comine; break;

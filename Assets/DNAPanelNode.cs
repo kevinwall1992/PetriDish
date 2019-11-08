@@ -2,9 +2,9 @@
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
-
-public class DNAPanelNode : GoodBehavior
+public abstract class DNAPanelNode : GoodBehavior
 {
     [SerializeField]
     protected RectTransform collapsed_form;
@@ -54,17 +54,8 @@ public class DNAPanelNode : GoodBehavior
         }
     }
 
-    public int CodonIndex
-    {
-        get { return SectorNode.NodeToCodonIndex(this); }
-    }
+    public abstract IEnumerable<Program.Code> Codes { get; }
 
-    public virtual int CodonLength { get { return 1; } }
-
-    public virtual string DNASequence
-    {
-        get { return GetComponentInParent<SectorNode>().Sector.DNA.GetSubsequence(CodonIndex, CodonLength); }
-    }
 
     protected override void Update()
     {

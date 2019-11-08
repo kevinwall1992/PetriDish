@@ -23,6 +23,18 @@ public class DNAPanel : DetailPanel
         }
     }
 
+    Program program = null;
+    public Program Program
+    {
+        get
+        {
+            if(program == null)
+                program = Scene.Micro.Visualization.OrganismComponent.Organism.GetProgram(DNA.Sequence);
+
+            return program;
+        }
+    }
+
     public SectorNode SectorNode { get; private set; }
 
     private void Awake()
@@ -32,7 +44,7 @@ public class DNAPanel : DetailPanel
 
     protected override void Start()
     {
-        SectorNode = SectorNode.CreateInstance(DNA.MainSector);
+        SectorNode = SectorNode.CreateInstance(Program.MainSector);
         SectorNode.transform.SetParent(transform, false);
         SectorNode.IsCollapsed = false;
 
@@ -47,6 +59,17 @@ public class DNAPanel : DetailPanel
         {
             Destroy(gameObject);
             return;
+        }
+
+        string program_dna_sequence = Program.GenerateDNASequence();//****Consider whether we want to make this a property
+        if (DNA.Sequence != program_dna_sequence)
+        {
+            int active_codon_index = DNA.ActiveCodonIndex;
+            DNA.RemoveSequence(0, DNA.CodonCount);
+            DNA.AppendSequence(program_dna_sequence);
+            DNA.ActiveCodonIndex = active_codon_index;
+
+            Scene.Micro.Editor.Do();
         }
 
         base.Update();

@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
 public class SectorNodeInsertionChoice : GoodBehavior, Choice<string>
 {
@@ -20,15 +22,26 @@ public class SectorNodeInsertionChoice : GoodBehavior, Choice<string>
         {
             selection = value;
 
-            string dna_sequence = "";
+            List<Program.Code> codes = new List<Program.Code>();
             switch(Selection.Value)
             {
-                case "Command": dna_sequence = "CVVVVV"; break;
-                case "Locus": dna_sequence = "LLC"; break;
-                case "Paste": dna_sequence = GUIUtility.systemCopyBuffer; break;
+                case "Command":
+                    codes.Add(new Program.CommandToken(Program.CommandType.Move));
+                    codes.Add(new Program.ValueToken(0));
+                    break;
+
+                case "Locus":
+                    codes.Add(new Program.LocusToken(0));
+                    break;
+
+                case "Paste":
+                    JArray json_codes_array = JArray.Parse(GUIUtility.systemCopyBuffer);
+                    foreach (JToken json_code_token in json_codes_array)
+                        codes.Add(Program.DecodeCode(json_code_token as JObject));
+                    break;
             }
 
-            SectorNode.InsertDNASequence(dna_sequence, ReferenceNode);
+            SectorNode.InsertCodesBefore(ReferenceNode, codes);
 
             SectorNode.HideInsertionChoice();
         }

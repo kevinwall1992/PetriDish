@@ -179,6 +179,13 @@ public abstract class ProgressiveCatalyst : Catalyst
     }
 
 
+    public void ClearState()
+    {
+        cofactors.Clear();
+        Orientation = DefaultOrientation;
+    }
+
+
     public virtual bool IsSame(Catalyst other)
     {
         if (this == other)

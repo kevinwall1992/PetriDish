@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
+
 public class Ribozyme : DNA, Catalyst
 {
     static Dictionary<string, Ribozyme> ribozymes = new Dictionary<string, Ribozyme>();
@@ -86,6 +87,7 @@ public class Ribozyme : DNA, Catalyst
             ribozymes[Sequence] = this;
     }
 
+
     public void Step(Cell.Slot slot)
     {
         Catalyst.Step(slot);
@@ -119,6 +121,9 @@ public class Ribozyme : DNA, Catalyst
 
     public bool CanAddCofactor(Compound cofactor) { return Catalyst.CanAddCofactor(cofactor); }
     public void AddCofactor(Compound cofactor) { Catalyst.AddCofactor(cofactor); }
+    public Compound RemoveCofactor(Compound cofactor) { return Catalyst.RemoveCofactor(cofactor); }
+
+    public void ClearState() { Catalyst.ClearState(); }
 
     public virtual Catalyst Mutate()
     {

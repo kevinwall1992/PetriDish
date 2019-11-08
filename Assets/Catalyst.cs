@@ -32,6 +32,8 @@ public interface Catalyst : Copiable<Catalyst>, Stackable, Encodable
     bool CanAddCofactor(Compound cofactor);
     void AddCofactor(Compound cofactor);
 
+    void ClearState();
+
     void Step(Cell.Slot slot);
     void Communicate(Cell.Slot slot, Action.Stage stage);
     Action Catalyze(Cell.Slot slot, Action.Stage stage);

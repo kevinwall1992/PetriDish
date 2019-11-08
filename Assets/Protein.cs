@@ -203,6 +203,9 @@ public class Protein : Polymer, Catalyst
 
     public bool CanAddCofactor(Compound cofactor) { return Catalyst.CanAddCofactor(cofactor); }
     public void AddCofactor(Compound cofactor) { Catalyst.AddCofactor(cofactor); }
+    public Compound RemoveCofactor(Compound cofactor) { return Catalyst.RemoveCofactor(cofactor); }
+
+    public void ClearState() { Catalyst.ClearState(); }
 
     public virtual Catalyst Mutate()
     {
@@ -280,7 +283,6 @@ public class Protein : Polymer, Catalyst
             AppendMonomer(amino_acid);
 
         Catalyst = ProgressiveCatalyst.DecodeCatalyst(json_object["Catalyst"] as JObject);
-
         proteins[DNASequence] = this;
     }
 }

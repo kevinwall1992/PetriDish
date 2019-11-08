@@ -573,7 +573,14 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
 
         Deck deck = GetDeck();
         foreach (Catalyst catalyst in deck)
-            json_deck_array.Add(catalyst.EncodeJson());
+        {
+            //This is already a thing: archetypes. Should I be using those? (even though its more code...?)****
+            Catalyst blank_copy = catalyst.Copy();
+            blank_copy.ClearState();
+
+            json_deck_array.Add(blank_copy.EncodeJson());
+        }
+
 
 
         return JObject.FromObject(Utility.CreateDictionary<string, object>("Cells", json_cell_array, 

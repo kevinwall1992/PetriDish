@@ -642,7 +642,12 @@ public class Interpretase : ProgressiveCatalyst
 
             Ribozyme ribozyme = Ribozyme.GetRibozyme(SequenceToBeCopied);
             if (ribozyme != null)
-                CopiedCompound = new Compound(ribozyme, quantity);
+            {
+                Ribozyme ribozyme_copy = ribozyme.Copy() as Ribozyme;
+                ribozyme_copy.ClearState();
+
+                CopiedCompound = new Compound(ribozyme_copy, quantity);
+            }
             else
                 CopiedCompound = new Compound(new DNA(SequenceToBeCopied), quantity);
         }

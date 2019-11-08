@@ -8,6 +8,9 @@ using UnityEngine;
 //turns building up to it. 
 public abstract class ProgressiveCatalyst : Catalyst
 {
+    public static Cell.Slot.Relation DefaultOrientation { get { return Cell.Slot.Relation.Across; } }
+
+
     List<Compound> cofactors = new List<Compound>();
     Dictionary<string, object> aspects = new Dictionary<string, object>();
 
@@ -35,7 +38,7 @@ public abstract class ProgressiveCatalyst : Catalyst
 
         Attachments = new Dictionary<Cell.Slot.Relation, Attachment>();
 
-        Orientation = Cell.Slot.Relation.Across;
+        Orientation = DefaultOrientation;
     }
 
     protected ProgressiveCatalyst()
@@ -46,7 +49,7 @@ public abstract class ProgressiveCatalyst : Catalyst
 
         Attachments = new Dictionary<Cell.Slot.Relation, Attachment>();
 
-        Orientation = Cell.Slot.Relation.Across;
+        Orientation = DefaultOrientation;
     }
 
     protected void Initialize(string name, int price, string description)

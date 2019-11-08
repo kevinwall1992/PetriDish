@@ -145,7 +145,7 @@ public class Cell
         {
             if (Compound == null)
                 Compound = compound;
-            else if (Compound.Molecule == compound.Molecule)
+            else if (Compound.Molecule.IsStackable(compound.Molecule))
                 Compound.Quantity += compound.Quantity;
         }
 

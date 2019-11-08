@@ -14,8 +14,8 @@ public class Interpretase : ProgressiveCatalyst
 
     public Interpretase() : base("Interpretase", 3, "Interprets DNA programs")
     {
-        Attachments[Cell.Slot.Relation.Across] = Grabber = new Grabber();
-        Attachments[Cell.Slot.Relation.Right] = OutputAttachment = new OutputAttachment();
+        Attachments[Cell.Slot.Relation.Right] = Grabber = new Grabber();
+        Attachments[Cell.Slot.Relation.Left] = OutputAttachment = new OutputAttachment();
     }
 
     public override bool CanAddCofactor(Compound cofactor)
@@ -845,10 +845,16 @@ public class Interpretase : ProgressiveCatalyst
         {
             get
             {
-                if (Direction == Catalyst.Orientation)
+                Cell.Slot.Relation grabber_current_direction = Catalyst.GetAttachmentDirection(Interpretase.Grabber);
+
+                if (Direction == grabber_current_direction)
                     return Catalyst.Orientation;
 
-                return CatalystSlot.GetAdjacentSlot(Direction).GetRelation(CatalystSlot);
+                Cell.Slot.Relation grabber_final_direction = CatalystSlot.GetAdjacentSlot(Direction).GetRelation(CatalystSlot);
+
+                return Catalyst.Orientation = (Cell.Slot.Relation)MathUtility.Mod((int)grabber_final_direction + 
+                                                                                       Catalyst.Orientation - 
+                                                                                       grabber_current_direction, 3);
             }
         }
 
@@ -884,14 +890,14 @@ public class Interpretase : ProgressiveCatalyst
 
             //Dragging grabbed compound behind us
             MoveToSlotAction move_action = null;
-            Cell.Slot grab_slot = catalyst_slot.GetAdjacentSlot(Catalyst.Orientation);
+            Cell.Slot grab_slot = Interpretase.Grabber.GetSlotPointedAt(catalyst_slot);
             if ((Interpretase.Grabber.IsGrabbing || IsTake) &&
                 grab_slot != null &&
                 grab_slot.Compound != null &&
-                Catalyst.Orientation != direction &&
+                Catalyst.GetAttachmentDirection(Interpretase.Grabber) != direction &&
                 !push_action.IsFullPush)
 
-                move_action = new MoveToSlotAction(catalyst_slot, catalyst_slot.GetAdjacentSlot(Catalyst.Orientation), catalyst_slot, quantity);
+                move_action = new MoveToSlotAction(catalyst_slot, grab_slot, catalyst_slot, quantity);
 
             SetAction(new CompositeAction(catalyst_slot, grab_command, push_action, move_action));
         }
@@ -931,22 +937,38 @@ public class Interpretase : ProgressiveCatalyst
         {
             direction = direction_;
 
-            Cell.Slot grab_slot = catalyst_slot.GetAdjacentSlot(Catalyst.Orientation);
+            Cell.Slot grab_slot = Interpretase.Grabber.GetSlotPointedAt(catalyst_slot);
             if (Interpretase.Grabber.IsGrabbing)
             {
                 List<Action> actions = new List<Action>();
 
                 Cell.Slot source = grab_slot;
 
+                Molecule molecule_last_rotated = null;
                 while (source != null && source.Compound!= null)
                 {
                     Cell.Slot.Relation move_direction = Cell.Slot.RotateRelation(catalyst_slot.GetRelation(source), IsRightSpin);
                     Cell.Slot destination = catalyst_slot.GetAdjacentSlot(move_direction);
 
-                    if (destination == null)
-                        actions.Add(new MoveToLocaleAction(catalyst_slot, source));
+                    if (source.Compound != null)
+                    {
+                        if (destination == null)
+                            actions.Add(new MoveToLocaleAction(catalyst_slot, source));
+                        else
+                        {
+                            if (molecule_last_rotated != null && molecule_last_rotated.IsStackable(source.Compound.Molecule))
+                                molecule_last_rotated = null;
+                            else
+                            {
+                                actions.Add(new MoveToSlotAction(catalyst_slot, source, destination));
+
+                                if(destination.Compound != null)
+                                    molecule_last_rotated = destination.Compound.Molecule;
+                            }
+                        }
+                    }
                     else
-                        actions.Add(new MoveToSlotAction(catalyst_slot, source, destination));
+                        molecule_last_rotated = null;
 
                     source = destination;
                 }

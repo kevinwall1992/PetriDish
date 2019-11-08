@@ -28,7 +28,9 @@ public class Interpretase : ProgressiveCatalyst
         if (DNA == null)
         {
             Cell.Slot input_slot = Grabber.GetSlotPointedAt(slot);
-            if (input_slot.Compound != null && input_slot.Compound.Molecule is DNA)
+            if (input_slot.Compound != null && 
+                input_slot.Compound.Molecule is DNA && 
+                !(input_slot.Compound.Molecule is Ribozyme))
                 return new LoadProgram(slot);
 
             return null;
@@ -511,7 +513,7 @@ public class Interpretase : ProgressiveCatalyst
             {
                 Compound compound = ProgramSlot.Compound;
 
-                if (compound == null || !(compound.Molecule is DNA))
+                if (compound == null || !(compound.Molecule is DNA) || compound.Molecule is Ribozyme)
                     return false;
 
                 return true;

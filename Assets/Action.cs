@@ -304,6 +304,8 @@ public class EnergeticAction : Action
 
 public abstract class MoveAction<T> : EnergeticAction
 {
+    float DesiredQuantity { get { return Scale; } }
+
     Compound source_compound_copy;
 
     public Cell.Slot Source { get; private set; }
@@ -329,6 +331,9 @@ public abstract class MoveAction<T> : EnergeticAction
             if (IsInvalidated)
                 return false;
 
+            if (Source.Compound.Quantity < DesiredQuantity)
+                return false;
+
             return base.IsLegal;
         }
     }
@@ -343,14 +348,14 @@ public abstract class MoveAction<T> : EnergeticAction
 
         if (quantity < 0)
             quantity = source.Compound.Quantity;
-        ScaleByFactor(source.Compound == null ? 0 : Mathf.Min(quantity, source.Compound.Quantity));
+        ScaleByFactor(quantity);
     }
 
     public override void Begin()
     {
         base.Begin();
 
-        MovedCompound = Source.Compound.Split(Scale);
+        MovedCompound = Source.Compound.Split(DesiredQuantity);
     }
 }
 

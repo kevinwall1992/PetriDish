@@ -18,16 +18,23 @@ public class DNA : Polymer
         get { return GetCodon(ActiveCodonIndex); }
     }
 
+    string baked_sequence = null;
     public string Sequence
     {
         get
         {
-            string sequence = "";
+            if (baked_sequence == null)
+            {
 
-            for (int i = 0; i < CodonCount; i++)
-                sequence += GetCodon(i);
+                baked_sequence = "";
 
-            return sequence;
+                for (int i = 0; i < CodonCount; i++)
+                    baked_sequence += GetCodon(i);
+
+                return baked_sequence;
+            }
+
+            return baked_sequence;
         }
     }
 
@@ -47,11 +54,10 @@ public class DNA : Polymer
 
     public override void InsertMonomer(Monomer monomer, int index)
     {
-        if (monomer.Equals(Nucleotide.Valanine) ||
-            monomer.Equals(Nucleotide.Comine) ||
-            monomer.Equals(Nucleotide.Funcosine) ||
-            monomer.Equals(Nucleotide.Locomine))
+        if (monomer is Nucleotide)
             base.InsertMonomer(monomer, index);
+
+        baked_sequence = null;
     }
 
     public override Monomer RemoveMonomer(int index)
@@ -59,7 +65,10 @@ public class DNA : Polymer
         if (index < ActiveCodonIndex)
             ActiveCodonIndex--;
 
-        return base.RemoveMonomer(index);
+        Monomer monomer = base.RemoveMonomer(index);
+        baked_sequence = null;
+
+        return monomer;
     }
 
     public string GetCodon(int codon_index)
@@ -128,18 +137,23 @@ public class DNA : Polymer
         return removed_dna;
     }
 
-
-    public override bool Equals(object obj)
+    public override bool IsStackable(object obj)
     {
-        if (!base.Equals(obj))
-            return false;
-
         if (!(obj is DNA))
             return false;
 
-        DNA other = obj as DNA;
+        if ((obj as DNA).Sequence != Sequence)
+            return false;
 
-        if (other.ActiveCodonIndex != ActiveCodonIndex)
+        return true;
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (!IsStackable(obj))
+            return false;
+
+        if ((obj as DNA).ActiveCodonIndex != ActiveCodonIndex)
             return false;
 
         return true;
@@ -147,9 +161,6 @@ public class DNA : Polymer
 
     public override Molecule Copy()
     {
-        if (this is Ribozyme)
-            return this;
-
         DNA copy = new DNA(Sequence);
         copy.ActiveCodonIndex = ActiveCodonIndex;
 
@@ -212,7 +223,7 @@ public class Nucleotide : Polymer.Monomer
 
     public override bool Equals(object obj)
     {
-        if (!base.Equals(obj))
+        if (!(obj is Nucleotide))
             return false;
 
         return (obj as Nucleotide).type == type;

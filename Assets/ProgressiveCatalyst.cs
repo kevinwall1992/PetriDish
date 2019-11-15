@@ -274,6 +274,7 @@ public abstract class ProgressiveCatalyst : Catalyst
         return JObject.FromObject(Utility.CreateDictionary<string, object>(
             "Type", GetType().Name,
             "Orientation", System.Enum.GetName(typeof(Cell.Slot.Relation), Orientation),
+            "Progress", Progress,
             "Cofactors", json_cofactor_array));
     }
 
@@ -285,6 +286,8 @@ public abstract class ProgressiveCatalyst : Catalyst
             case "Left": Orientation = Cell.Slot.Relation.Left; break;
             case "Across": Orientation = Cell.Slot.Relation.Across; break;
         }
+
+        Progress = Utility.JTokenToFloat(json_object["Progress"]);
 
         foreach (JToken json_cofactor_token in json_object["Cofactors"])
             AddCofactor(Compound.DecodeCompound(json_cofactor_token as JObject));

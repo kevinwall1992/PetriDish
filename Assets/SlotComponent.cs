@@ -31,27 +31,36 @@ public class SlotComponent : GoodBehavior, Spawner
         get { return CompoundComponent.transform.position; }
     }
 
-    DetailPanel detail_panel;
+    DetailPanel detail_panel = null;
     public DetailPanel DetailPanel
     {
         get
         {
-            if (detail_panel == null && CompoundComponent.Compound != null)
-            {
-                Molecule molecule = CompoundComponent.Compound.Molecule;
+            if (CompoundComponent.Compound == null)
+                return null;
 
-                if (molecule is Catalyst)
-                {
-                    if (Interpretase.GetGeneticCofactor(molecule as Catalyst) != null)
-                        detail_panel = DNAPanel.Create(Slot);
-                    else
-                        detail_panel = CatalystPanel.Create(CompoundComponent.Compound.Molecule as Catalyst);
-                }
-                else if (molecule is DNA)
+            Molecule molecule = CompoundComponent.Compound.Molecule;
+
+            if (detail_panel is DNAPanel && molecule is DNA && ReferenceEquals(molecule as DNA, (detail_panel as DNAPanel).DNA))
+                return detail_panel;
+
+            if (detail_panel != null)
+            {
+                Destroy(detail_panel);
+                detail_panel = null;
+            }
+
+            if (molecule is Catalyst)
+            {
+                if (Interpretase.GetGeneticCofactor(molecule as Catalyst) != null)
                     detail_panel = DNAPanel.Create(Slot);
                 else
-                    detail_panel = null;
+                    detail_panel = CatalystPanel.Create(CompoundComponent.Compound.Molecule as Catalyst);
             }
+            else if (molecule is DNA)
+                detail_panel = DNAPanel.Create(Slot);
+            else
+                detail_panel = null;
 
             return detail_panel;
         }

@@ -71,4 +71,9 @@ public class DetailPanel : GoodBehavior
         else
             Right = null;
     }
+
+    private void OnDestroy()
+    {
+        Close();
+    }
 }

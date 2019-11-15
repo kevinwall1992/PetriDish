@@ -3,7 +3,7 @@ using System.Collections;
 
 public class MoleculeComponent : GoodBehavior
 {
-    Molecule molecule, molecule_copy;
+    Molecule molecule;
 
     [SerializeField]
     SpriteRenderer sprite_renderer;
@@ -14,8 +14,10 @@ public class MoleculeComponent : GoodBehavior
               left_transform;
 
     [SerializeField]
-    Color ribozyme_color, 
+    Color ribozyme_color,
           protein_color;
+
+    public Molecule Molecule { get { return molecule; } }
 
     [SerializeField]
     CatalystProgressIcon catalyst_progress_icon;
@@ -39,36 +41,26 @@ public class MoleculeComponent : GoodBehavior
             Scene.Micro.Camera.WorldToScreenPoint(
                 transform.position) + new Vector3(-15, 24));
 
-        Validate();
-    }
-
-    void Validate()
-    {
-        if (molecule != null && molecule.Equals(molecule_copy))
-            return;
-
-        if (molecule == null)
+        if (molecule is Catalyst)
         {
-            sprite_renderer.sprite = null;
-            molecule_copy = null;
-        }
-        else
-        {
-            molecule_copy = molecule.Copy();
-
-            if (molecule is Catalyst)
-                transform.localRotation = Quaternion.Euler(0, 0, ((int)(molecule as Catalyst).Orientation) * 120);
+            transform.localRotation = Quaternion.Euler(0, 0, ((int)(molecule as Catalyst).Orientation) * 120);
         }
     }
 
     public MoleculeComponent SetMolecule(Molecule molecule_)
     {
+        if (molecule != null && molecule.Equals(molecule_))
+            return this;
+
         molecule = molecule_;
 
         transform.localRotation = Quaternion.identity;
+        if (molecule is Catalyst)
+            transform.localRotation = Quaternion.Euler(0, 0, ((int)(molecule as Catalyst).Orientation) * 120);
 
         if (molecule != null)
             sprite_renderer.sprite = GetSprite(molecule);
+        else sprite_renderer.sprite = null;
 
         foreach (Cell.Slot.Relation direction in System.Enum.GetValues(typeof(Cell.Slot.Relation)))
         {
@@ -114,8 +106,6 @@ public class MoleculeComponent : GoodBehavior
                 }
             }
         }
-
-        Validate();
 
         return this;
     }

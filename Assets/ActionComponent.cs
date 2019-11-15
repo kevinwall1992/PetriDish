@@ -244,7 +244,8 @@ public class ActionComponent : MonoBehaviour
             if (action is Interpretase.MoveCommand)
             {
                 Interpretase.MoveCommand move_command = action as Interpretase.MoveCommand;
-                float radians = (((int)move_command.FinalOrientation + 0) % 3) * 2 * Mathf.PI / 3;
+
+                float radians = MathUtility.Mod((move_command.MovingCompound.Molecule as Catalyst).Orientation - move_command.FinalOrientation, 3) * -2 * Mathf.PI / 3;
 
                 compound_rotations[move_command.MovingCompound] = radians;
             }
@@ -298,13 +299,10 @@ public class ActionComponent : MonoBehaviour
 
                     SlotComponent destination_slot_component = OrganismComponent.GetSlotComponent(move_to_slot_action.Destination);
 
+                    compound_component.transform.rotation = OrganismComponent.GetSlotComponent(move_to_slot_action.Source)
+                                                            .CompoundComponent.transform.rotation;
+
                     compound_component.SetCompound(move_to_slot_action.MovedCompound);
-                    if (move_to_slot_action.Source.Cell != move_to_slot_action.Destination.Cell && 
-                        !compound_rotations.ContainsKey(compound))
-                        compound_component.transform.rotation = Quaternion.identity;
-                    else
-                        compound_component.transform.rotation = OrganismComponent.GetSlotComponent(move_to_slot_action.Source)
-                                                                .CompoundComponent.transform.rotation;
 
                     source_slot = move_to_slot_action.Source;
                     destination_game_object = destination_slot_component.CompoundComponent.gameObject;
@@ -349,7 +347,7 @@ public class ActionComponent : MonoBehaviour
                     .Smooth();
 
                 if (compound_rotations.ContainsKey(compound_component.Compound))
-                    final_rotation = destination_rotation + compound_rotations[compound_component.Compound];
+                    final_rotation += compound_rotations[compound_component.Compound];
                 compound_component.MoleculeComponent.gameObject.AddComponent<RotationAnimation>()
                     .SetParameters(final_rotation)
                     .SetLength(1.0f * length)

@@ -587,7 +587,7 @@ public class ReactionAction : EnergeticAction
         System.Func<Compound, bool, float> GetTransportRate = delegate (Compound compound, bool transport_out)
         {
             Molecule molecule = compound.Molecule;
-            float quantity = compound.Quantity * Scale;
+            float quantity = compound.Quantity;
 
             float max_rate = Organism.Membrane.GetTransportRate(molecule, false) * quantity;
 
@@ -595,10 +595,10 @@ public class ReactionAction : EnergeticAction
         };
 
         foreach (Compound compound in locale_reactants)
-            max_ratio = Mathf.Min(max_ratio, GetTransportRate(compound, false) / (compound.Quantity * Scale));
+            max_ratio = Mathf.Min(max_ratio, GetTransportRate(compound, false) / (compound.Quantity));
 
         foreach (Compound compound in locale_products)
-            max_ratio = Mathf.Min(max_ratio, GetTransportRate(compound, true) / (compound.Quantity * Scale));
+            max_ratio = Mathf.Min(max_ratio, GetTransportRate(compound, true) / (compound.Quantity));
 
         ScaleByFactor(max_ratio);
     }

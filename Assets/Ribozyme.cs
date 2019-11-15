@@ -25,6 +25,7 @@ public class Ribozyme : DNA, Catalyst
 
     static string GenerateDNASequence(int codon_count)
     {
+        //****Consider only using V codons
         List<string> starting_codon = new List<string> { "V", "F" };
         List<string> other_codons = new List<string> { "V", "C", "C", "C", "F", "L", "L", "L" };
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public static class Balance
 {
-    public static class Actions//****confusion over reuse of terminology?
+    public static class Actions
     {
         public static class Reaction
         {
@@ -15,7 +15,7 @@ public static class Balance
         public static class Transcription
         {
             public static float Cost { get; set; }
-            public static float EnergyChange { get; set; }//****better term?
+            public static float EnergyChange { get; set; }
 
             public static float UnitLength { get; set; }
             public static float InterpretaseCostMultiplier { get; set; }
@@ -23,7 +23,7 @@ public static class Balance
             static Transcription() { Load(); }
         }
 
-        public static class CompoundMovement//****Clunky, over-technical name
+        public static class CompoundMovement
         {
             public static float Cost { get; set; }
             public static float EnergyChange { get; set; }

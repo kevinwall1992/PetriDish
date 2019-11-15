@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
+//****Need arrow to indicate code being executed
 public class DNAPanel : DetailPanel
 {
     public DNA DNA
@@ -61,7 +62,7 @@ public class DNAPanel : DetailPanel
             return;
         }
 
-        string program_dna_sequence = Program.GenerateDNASequence();//****Consider whether we want to make this a property
+        string program_dna_sequence = Program.GenerateDNASequence();
         if (DNA.Sequence != program_dna_sequence)
         {
             int active_codon_index = DNA.ActiveCodonIndex;

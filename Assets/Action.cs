@@ -240,6 +240,7 @@ public class CompositeAction : Action
     }
 }
 
+//should we actually be working in kJ/mol, then convert, or just work in nrg equivalents?****
 public class EnergeticAction : Action
 {
     float base_energy_change;
@@ -301,29 +302,16 @@ public abstract class MoveAction<T> : EnergeticAction
 {
     float DesiredQuantity { get { return Scale; } }
 
-    Compound source_compound_copy;
-
     public Cell.Slot Source { get; private set; }
     public T Destination { get; private set; }
 
     public Compound MovedCompound { get; private set; }
-
-    public virtual bool IsInvalidated
-    {
-        get
-        {
-            return !source_compound_copy.Equals(Source.Compound);
-        }
-    }
 
     public override bool IsLegal
     {
         get
         {
             if (Source.Compound == null)
-                return false;
-
-            if (IsInvalidated)
                 return false;
 
             if (Source.Compound.Quantity < DesiredQuantity)
@@ -337,7 +325,6 @@ public abstract class MoveAction<T> : EnergeticAction
         : base(catalyst_slot, Balance.Actions.CompoundMovement.Cost, Balance.Actions.CompoundMovement.EnergyChange)
     {
         Source = source;
-        source_compound_copy = source.Compound.Copy();
 
         Destination = destination;
 
@@ -356,40 +343,18 @@ public abstract class MoveAction<T> : EnergeticAction
 
 public class MoveToSlotAction : MoveAction<Cell.Slot>
 {
-    Compound destination_compound_copy = null;
-
-    public override bool IsInvalidated
-    {
-        get
-        {
-            if (destination_compound_copy == null)
-            {
-                if (Destination.Compound != null)
-                    return true;
-            }
-            else if (Destination.Compound == null)
-                return true;
-            else if (!destination_compound_copy.Equals(Destination.Compound))
-                return true;
-                
-            return base.IsInvalidated;
-        }
-    }
-
     public MoveToSlotAction(Cell.Slot catalyst_slot, 
                             Cell.Slot source, Cell.Slot destination, float quantity = -1)
         : base(catalyst_slot, source, destination, quantity)
     {
-        if (Destination.Compound != null)
-            destination_compound_copy = Destination.Compound.Copy();
+
     }
 
     public MoveToSlotAction(Cell.Slot catalyst_slot, 
                             Cell.Slot source, Cell.Slot.Relation direction, float quantity = -1)
         : base(catalyst_slot, source, source.GetAdjacentSlot(direction), quantity)
     {
-        if (Destination.Compound != null)
-            destination_compound_copy = Destination.Compound.Copy();
+
     }
 
     public override void End()
@@ -461,19 +426,6 @@ public class PushAction : CompositeAction
     }
 
     public bool IsFullPush { get; private set; }
-
-    public override bool IsLegal
-    {
-        get
-        {
-            foreach (Action action in Actions)
-                if (action is MoveToSlotAction)
-                    if ((action as MoveToSlotAction).IsInvalidated)
-                        return false;
-
-            return true;
-        }
-    }
 
     public PushAction(Cell.Slot catalyst_slot, Cell.Slot source, Cell.Slot.Relation direction)
         : base(catalyst_slot)

@@ -120,7 +120,7 @@ public class MoleculeComponent : GoodBehavior
             case "Structate": name = "sugar"; break;
             case "Nitrogen": name = "nitrogen_gas"; break;
             case "Hindenburgium Gas": name = "hydrogen_gas"; break;
-            case "Carbon Diaeride": name = "carbon_dioxide"; break;
+            case "Karbon Diaeride": name = "carbon_dioxide"; break;
             case "Umamium Gas": name = "nitrogen_gas"; break;
             case "Aerogen Gas": name = "carbon_dioxide"; break;
             case "Phlorate": name = "phosphate"; break;

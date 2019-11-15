@@ -852,9 +852,9 @@ public class Interpretase : ProgressiveCatalyst
 
                 Cell.Slot.Relation grabber_final_direction = CatalystSlot.GetAdjacentSlot(Direction).GetRelation(CatalystSlot);
 
-                return Catalyst.Orientation = (Cell.Slot.Relation)MathUtility.Mod((int)grabber_final_direction + 
-                                                                                       Catalyst.Orientation - 
-                                                                                       grabber_current_direction, 3);
+                return (Cell.Slot.Relation)MathUtility.Mod((int)grabber_final_direction + 
+                                                           Catalyst.Orientation - 
+                                                           grabber_current_direction, 3);
             }
         }
 

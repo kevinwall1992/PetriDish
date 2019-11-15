@@ -31,13 +31,13 @@ public class SpeedButton : ScalingButton
                 break;
 
             case Speed.Fast:
-                Scene.Micro.Visualization.Speed = 1.75f;
+                Scene.Micro.Visualization.Speed = 2.0f;
                 Image.sprite = Resources.Load<Sprite>("fast_icon");
                 Color = fast_color;
                 break;
 
             case Speed.Faster:
-                Scene.Micro.Visualization.Speed = 2.5f;
+                Scene.Micro.Visualization.Speed = 4.0f;
                 Image.sprite = Resources.Load<Sprite>("faster_icon");
                 Color = faster_color;
                 break;

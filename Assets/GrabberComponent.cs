@@ -10,10 +10,22 @@ public class GrabberComponent : AttachmentComponent
 
     Grabber Grabber { get { return Attachment as Grabber; } }
 
+    protected override void Start()
+    {
+        base.Start();
+
+        UpdateGrabAnimation();
+    }
+
     protected override void Update()
     {
         base.Update();
 
+        UpdateGrabAnimation();
+    }
+
+    void UpdateGrabAnimation()
+    {
         if (Grabber != null && is_grabbing_visually != Grabber.IsGrabbing)
         {
             animator.SetFloat("moment", Grabber.IsGrabbing ? 1 : 0);

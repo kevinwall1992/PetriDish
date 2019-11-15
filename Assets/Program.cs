@@ -15,7 +15,7 @@ public class Program : Encodable
     {
         MainSector = new Sector("Main Sector", 
                                 "Describe this DNA strand here.", 
-                                DNASequenceToTokens(dna_sequence).ConvertAll((token) => ((Code)token)));//****Replace these with Utility function
+                                TokensToCodes(DNASequenceToTokens(dna_sequence)));
     }
 
     Code GetCodeById(int id)
@@ -91,6 +91,16 @@ public class Program : Encodable
     public void DecodeJson(JObject json_object)
     {
         MainSector = DecodeCode(json_object["Main Sector"] as JObject) as Sector;
+    }
+
+    public static List<Code> TokensToCodes(IEnumerable<Token> tokens)
+    {
+        return Utility.ToParentType<Token, Code>(tokens);
+    }
+
+    public static List<Token> CodesToTokens(IEnumerable<Code> codes)
+    {
+        return Utility.ToChildType<Code, Token>(codes);
     }
 
 

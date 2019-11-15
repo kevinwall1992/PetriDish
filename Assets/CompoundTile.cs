@@ -138,7 +138,7 @@ public class CompoundTile : GoodBehavior
                     else
                         dna_sequence = (compound.Molecule as Protein).DNASequence;
 
-                    sector_node.InsertCodes(Program.DNASequenceToTokens(dna_sequence).ConvertAll((token) => ((Program.Code)token)));//****Replace these things with Utility function
+                    sector_node.InsertCodes(Program.TokensToCodes(Program.DNASequenceToTokens(dna_sequence)));
                 }
             }
         }

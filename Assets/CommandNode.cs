@@ -112,7 +112,7 @@ public class CommandNode : DNAPanelNode
     public static CommandNode CreateInstance(IEnumerable<Program.Token> tokens)
     {
         CommandNode command_dna_node = Instantiate(Scene.Micro.Prefabs.CommandNode);
-        command_dna_node.InitializeCommandNodeElement(new List<Program.Token>(tokens));
+        command_dna_node.tokens_given = new List<Program.Token>(tokens);
 
         return command_dna_node;
     }

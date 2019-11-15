@@ -159,7 +159,7 @@ public class CommandNodeElement : GoodBehavior
 
                 Program.Code reference_code = CommandNode.SectorNode.Sector.GetNextCode(Tokens.Last());
                 CommandNode.SectorNode.Sector.Remove(Tokens.First(), Tokens.Last());
-                CommandNode.SectorNode.Sector.InsertBefore(reference_code, new_tokens.ConvertAll((token) => ((Program.Code)token)));
+                CommandNode.SectorNode.Sector.InsertBefore(reference_code, Program.TokensToCodes(new_tokens));
 
                 Initialize(new_tokens.First(), new_tokens);
                 CommandNode.UpdateCommandIcon();

@@ -42,7 +42,7 @@ public class CatalystNode : DNAPanelNode
 
     public override IEnumerable<Program.Code> Codes
     {
-        get { return tokens.ConvertAll((token) => ((Program.Code)token)); }
+        get { return Program.TokensToCodes(tokens); }
     }
 
     protected override void Start()

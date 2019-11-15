@@ -469,7 +469,7 @@ public class SectorNode : DNAPanelNode
                 {
                     int operand_count = Interpretase.GetOperandCount(mock_dna_strand, codon_index);
 
-                    node = CommandNode.CreateInstance(codes_to_integrate.GetRange(i, operand_count + 1).ConvertAll((code_) => ((Program.Token)code_)));
+                    node = CommandNode.CreateInstance(Program.CodesToTokens(codes_to_integrate.GetRange(i, operand_count + 1)));
                 }
                 else if (token is Program.LocusToken)
                     node = LocusNode.CreateInstance(token as Program.LocusToken);
@@ -478,7 +478,7 @@ public class SectorNode : DNAPanelNode
                     int length;
                     Interpretase.GetCatalyst(mock_dna_strand, codon_index, out length);
 
-                    node = CatalystNode.CreateInstance(codes_to_integrate.GetRange(i, length).ConvertAll((code_) => ((Program.Token)code_)));
+                    node = CatalystNode.CreateInstance(Program.CodesToTokens(codes_to_integrate.GetRange(i, length)));
                 }
             }
 

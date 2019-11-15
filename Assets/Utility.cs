@@ -168,6 +168,16 @@ public static class Utility
         return (u) => (inverse_dictionary[u]);
     }
 
+    public static List<U> ToParentType<T, U>(IEnumerable<T> enumerable) where T : U
+    {
+        return (new List<T>(enumerable)).ConvertAll(t => (U)t);
+    }
+
+    public static List<U> ToChildType<T, U>(IEnumerable<T> enumerable) where U : T
+    {
+        return (new List<T>(enumerable)).ConvertAll(t => (U)t);
+    }
+
 
     public static IEnumerable<T> GetEnumValues<T>()
     {

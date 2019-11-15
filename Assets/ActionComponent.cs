@@ -363,18 +363,10 @@ public class ActionComponent : MonoBehaviour
 
             if (action is Constructase.ConstructCell)
             {
-                Transform adjustment = new GameObject("adjustment").GetComponent<Transform>();
-                adjustment.SetParent(Scene.Micro.Visualization.transform);
-
                 Animator construction_animator = Instantiate(Scene.Micro.Prefabs.ConstructionAnimator);
-                construction_animator.transform.SetParent(adjustment);
-                construction_animator.transform.Translate(-0.150f, -0.04f, 0);
-
-                Cell.Relation direction = SlotComponent.Slot.Direction;
-                adjustment.Rotate(0, 0, (((int)direction + 5) % 6) * -60);
-
-                Vector2Int cell_position = OrganismComponent.Organism.GetCellPosition(CellComponent.Cell.GetAdjacentCell(direction));
-                adjustment.position = OrganismComponent.CellPositionToWorldPosition(cell_position);
+                construction_animator.transform.SetParent(SlotComponent.transform);
+                construction_animator.transform.localRotation = Quaternion.Euler(0, 0, 60);
+                construction_animator.transform.localPosition = new Vector3(0, 4.2f, 0);
 
                 construction_animator.gameObject.AddComponent<AnimatorAnimation>()
                     .SetLength(1.0f * length)
@@ -420,8 +412,6 @@ public class ActionComponent : MonoBehaviour
             ProgressiveCatalyst catalyst = action.Catalyst.GetFacet<ProgressiveCatalyst>();
             if (catalyst != null && !(catalyst is InstantCatalyst))
             {
-
-
                 float start_progress = catalyst_progress_icon.Moment;
                 if (start_progress >= 1)
                     start_progress = 0;

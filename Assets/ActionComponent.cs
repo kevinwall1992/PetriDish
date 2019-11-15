@@ -454,7 +454,7 @@ public class ActionAnimation : MonoBehaviour
 
     bool is_smooth = false;
     float smooth_moment = 0;
-    float velocity;
+    float velocity = 0;
 
     bool reverse = false;
 
@@ -462,29 +462,22 @@ public class ActionAnimation : MonoBehaviour
     {
         elapsed_time += Time.deltaTime * Scene.Micro.Visualization.Speed;
 
-        if (GetMoment() >= 1)
+        if (is_smooth && elapsed_time >= delay)
+            //This function is GARBAGE, Unity!
+            smooth_moment = Mathf.SmoothDamp(smooth_moment, 1, ref velocity, 0.5f * length / Scene.Micro.Visualization.Speed);
+
+        if ((elapsed_time - delay) >= length)
             Destroy(this);
     }
 
     protected float GetMoment()
     {
-        float linear_moment = Mathf.Max((elapsed_time - delay), 0) / length;
+        float moment = Mathf.Max((elapsed_time - delay), 0) / length;
 
-        if (!is_smooth)
-            return linear_moment;
-        else
-        {
-            if (elapsed_time >= delay)
-                smooth_moment = Mathf.SmoothDamp(smooth_moment, 1, ref velocity, length);
+        if (is_smooth && moment < 1)
+            moment = Mathf.Min(smooth_moment / 0.915f, 1);
 
-            float moment;
-            if (linear_moment >= 1)
-                moment = linear_moment;
-            else
-                moment = Mathf.Min(smooth_moment / 0.915f, 1);
-
-            return reverse ? 1 - moment : moment;
-        }
+        return reverse ? 1 - moment : moment;
     }
 
     public ActionAnimation SetLength(float length_, float delay_ = 0)

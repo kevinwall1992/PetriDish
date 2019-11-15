@@ -975,8 +975,6 @@ public class Interpretase : ProgressiveCatalyst
 
                 SetAction(new CompositeAction(catalyst_slot, actions.ToArray()));                
             }
-
-            ScaleByFactor(CatalystSlot.Compound.Quantity);
         }
 
         public override void End()

@@ -17,6 +17,10 @@ public class MoleculeComponent : GoodBehavior
     Color ribozyme_color, 
           protein_color;
 
+    [SerializeField]
+    CatalystProgressIcon catalyst_progress_icon;
+    public CatalystProgressIcon CatalystProgressIcon { get { return catalyst_progress_icon; } }
+
     public AttachmentComponent AcrossAttachmentComponent
     { get { return across_transform.GetComponentInChildren<AttachmentComponent>(); } }
 
@@ -29,6 +33,11 @@ public class MoleculeComponent : GoodBehavior
     protected override void Update()
     {
         base.Update();
+
+        CatalystProgressIcon.transform.position =
+            Scene.Micro.Camera.ScreenToWorldPoint(
+            Scene.Micro.Camera.WorldToScreenPoint(
+                transform.position) + new Vector3(-15, 24));
 
         Validate();
     }

@@ -371,6 +371,28 @@ public class ActionComponent : MonoBehaviour
                     .SetLength(0.7f * length, 0.3f * length);
             }
         }
+
+
+        CatalystProgressIcon catalyst_progress_icon = SlotComponent.CompoundComponent.MoleculeComponent.CatalystProgressIcon;
+        if (action is ProgressiveCatalyst.WorkAction || (catalyst_progress_icon.Moment > 0 && catalyst_progress_icon.Moment < 1))
+        {
+            ProgressiveCatalyst catalyst = action.Catalyst.GetFacet<ProgressiveCatalyst>();
+            if (catalyst != null && !(catalyst is InstantCatalyst))
+            {
+
+
+                float start_progress = catalyst_progress_icon.Moment;
+                if (start_progress >= 1)
+                    start_progress = 0;
+
+                float end_progress = 1;
+                if (catalyst.PreviewAction != null)
+                    end_progress = catalyst.NormalizedProgress;
+
+                catalyst_progress_icon.gameObject.AddComponent<CatalystProgressAnimation>()
+                    .SetParameters(start_progress, end_progress);
+            }
+        }
     }
 
     float GetMoment()
@@ -632,4 +654,31 @@ public class AnimatorAnimation : ActionAnimation
 public class CytosolAnimation : ActionAnimation
 {
 
+}
+
+public class CatalystProgressAnimation : ActionAnimation
+{
+    CatalystProgressIcon catalyst_progress_icon;
+
+    float start_progress, end_progress;
+
+    private void Start()
+    {
+        catalyst_progress_icon = GetComponentInChildren<CatalystProgressIcon>();
+    }
+
+    protected override void Update()
+    {
+        base.Update();
+
+        catalyst_progress_icon.Moment = Mathf.Lerp(start_progress, end_progress, GetMoment());
+    }
+
+    public CatalystProgressAnimation SetParameters(float start_progress_, float end_progress_)
+    {
+        start_progress = start_progress_;
+        end_progress = end_progress_;
+
+        return this;
+    }
 }

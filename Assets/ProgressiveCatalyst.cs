@@ -32,6 +32,18 @@ public abstract class ProgressiveCatalyst : Catalyst
 
     public float Progress { get; set; }
 
+    public Action PreviewAction { get; set; }
+    public float NormalizedProgress
+    {
+        get
+        {
+            if (PreviewAction == null)
+                return 0;
+
+            return Progress / PreviewAction.Cost;
+        }
+    }
+
     public ProgressiveCatalyst(string name, int price, string description = "")
     {
         Initialize(name, price, description);
@@ -101,16 +113,21 @@ public abstract class ProgressiveCatalyst : Catalyst
         if (!action.IsLegal)
         {
             Progress = 0;
+            PreviewAction = null;
+
             return null;
         }
 
         if (Progress >= action.Cost)
         {
             Progress = 0;
+            PreviewAction = null;
+
             return action;
         }
 
-        return null;
+        PreviewAction = action;
+        return new WorkAction(slot);
     }
 
     protected static T GetMoleculeInSlotAs<T>(Cell.Slot slot) where T : Molecule
@@ -521,5 +538,14 @@ public abstract class ProgressiveCatalyst : Catalyst
             return 1;
 
         return normalized_claim_yields[this];
+    }
+
+
+    public class WorkAction : Action
+    {
+        public WorkAction(Cell.Slot catalyst_slot) : base(catalyst_slot, 0)
+        {
+
+        }
     }
 }

@@ -14,7 +14,7 @@ public abstract class Action
         {
             base_cost = value;
 
-            Scale = 1;
+            base_scale = 1;
         }
     }
 
@@ -28,22 +28,12 @@ public abstract class Action
     float base_scale = 1;
     public virtual float Scale
     {
-        get { return base_scale * StackScale; }
-        protected set { base_scale = value; }
+        get { return Mathf.Min(base_scale * StackScale, MaxScale); }
     }
 
-    public virtual float Cost
-    {
-        get { return BaseCost * Scale / StackScale; }
+    public float MaxScale { get; set; }
 
-        set
-        {
-            if(BaseCost != 0)
-                Scale = value / BaseCost;
-        }
-    }
-
-    public float StackScale
+    float StackScale
     {
         get
         {
@@ -59,6 +49,17 @@ public abstract class Action
             }
 
             return max_ratio;
+        }
+    }
+
+    public virtual float Cost
+    {
+        get { return BaseCost * base_scale; }
+
+        set
+        {
+            if (BaseCost != 0)
+                base_scale = value / BaseCost;
         }
     }
 
@@ -78,6 +79,8 @@ public abstract class Action
         CatalystSlot = catalyst_slot;
         Catalyst = (CatalystSlot.Compound.Molecule as Catalyst);
 
+        MaxScale = float.MaxValue;
+
         BaseCost = cost;
     }
 
@@ -92,7 +95,7 @@ public abstract class Action
         return new Dictionary<Cell.Slot, float>();
     }
 
-    public void ScaleByFactor(float factor)
+    public virtual void ScaleByFactor(float factor)
     {
         base_scale *= factor;
     }
@@ -161,19 +164,6 @@ public class CompositeAction : Action
 {
     List<Action> actions= new List<Action>();
 
-    public override float Scale
-    {
-        protected set
-        {
-            float ratio = value / Scale;
-
-            base.Scale = value;
-
-            foreach (Action action in actions)
-                action.ScaleByFactor(ratio);
-        }
-    }
-
     public List<Action> Actions { get { return actions; } }
 
     public override bool IsLegal
@@ -198,6 +188,11 @@ public class CompositeAction : Action
         : base(catalyst_slot, 0)
     {
         SetActions(actions_);
+    }
+
+    public override void ScaleByFactor(float factor)
+    {
+        throw new System.NotImplementedException();
     }
 
     protected void SetActions(IEnumerable<Action> actions)

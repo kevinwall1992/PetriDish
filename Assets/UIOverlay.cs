@@ -6,49 +6,73 @@ using System;
 
 public class UIOverlay : GoodBehavior
 {
-    Dictionary<CompoundComponent, Text> compound_quantity_texts= new Dictionary<CompoundComponent, Text>();
-
     [SerializeField]
-    Text quantity_text_prefab;
+    public Text quantity_text_prefab;
+
+    Dictionary<CompoundComponent, CompoundOverlays> compound_overlays = new Dictionary<CompoundComponent, CompoundOverlays>();
 
 
     protected override void Update()
     {
         base.Update();
 
-        //Remove deleted compounds
-        Dictionary<CompoundComponent, Text>.KeyCollection keys = compound_quantity_texts.Keys;
-        List<CompoundComponent> deleted_compound_components= new List<CompoundComponent>();
-        foreach (CompoundComponent compound_component in keys)
-            if (compound_component == null || compound_component.Compound== null)
-                deleted_compound_components.Add(compound_component);
-        foreach (CompoundComponent compound_component in deleted_compound_components)
-        {
-            GameObject.Destroy(compound_quantity_texts[compound_component].gameObject);
-            compound_quantity_texts.Remove(compound_component);
-        }
-
         //Add new compounds
         CompoundComponent[] compound_components = Scene.Micro.Visualization.GetComponentsInChildren<CompoundComponent>();
         foreach (CompoundComponent compound_component in compound_components)
+            if (!compound_overlays.ContainsKey(compound_component) && compound_component.Compound != null)
+                compound_overlays[compound_component] = new CompoundOverlays(this, compound_component);
+
+        //Update overlays
+        foreach (CompoundOverlays compound_overlays___ in compound_overlays.Values)
+            compound_overlays___.Update();
+
+        //Remove deleted compounds
+        foreach (CompoundOverlays compound_overlays___ in new List<CompoundOverlays>(compound_overlays.Values))
+            if (compound_overlays___.WasDestroyed)
+                compound_overlays.Remove(compound_overlays___.compound_component);
+    }
+
+    class CompoundOverlays
+    {
+        public CompoundComponent compound_component;
+
+        public Text quantity_overlay;
+
+        public bool WasDestroyed { get; private set; }
+
+        public CompoundOverlays(UIOverlay ui_overlay, CompoundComponent compound_component_)
         {
-            if (!compound_quantity_texts.ContainsKey(compound_component) && compound_component.Compound!= null)
-            {
-                compound_quantity_texts[compound_component] = Instantiate(quantity_text_prefab);
-                compound_quantity_texts[compound_component].transform.SetParent(transform);
-            }
+            compound_component = compound_component_;
+            WasDestroyed = false;
+
+            quantity_overlay = Instantiate(ui_overlay.quantity_text_prefab);
+            quantity_overlay.transform.SetParent(ui_overlay.transform);
         }
 
-        //Update quantity texts
-        foreach (CompoundComponent compound_component in compound_quantity_texts.Keys)
+        public void Update()
         {
-            compound_quantity_texts[compound_component].text = Measures.GetVisualQuantity(compound_component.Compound).ToString("n1");
-            compound_quantity_texts[compound_component].transform.position = 
-                Scene.Micro.Camera.WorldToScreenPoint(compound_component.transform.position) + new Vector3(20, -10);
+            if (compound_component == null || compound_component.Compound == null)
+            {
+                Destroy();
+                return;
+            }
 
-            Color text_color = compound_quantity_texts[compound_component].color;
+            Vector3 screen_position = Scene.Micro.Camera.WorldToScreenPoint(compound_component.transform.position);
+
+            quantity_overlay.text = Measures.GetVisualQuantity(compound_component.Compound).ToString("n1");
+            quantity_overlay.transform.position = screen_position + new Vector3(20, -10);
+
+            Color text_color = quantity_overlay.color;
             text_color.a = compound_component.MoleculeComponent.GetComponent<SpriteRenderer>().color.a;
-            compound_quantity_texts[compound_component].color = text_color;
+            quantity_overlay.color = text_color;
+        }
+
+        public void Destroy()
+        {
+            if(quantity_overlay != null)
+                GameObject.Destroy(quantity_overlay.gameObject);
+
+            WasDestroyed = true;
         }
     }
 }

@@ -24,10 +24,31 @@ public class CommandNode : DNAPanelNode
 
     CommandNodeElement command_node_element = null;
 
-
+    List<Program.Token> tokens_given = null;
     public override IEnumerable<Program.Code> Codes
     {
-        get { return command_node_element.Tokens.ConvertAll((token) => ((Program.Code)token)); }
+        get
+        {
+            IEnumerable<Program.Token> tokens;
+
+            if (command_node_element != null)
+                tokens = command_node_element.Tokens;
+            else
+                tokens = tokens_given;
+
+            return Program.TokensToCodes(tokens);
+        }
+    }
+
+    public override bool IsCollapsed
+    {
+        set
+        {
+            base.IsCollapsed = value;
+
+            if (!IsCollapsed)
+                InitializeCommandNodeElement(tokens_given);
+        }
     }
 
     protected override void Start()
@@ -49,13 +70,15 @@ public class CommandNode : DNAPanelNode
     {
         string icon_filename = "";
 
-        switch ((command_node_element.Token as Program.CommandToken).Type)
+        List<Program.Code> codes_list = new List<Program.Code>(Codes);
+
+        switch ((codes_list[0] as Program.CommandToken).Type)
         {
             case Program.CommandType.Move:
-                string first_operand = command_node_element.Tokens[1].Codon;
+                Program.Token first_operand = codes_list[1] as Program.Token;
 
-                if (first_operand[0] == 'V')
-                    switch (Interpretase.ValueToDirection(Interpretase.CodonToValue(first_operand)))
+                if (first_operand is Program.ValueToken)
+                    switch (Interpretase.ValueToDirection((first_operand as Program.ValueToken).Value))
                     {
                         case Cell.Slot.Relation.Right: icon_filename = "move_right_icon"; break;
                         case Cell.Slot.Relation.Left: icon_filename = "move_left_icon"; break;

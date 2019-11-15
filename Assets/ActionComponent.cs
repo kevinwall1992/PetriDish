@@ -1,6 +1,5 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 
 //This needs an overhaul to reduce coupling with Action, or at least manage it better
@@ -126,6 +125,48 @@ public class ActionComponent : MonoBehaviour
 
                     compound_component.gameObject.AddComponent<MoveAnimation>()
                         .SetParameters(source != null ? source.gameObject : SlotComponent.CompoundComponent.gameObject, CellComponent.gameObject)
+                        .SetLength(0.5f * length, 0.5f * length);
+
+                    compound_component.gameObject.AddComponent<FadeAnimation>()
+                        .SetParameters(false, true)
+                        .SetLength(0.1f * length, 0.9f * length);
+
+                    compound_component.gameObject.AddComponent<FadeAnimation>()
+                        .SetParameters(true, false)
+                        .SetLength(0.1f * length, 0.5f * length);
+                }
+
+                foreach (Compound compound in reaction.GetLocaleReactants())
+                {
+                    CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
+                    compound_component.SetCompound(compound);
+                    compound_component.transform.SetParent(CellComponent.transform);
+                    compound_component.transform.localScale = new Vector3(0.75f, 0.75f);
+                    compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
+
+                    Transform target = outgoing_compound_positions.Dequeue();
+
+                    compound_component.gameObject.AddComponent<MoveAnimation>()
+                        .SetParameters(SlotComponent.Outside.gameObject, target != null ? target.gameObject : SlotComponent.CompoundComponent.gameObject)
+                        .SetLength(0.5f * length);
+
+                    compound_component.gameObject.AddComponent<FadeAnimation>()
+                        .SetParameters(false, true)
+                        .SetLength(0.2f * length, 0.4f * length);
+                }
+
+                foreach (Compound compound in reaction.GetLocaleProducts())
+                {
+                    CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
+                    compound_component.SetCompound(compound);
+                    compound_component.transform.SetParent(CellComponent.transform);
+                    compound_component.transform.localScale = new Vector3(0.75f, 0.75f);
+                    compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
+
+                    Transform source = incoming_compound_positions.Dequeue();
+
+                    compound_component.gameObject.AddComponent<MoveAnimation>()
+                        .SetParameters(source != null ? source.gameObject : SlotComponent.CompoundComponent.gameObject, SlotComponent.Outside.gameObject)
                         .SetLength(0.5f * length, 0.5f * length);
 
                     compound_component.gameObject.AddComponent<FadeAnimation>()

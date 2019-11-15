@@ -696,4 +696,22 @@ public class ReactionAction : EnergeticAction
 
         return scaled_cytosol_products;
     }
+
+    public List<Compound> GetLocaleReactants()
+    {
+        List<Compound> scaled_locale_reactants = new List<Compound>();
+        foreach (Compound compound in locale_reactants)
+            scaled_locale_reactants.Add(compound * Scale);
+
+        return scaled_locale_reactants;
+    }
+
+    public List<Compound> GetLocaleProducts()
+    {
+        List<Compound> scaled_locale_products = new List<Compound>();
+        foreach (Compound compound in locale_products)
+            scaled_locale_products.Add(compound * Scale);
+
+        return scaled_locale_products;
+    }
 }

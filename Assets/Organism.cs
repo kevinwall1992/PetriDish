@@ -161,18 +161,26 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
                 column.Insert(0, null);
     }
 
+    float baked_surface_area = -1;
+    bool surface_area_is_invalid = true;
     float GetSurfaceArea()
     {
-        int total_exposed_edges = 0;
+        if (surface_area_is_invalid)
+        {
+            int total_exposed_edges = 0;
 
-        foreach (List<Cell> column in cells)
-            foreach (Cell cell in column)
-                if (cell != null)
-                    foreach (Cell.Slot slot in cell.Slots)
-                        if (slot.IsExposed)
-                            total_exposed_edges++;
+            foreach (List<Cell> column in cells)
+                foreach (Cell cell in column)
+                    if (cell != null)
+                        foreach (Cell.Slot slot in cell.Slots)
+                            if (slot.IsExposed)
+                                total_exposed_edges++;
 
-        return total_exposed_edges / 6.0f;
+            baked_surface_area = total_exposed_edges / 6.0f;
+            surface_area_is_invalid = false;
+        }
+
+        return baked_surface_area;
     }
 
     Deck GetDeck()
@@ -269,6 +277,7 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
 
         if (IsPositionWithinBounds(position))
             cells[position.x][position.y] = new_cell;
+        surface_area_is_invalid = true;
 
         return GetCell(position);
     }
@@ -278,6 +287,7 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
         Vector2Int position = GetCellPosition(cell);
 
         cells[position.x][position.y] = null;
+        surface_area_is_invalid = true;
 
         return cell;
     }

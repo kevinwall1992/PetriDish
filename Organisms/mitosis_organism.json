@@ -1,0 +1,2008 @@
+{
+  "Cells": [
+    {
+      "Column": 0,
+      "Row": 0,
+      "Slots": [
+        {},
+        {},
+        {},
+        {},
+        {},
+        {}
+      ]
+    },
+    {
+      "Column": 0,
+      "Row": 1,
+      "Slots": [
+        {
+          "Compound": {
+            "Molecule": {
+              "Type": "Nucleotide",
+              "Nucleotide Type": "None"
+            },
+            "Quantity": 2.0
+          }
+        },
+        {},
+        {},
+        {
+          "Compound": {
+            "Molecule": {
+              "Type": "Ribozyme",
+              "Sequence": "FFFFFLFCLFLLFLFFLCVLLFVL",
+              "Catalyst": {
+                "Type": "Interpretase",
+                "Orientation": "Across",
+                "Progress": 0.0,
+                "Cofactors": [],
+                "Is Grabbing": false
+              }
+            },
+            "Quantity": 0.01
+          }
+        },
+        {
+          "Compound": {
+            "Molecule": {
+              "Type": "DNA",
+              "Sequence": "CVVVVFCVVVVFCVVVVFCVVVVFCFFLVVLVCCVFCVVVVVCVVVVCCVVVVCCVVVVCCFFLCVLCCCVVVVFCVVVVFCFFLCCLCFCFFLCCLCFCVVVVVCVVVVCCVVVVCCFFLVLLCVCVVVVVCVVVVCCVVVVCCVVVVCCFFLVCLVFCVVVVFCFFLVFLVLCVVVVFCVVVVFCVLCVVVVVCVVVVFLLCCVVVVCCVVVVVCVVVVCCVVVVCCCCVVCCVFCVVVVFCVVVVFCVVVVVCVVVVCCVVVVFCVVVVFCVVVVFCVVVVFCVLCVVVVCCVVVVVCVVVVFCCCVVVCVCVVCVCVCVVVVVCVVVVCCVVVVFCVLCLCFVFFVVVVVCVVVVFCVFCCCVVCCVVVVFCVVVVVCCCVVVCVVVVFCVVVVFCVVVVFCVLCVVVVFCVVVVFCVVVVFCVVVVVCVVVVCCVVVVCCVVVVVCVVVVFCCCVVVCVCVVCVLVCVVVVVCVVVVFCVVVVFCVVVVVCVVVVCCVVVVFCVLCLCFVLFVVVLVCVVVVFCLCFVLFVVVFVCVVVVFCLCFVLFVVVCVCVVVVFCVFCVVVVFCVVVVFCVVVVFCVVVVVCVVVVCCVVVVCCVVVVCCVVVVCCVVVVVCVVVVFCVVVVCCVVVVCCVVVVCCVLCVVVVFCVVVVFCVVVVVCVVVVFCVVVVFCVVVVVCVVVVFCCCVVVCVFCCCVVVCVLCVVVVCCVVVVVCVVVVCCVVVVVCVVVVFCVVVVFCCCVVVCVFCVVVVCCVVVVVCVVVVCCVVVVFCVVVVFCVLCVVVVVCVVVVFCVVVVFCVVVVVCVVVVFCCCVVVCVFCCCVVVCVLCCCVVCCLCFVCFVVVLVCVFCCCVVVCVLCCCVVCCLCFVCFVVVCLCVFCCCVVVCVLCVVVVCCVVVVVCVVVVCCVVVVVCVVVVFCVVVVFCCCVVVCVCVVCVFVCVVVVCCVVVVVCVVVVFCVVVVFCVVVVFCVVVVVCVVVVCCFFLCFLCLCFFLCFLCLCVVVVFCVLCFFLLLLLLCVVVVVCVVVVCCVVVVCCVVVVCCLFLLCVVVLVVFCVFFLFCLFLLFLFFLCVLLFVLLVCFFCFFLFCLFLLFLFFLCVLLFVLLVFFCLFFLVCLFLLFLFFLCVLLFVLLVLFFVFFLFCLFLLFLFFLCVLLFVLLCVFLVFFLFCLFLLFLFFLCVLLFVLLCCFVVFFLFCLFLLFLFFLCVLLFVLLCFFFFFFLFCLFLLFLFFLCVLLFVLLCL"
+            },
+            "Quantity": 0.005
+          }
+        },
+        {}
+      ]
+    },
+    {
+      "Column": 1,
+      "Row": 0,
+      "Slots": [
+        {},
+        {},
+        {},
+        {},
+        {},
+        {}
+      ]
+    },
+    {
+      "Column": 1,
+      "Row": 1,
+      "Slots": [
+        {},
+        {},
+        {},
+        {},
+        {},
+        {}
+      ]
+    }
+  ],
+  "Cytosol": {
+    "Compounds": [
+      {
+        "Molecule": {
+          "Type": "Simple Molecule",
+          "Name": "Water"
+        },
+        "Quantity": 330000.0
+      },
+      {
+        "Molecule": {
+          "Type": "Chargeable Molecule",
+          "Molecule": {
+            "Type": "Simple Molecule",
+            "Name": "NRG"
+          },
+          "kJ Per Mole": 1000.0,
+          "Is Charged": true
+        },
+        "Quantity": 3.0
+      },
+      {
+        "Molecule": {
+          "Type": "Chargeable Molecule",
+          "Molecule": {
+            "Type": "Simple Molecule",
+            "Name": "NRG"
+          },
+          "kJ Per Mole": 1000.0,
+          "Is Charged": false
+        },
+        "Quantity": 4.0
+      }
+    ]
+  },
+  "Deck": [
+    {
+      "Type": "Ribozyme",
+      "Sequence": "FFFFFLFCLFLLFLFFLCVLLFVL",
+      "Catalyst": {
+        "Type": "Interpretase",
+        "Orientation": "Across",
+        "Progress": 0.0,
+        "Cofactors": [],
+        "Is Grabbing": false
+      }
+    },
+    {
+      "Type": "Ribozyme",
+      "Sequence": "FCVFFLFCLFLLFLFFLCVLLFVL",
+      "Catalyst": {
+        "Type": "ReactionCatalyst",
+        "Orientation": "Across",
+        "Progress": 0.0,
+        "Cofactors": [],
+        "Name": "Gene Synthesis",
+        "Inhibitors": {},
+        "Activators": {},
+        "Directions": {
+          "Across": 0.5,
+          "Left": 0.51,
+          "Right": 0.49
+        },
+        "Is Ribozyme": 0.5,
+        "Optimal Temperature": 0.5,
+        "Temperature Tolerance": 0.5,
+        "Optimal pH": 0.5,
+        "pH Tolerance": 0.5,
+        "Productivity": 0.5,
+        "Potential": 0.5
+      }
+    },
+    {
+      "Type": "Ribozyme",
+      "Sequence": "FFCFFLFCLFLLFLFFLCVLLFVL",
+      "Catalyst": {
+        "Type": "ReactionCatalyst",
+        "Orientation": "Across",
+        "Progress": 0.0,
+        "Cofactors": [],
+        "Name": "NRG Synthesis",
+        "Inhibitors": {},
+        "Activators": {},
+        "Directions": {
+          "Across": 0.5,
+          "Left": 0.49,
+          "Right": 0.51
+        },
+        "Is Ribozyme": 0.5,
+        "Optimal Temperature": 0.5,
+        "Temperature Tolerance": 0.5,
+        "Optimal pH": 0.5,
+        "pH Tolerance": 0.5,
+        "Productivity": 0.5,
+        "Potential": 0.5
+      }
+    },
+    {
+      "Type": "Ribozyme",
+      "Sequence": "FCLFFLVCLFLLFLFFLCVLLFVL",
+      "Catalyst": {
+        "Type": "Constructase",
+        "Orientation": "Across",
+        "Progress": 0.0,
+        "Cofactors": []
+      }
+    },
+    {
+      "Type": "Ribozyme",
+      "Sequence": "FFVFFLFCLFLLFLFFLCVLLFVL",
+      "Catalyst": {
+        "Type": "Separatase",
+        "Orientation": "Across",
+        "Progress": 0.0,
+        "Cofactors": []
+      }
+    },
+    {
+      "Type": "Ribozyme",
+      "Sequence": "FLVFFLFCLFLLFLFFLCVLLFVL",
+      "Catalyst": {
+        "Type": "ReactionCatalyst",
+        "Orientation": "Across",
+        "Progress": 0.0,
+        "Cofactors": [],
+        "Name": "Structatogenesis",
+        "Inhibitors": {},
+        "Activators": {},
+        "Directions": {
+          "Across": 0.5,
+          "Left": 0.51,
+          "Right": 0.49
+        },
+        "Is Ribozyme": 0.5,
+        "Optimal Temperature": 0.5,
+        "Temperature Tolerance": 0.5,
+        "Optimal pH": 0.5,
+        "pH Tolerance": 0.5,
+        "Productivity": 0.5,
+        "Potential": 0.5
+      }
+    },
+    {
+      "Type": "Ribozyme",
+      "Sequence": "FVVFFLFCLFLLFLFFLCVLLFVL",
+      "Catalyst": {
+        "Type": "Pumpase",
+        "Orientation": "Across",
+        "Progress": 0.0,
+        "Cofactors": [],
+        "Is Isomer": true,
+        "Molecule": "Hindenburgium Gas"
+      }
+    }
+  ],
+  "Programs": [
+    {
+      "Main Sector": {
+        "Code Type": "Sector",
+        "Name": "Main Sector",
+        "Description": "Describe this DNA strand here.",
+        "Codes": [
+          {
+            "Code Type": "Locus Token",
+            "Location": 15
+          },
+          {
+            "Code Type": "Sector",
+            "Name": "Catalyst Copying",
+            "Description": "",
+            "Codes": [
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Copy"
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 0
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Grab"
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 0
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Copy"
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 4
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 5
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Copy"
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 5
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 6
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Copy"
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 5
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 6
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 0
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Copy"
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 3
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 4
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 0
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Copy"
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 1
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Copy"
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 2
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 3
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Release"
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 0
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              }
+            ]
+          },
+          {
+            "Code Type": "Locus Token",
+            "Location": 13
+          },
+          {
+            "Code Type": "Sector",
+            "Name": "Cell Construction",
+            "Description": "",
+            "Codes": [
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 0
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Spin"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Sector",
+                "Name": "Constructase Placement",
+                "Description": "",
+                "Codes": [
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Grab"
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Release"
+                  }
+                ]
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 0
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Spin"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 0
+              },
+              {
+                "Code Type": "Sector",
+                "Name": "Constructase Supply",
+                "Description": "",
+                "Codes": [
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Take"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 4
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Release"
+                  }
+                ]
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Wait"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "EqualTo"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Measure"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 0
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Sector",
+                "Name": "Constructase Placement",
+                "Description": "",
+                "Codes": [
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Grab"
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Spin"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Spin"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Release"
+                  }
+                ]
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 0
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 0
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Spin"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 0
+              },
+              {
+                "Code Type": "Sector",
+                "Name": "Constructase Supply",
+                "Description": "",
+                "Codes": [
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Take"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 12
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Release"
+                  }
+                ]
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Wait"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "LessThan"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Measure"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 12
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Wait"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "LessThan"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Measure"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 8
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Wait"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "LessThan"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Measure"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 4
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Sector",
+                "Name": "Returning Constructase",
+                "Description": "",
+                "Codes": [
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Grab"
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Release"
+                  }
+                ]
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 0
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              }
+            ]
+          },
+          {
+            "Code Type": "Sector",
+            "Name": "NRG Synthesis",
+            "Description": "",
+            "Codes": [
+              {
+                "Code Type": "Sector",
+                "Name": "Gene Synthase Supply",
+                "Description": "",
+                "Codes": [
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Spin"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Grab"
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Spin"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Release"
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  }
+                ]
+              },
+              {
+                "Code Type": "Sector",
+                "Name": "NRG Synthase Supply",
+                "Description": "",
+                "Codes": [
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Spin"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Grab"
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Release"
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code Type": "Sector",
+            "Name": "Interpretase Copying",
+            "Description": "",
+            "Codes": [
+              {
+                "Code Type": "Sector",
+                "Name": "Gene Synthase Supply",
+                "Description": "",
+                "Codes": [
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 2
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Spin"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Grab"
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Spin"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Release"
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Spin"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Wait"
+                  },
+                  {
+                    "Code Type": "Function Token",
+                    "Type": "GreaterThan"
+                  },
+                  {
+                    "Code Type": "Function Token",
+                    "Type": "Measure"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 12
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Grab"
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Spin"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Release"
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Spin"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Wait"
+                  },
+                  {
+                    "Code Type": "Function Token",
+                    "Type": "GreaterThan"
+                  },
+                  {
+                    "Code Type": "Function Token",
+                    "Type": "Measure"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 7
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Grab"
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Spin"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Release"
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 0
+                  },
+                  {
+                    "Code Type": "Command Token",
+                    "Type": "Move"
+                  },
+                  {
+                    "Code Type": "Value Token",
+                    "Value": 1
+                  }
+                ]
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 0
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Spin"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 0
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Take"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 8
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 0
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 0
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Copy"
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 6
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 7
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Copy"
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 6
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 7
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 2
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Release"
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Copy"
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 15
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 15
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 0
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              },
+              {
+                "Code Type": "Command Token",
+                "Type": "Move"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 1
+              }
+            ]
+          },
+          {
+            "Code Type": "Command Token",
+            "Type": "If"
+          },
+          {
+            "Code Type": "Locus Token",
+            "Location": 13
+          },
+          {
+            "Code Type": "Value Token",
+            "Value": 0
+          },
+          {
+            "Code Type": "Sector",
+            "Name": "Catalysts",
+            "Description": "",
+            "Codes": [
+              {
+                "Code Type": "Locus Token",
+                "Location": 0
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Add"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned5"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned1"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned9"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned8"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned7"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 15
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "LessThan"
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 1
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned3"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned5"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned1"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned9"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned8"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned7"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 15
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "LessThan"
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 2
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned1"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned5"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 7
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned9"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned8"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned7"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 15
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "LessThan"
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 3
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned2"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned5"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned1"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned9"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned8"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned7"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 15
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "LessThan"
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 4
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned6"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned5"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned1"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned9"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned8"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned7"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 15
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "LessThan"
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 5
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Measure"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned5"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned1"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned9"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned8"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned7"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 15
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "LessThan"
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 6
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned4"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned5"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned1"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned9"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned8"
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "Unassigned7"
+              },
+              {
+                "Code Type": "Value Token",
+                "Value": 15
+              },
+              {
+                "Code Type": "Function Token",
+                "Type": "LessThan"
+              },
+              {
+                "Code Type": "Locus Token",
+                "Location": 7
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

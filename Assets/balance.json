@@ -1,7 +1,7 @@
 {
   "Actions" :
   {
-    "Cost Multiplier" : 0.01,
+    "Cost Multiplier" : 0.005,
     
     "Membrane Transport" :
     {
@@ -43,8 +43,8 @@
 
     "Transcription" :
     {
-      "Cost" : 100,
-      "Energy Change" : -14,
+      "Cost" : 14,
+      "Energy Change" : -6,
 
       "Unit Length" : 40,
       "Interpretase Cost Multiplier" : 2

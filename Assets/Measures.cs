@@ -72,7 +72,7 @@ public static class Measures
     public static float GetVisualQuantity(Compound compound)//larger compounds should be harder to move****
     {
         if (compound.Molecule is Polymer)
-            return (compound.Quantity * 100);
+            return (compound.Quantity * 200);
         else if (compound.Molecule is ChargeableMolecule)
             return compound.Quantity * 10;
 

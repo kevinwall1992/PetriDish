@@ -83,26 +83,11 @@ public class WaterLocale : Locale
 
     public static WaterLocale CreateVentLocale()
     {
-        return CreateCustomWaterLocale(Utility.CreateDictionary<Molecule, float>());
-            /*
-            Molecule.GetMolecule("Chloride"), 18.9f,
-            Molecule.GetMolecule("Sodium"), 10.6f,
-            Molecule.GetMolecule("Sulfate"), 2.65f,
-            Molecule.GetMolecule("Magnesium"), 1.27f,
-            Molecule.GetMolecule("Calcium"), 0.4f,
-            Molecule.GetMolecule("Potassium"), 0.38f,
-            Molecule.GetMolecule("Bicarbonate"), 0.14f,
-            Molecule.GetMolecule("Bromide"), 0.065f,
-            Molecule.GetMolecule("Boric Acid"), 0.026f,
-            Molecule.GetMolecule("Strontium"), 0.013f,
-            Molecule.GetMolecule("Floride"), 0.001f,
-            Molecule.GetMolecule("Nitrogen"), 0.0084f,
-            Molecule.GetMolecule("Carbon Dioxide"), 0.001f,
-            Molecule.GetMolecule("Phosphate"), 0.0037f,
-            Molecule.GetMolecule("Hydrogen Sulfide"), 0.004f,
-            Molecule.GetMolecule("Methane"), 0.002f,
-            Molecule.GetMolecule("Hydrogen"), 0.007f));
-            */
+        return CreateCustomWaterLocale(Utility.CreateDictionary<Molecule, float>(
+            Molecule.GetMolecule("Karbon Diaeride"), 0.3f,
+            Molecule.GetMolecule("Hindenburgium Gas"), 0.15f,
+            Molecule.GetMolecule("Umomia"), 0.015f,
+            Molecule.GetMolecule("Phlorate"), 0.03f));
     }
 }
 

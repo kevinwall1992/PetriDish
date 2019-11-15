@@ -584,7 +584,7 @@ public class Interpretase : ProgressiveCatalyst
 
     public class CopyCommand : Command
     {
-        static float quantity = 0.01f;
+        static float quantity = 0.005f;
 
         string start_marker, stop_marker;
 

@@ -46,7 +46,7 @@ public class MicroVisualization : GoodBehavior
 
         OrganismComponent = GetComponentInChildren<OrganismComponent>();
 
-        OrganismComponent.LoadOrganism("Organisms/test_organism");
+        OrganismComponent.LoadOrganism("Organisms/mitosis_organism");
         water_locale.AddOrganism(OrganismComponent.Organism);
 
         Scene.Micro.Editor.TrackThis(OrganismComponent.Organism);

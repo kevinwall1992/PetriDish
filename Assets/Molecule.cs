@@ -140,14 +140,26 @@ public abstract class Molecule : Copiable<Molecule>, Stackable, Encodable
         return IsStackable(obj);
     }
 
+    int baked_hash_code;
+    bool hash_code_is_invalid = true;
     public override int GetHashCode()
     {
-        int hash = 17;
+        if (hash_code_is_invalid)
+        {
+            baked_hash_code = 17;
 
-        foreach (Element element in Elements.Keys)
-            hash = hash * 23 + element.GetHashCode() * Elements[element];
+            foreach (Element element in Elements.Keys)
+                baked_hash_code = baked_hash_code * 23 + element.GetHashCode() * Elements[element];
 
-        return hash;
+            hash_code_is_invalid = false;
+        }
+
+        return baked_hash_code;
+    }
+
+    protected void InvalidateElements()
+    {
+        hash_code_is_invalid = true;
     }
 
     //In most cases, molecules are immutable singletons,

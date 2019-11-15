@@ -50,6 +50,7 @@ public class Polymer : Molecule
             monomer.Condense();
 
         monomers.Insert(index, monomer);
+        InvalidateElements();
     }
 
     public void AppendMonomer(Monomer monomer)
@@ -61,6 +62,7 @@ public class Polymer : Molecule
     {
         Monomer monomer = monomers[index];
         monomers.RemoveAt(index);
+        InvalidateElements();
 
         return monomer;
     }

@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class CompoundComponent : GoodBehavior
 {
-    Compound compound_copy;
+    Compound validated_compound;
 
     [SerializeField]
     MoleculeComponent molecule_component;
@@ -38,18 +38,18 @@ public class CompoundComponent : GoodBehavior
 
     void Validate()
     {
-        if (Compound != null && Compound.Equals(compound_copy))
+        if (Compound != null && ReferenceEquals(Compound, validated_compound))
             return;
 
         if (Compound == null)
         {
             molecule_component.SetMolecule(null);
-            compound_copy = null;
+            validated_compound = null;
         }
         else
         {
             molecule_component.SetMolecule(Compound.Molecule);
-            compound_copy = Compound.Copy();
+            validated_compound = Compound;
         }
     }
 

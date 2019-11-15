@@ -184,7 +184,7 @@ public class ActionComponent : MonoBehaviour
                 Interpretase.LoadProgram load_program_action = action as Interpretase.LoadProgram;
 
                 CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
-                compound_component.SetCompound(new Compound(new DNA(), 1));
+                compound_component.SetCompound(load_program_action.ProgramCompound);
                 compound_component.transform.SetParent(CellComponent.transform);
                 compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
@@ -206,7 +206,7 @@ public class ActionComponent : MonoBehaviour
                 Interpretase.CopyCommand copy_command = action as Interpretase.CopyCommand;
 
                 CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
-                compound_component.SetCompound(new Compound(new DNA(), 1));
+                compound_component.SetCompound(copy_command.CopiedCompound);
                 compound_component.transform.SetParent(CellComponent.transform);
                 compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 

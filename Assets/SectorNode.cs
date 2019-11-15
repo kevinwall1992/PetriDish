@@ -658,7 +658,6 @@ public class SectorNode : DNAPanelNode
     {
         SectorNode sector_node = Instantiate(Scene.Micro.Prefabs.SectorNode);
         sector_node.Sector = sector;
-        sector_node.Reload();
 
         return sector_node;
     }

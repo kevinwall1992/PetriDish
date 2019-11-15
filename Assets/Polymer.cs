@@ -117,6 +117,15 @@ public class Polymer : Molecule
             Monomers.Add(Molecule.DecodeMolecule(json_token as JObject) as Monomer);
     }
 
+    public override Molecule Copy()
+    {
+        Polymer copy = new Polymer();
+
+        foreach (Monomer monomer in monomers)
+            copy.AppendMonomer(monomer);
+
+        return copy;
+    }
 
     public abstract class Monomer : Molecule
     {

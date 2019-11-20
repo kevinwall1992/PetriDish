@@ -98,10 +98,13 @@ public class MicroVisualization : GoodBehavior
 
     void SwitchOrganism(int relative_index)
     {
+        DetailPanel.CloseAll();
+
         int index = MathUtility.Mod(water_locale.Organisms.IndexOf(OrganismComponent.Organism) + relative_index, 
                                     water_locale.Organisms.Count);
 
         OrganismComponent.SetOrganism(water_locale.Organisms[index]);
+        
     }
 
     public void NextOrganism()

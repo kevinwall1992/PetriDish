@@ -76,4 +76,14 @@ public class DetailPanel : GoodBehavior
     {
         Close();
     }
+
+
+    public static void CloseAll()
+    {
+        if (Left != null)
+            Left.Close();
+
+        if (Right != null)
+            Right.Close();
+    }
 }

@@ -154,6 +154,11 @@ public class OrganismComponent : GoodBehavior
     {
         Organism = organism;
 
+        stage_queue.Clear();
+
+        cytosol_detail_panel = null;
+        deck_detail_panel = null;
+
         ValidateCells();
     }
 

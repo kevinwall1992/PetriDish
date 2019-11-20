@@ -205,21 +205,38 @@ public class ActionComponent : MonoBehaviour
             {
                 Interpretase.CopyCommand copy_command = action as Interpretase.CopyCommand;
 
-                CompoundComponent compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
-                compound_component.SetCompound(copy_command.CopiedCompound);
-                compound_component.transform.SetParent(CellComponent.transform);
-                compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
+                CompoundComponent used_compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
+                used_compound_component.SetCompound(copy_command.UsedCompound);
+                used_compound_component.transform.SetParent(CellComponent.transform);
+                used_compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
-                SlotComponent output_slot_component = CellComponent.OrganismComponent.GetCellComponent(copy_command.Destination.Cell).GetSlotComponent(copy_command.Destination);
+                SlotComponent input_slot_component = CellComponent.OrganismComponent.GetSlotComponent(copy_command.Source);
 
-                compound_component.gameObject.AddComponent<MoveAnimation>()
+                used_compound_component.gameObject.AddComponent<MoveAnimation>()
+                    .SetParameters(input_slot_component.CompoundComponent.gameObject, 
+                                   CellComponent.GetSlotComponent(copy_command.CatalystSlot).CompoundComponent.gameObject)
+                    .SetLength(0.5f * length);
+
+                used_compound_component.gameObject.AddComponent<FadeAnimation>()
+                    .SetParameters(true, true)
+                    .SetLength(0.5f * length);
+
+
+                CompoundComponent copied_compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
+                copied_compound_component.SetCompound(copy_command.CopiedCompound);
+                copied_compound_component.transform.SetParent(CellComponent.transform);
+                copied_compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
+
+                SlotComponent output_slot_component = CellComponent.OrganismComponent.GetSlotComponent(copy_command.Destination);
+
+                copied_compound_component.gameObject.AddComponent<MoveAnimation>()
                     .SetParameters(CellComponent.GetSlotComponent(copy_command.CatalystSlot).CompoundComponent.gameObject, 
                                    output_slot_component.CompoundComponent.gameObject)
-                    .SetLength(1.0f * length);
+                    .SetLength(0.5f * length, 0.5f * length);
 
-                compound_component.gameObject.AddComponent<FadeAnimation>()
+                copied_compound_component.gameObject.AddComponent<FadeAnimation>()
                     .SetParameters(true, false)
-                    .SetLength(0.5f);
+                    .SetLength(0.5f * length, 0.5f * length);
             }
 
             if (action is PumpAction)

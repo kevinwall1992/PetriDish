@@ -464,7 +464,27 @@ public class ActionComponent : MonoBehaviour
 
             if (action is Separatase.SeparateCell)
             {
-                CellComponent spore_cell_component = OrganismComponent.GetCellComponent(SlotComponent.Slot.AdjacentCell);
+                Cell loyal_cell = CellComponent.Cell;
+                Cell rebel_cell = SlotComponent.Slot.AdjacentCell;
+
+                CellComponent rebel_cell_component = OrganismComponent.GetCellComponent(rebel_cell);
+
+                List<Cell> rebel_cells = OrganismComponent.Organism.GetRebelCells(loyal_cell, rebel_cell);
+                foreach (Cell cell in rebel_cells)
+                {
+                    CellComponent cell_component = OrganismComponent.GetCellComponent(cell);
+
+                    cell_component.gameObject.AddComponent<FadeAnimation>()
+                        .SetParameters(false, true)
+                        .SetLength(0.2f * length);
+                    cell_component.gameObject.AddComponent<ScalingAnimation>()
+                        .SetParameters(true)
+                        .SetLength(0.2f * length);
+                    cell_component.gameObject.AddComponent<MoveAnimation>()
+                        .SetParameters(rebel_cell_component.gameObject)
+                        .SetLength(0.2f * length);
+                }
+
 
                 Animator spore_animator = Instantiate(Scene.Micro.Prefabs.SporeAnimator);
                 spore_animator.transform.SetParent(Scene.Micro.Visualization.transform);
@@ -473,16 +493,15 @@ public class ActionComponent : MonoBehaviour
                     .SetLength(0.2f * length)
                     .Smooth();
 
-                spore_cell_component.gameObject.AddComponent<FadeAnimation>()
-                    .SetParameters(false, true)
-                    .SetLength(0.2f * length);
-                spore_cell_component.gameObject.AddComponent<ScalingAnimation>()
-                    .SetParameters(true)
-                    .SetLength(0.2f * length);
+                Vector3 center = Vector3.zero;
+                List<Cell> loyal_cells = OrganismComponent.Organism.GetLoyalCells(loyal_cell, rebel_cell);
+                foreach (Cell cell in loyal_cells)
+                    center += OrganismComponent.GetCellComponent(cell).transform.position / loyal_cells.Count;
 
                 spore_animator.gameObject.AddComponent<MoveAnimation>()
-                    .SetParameters(spore_cell_component.gameObject, OrganismComponent.North)
-                    .SetLength(25, 0.3f * length);
+                    .SetParameters(rebel_cell_component.transform.position, 
+                                   center + (rebel_cell_component.transform.position - center).normalized * 20)
+                    .SetLength(0.7f * length, 0.3f * length);
 
                 spore_animator.gameObject.AddComponent<FadeAnimation>()
                     .SetParameters(false, true)
@@ -610,15 +629,16 @@ public class TransformAnimation : ActionAnimation
 public class MoveAnimation : ActionAnimation
 {
     GameObject source, target;
+    Vector3 fixed_source_position = Vector3.zero, 
+            fixed_target_position = Vector3.zero;
 
     protected override void Update()
     {
         base.Update();
 
-        if (source == null || target == null)
-            return;
-
-        transform.position = Vector2.Lerp(source.transform.position, target.transform.position, GetMoment());
+        transform.position = Vector2.Lerp(source == null ? fixed_source_position : source.transform.position, 
+                                          target == null ? fixed_target_position : target.transform.position, 
+                                          GetMoment());
     }
 
     public MoveAnimation SetParameters(GameObject source_, GameObject target_)
@@ -627,6 +647,38 @@ public class MoveAnimation : ActionAnimation
         target = target_;
 
         transform.position = source.transform.position;
+
+        return this;
+    }
+
+    public MoveAnimation SetParameters(GameObject target_)
+    {
+        fixed_source_position = transform.position;
+        target = target_;
+
+        return this;
+    }
+
+    public MoveAnimation SetParameters(GameObject source_, Vector3 target_position)
+    {
+        source = source_;
+        fixed_target_position = target_position;
+
+        return this;
+    }
+
+    public MoveAnimation SetParameters(Vector3 target_position)
+    {
+        fixed_source_position = transform.position;
+        fixed_target_position = target_position;
+
+        return this;
+    }
+
+    public MoveAnimation SetParameters(Vector3 source_position, Vector3 target_position)
+    {
+        fixed_source_position = source_position;
+        fixed_target_position = target_position;
 
         return this;
     }

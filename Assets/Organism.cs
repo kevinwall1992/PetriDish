@@ -93,13 +93,14 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
         return GetCell(GetNeighborPosition(cell, direction));
     }
 
-    IEnumerable<IEnumerable<Cell>> GetCellSets()
+    IEnumerable<IEnumerable<Cell>> GetDisjointCellSets(List<Cell> cells_to_ignore)
     {
         List<IEnumerable<Cell>> cell_sets = new List<IEnumerable<Cell>>();
 
         List<Cell> available_cells = new List<Cell>();
-        foreach (Cell cell in GetCells())
-            available_cells.Add(cell);
+        available_cells.AddRange(GetCells());
+        foreach (Cell cell in cells_to_ignore)
+            available_cells.Remove(cell);
 
         while (available_cells.Count > 0)
         {
@@ -120,7 +121,7 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
                 {
                     Cell neighbor = cell.GetAdjacentCell(direction);
 
-                    if(neighbor != null)
+                    if(neighbor != null && !cells_to_ignore.Contains(neighbor))
                         cell_queue.Enqueue(neighbor);
                 }
 
@@ -294,69 +295,45 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
 
     public Organism Separate(Cell loyal_cell, Cell rebel_cell)
     {
-        //Collect neighbors before removing rebel cell
+        List<Cell> rebel_cells = GetRebelCells(loyal_cell, rebel_cell);
+
+
+        //Organize cells into tree structure
+        //Tree explains how to build rebel organism by 
+        //expanding one cell at a time. 
         Dictionary<Cell, Cell> host_cells = new Dictionary<Cell, Cell>();
         Dictionary<Cell, Cell.Relation> directions = new Dictionary<Cell, Cell.Relation>();
 
         Queue<Cell> cell_queue = new Queue<Cell>();
-        foreach (Cell.Relation direction in System.Enum.GetValues(typeof(Cell.Relation)))
-        {
-            Cell neighbor = rebel_cell.GetAdjacentCell(direction);
-            if (neighbor == null)
-                continue;
+        cell_queue.Enqueue(rebel_cell);
 
-            cell_queue.Enqueue(neighbor);
-            host_cells[neighbor] = rebel_cell;
-            directions[neighbor] = direction;
-        }
-
-
-        //Remove rebel cell, 
-        //form sets from remaining cells,
-        //remove the loyal set, 
-        //and use remaining sets to form rebel cell list
-        RemoveCell(rebel_cell);
-
-        IEnumerable<IEnumerable<Cell>> factions = GetCellSets();
-
-        List<Cell> rebel_cells = new List<Cell>();
-        rebel_cells.Add(rebel_cell);
-
-        foreach(IEnumerable<Cell> faction in factions)
-        {
-            bool is_rebel_faction = true;
-
-            foreach (Cell cell in faction)
-                if (cell == loyal_cell)
-                    is_rebel_faction = false;
-
-            if (is_rebel_faction)
-                rebel_cells.AddRange(faction);
-        }
-
-
-        //Create rebel organism,
-        //Add rebel cells one by one via their relationship
-        //to existing rebel cells.
-        Organism rebel_organism = new Organism(rebel_cell);
-
-        while(cell_queue.Count > 0)
+        while (cell_queue.Count > 0)
         {
             Cell cell = cell_queue.Dequeue();
-            if (!rebel_cells.Contains(cell) || rebel_organism.GetCells().Contains(cell))
+
+            if (host_cells.Values.Contains(cell))
                 continue;
 
             foreach (Cell.Relation direction in System.Enum.GetValues(typeof(Cell.Relation)))
             {
                 Cell neighbor = cell.GetAdjacentCell(direction);
-                if (neighbor == null)
+                if (neighbor == null || host_cells.Keys.Contains(neighbor))
                     continue;
 
-                cell_queue.Enqueue(neighbor);
                 host_cells[neighbor] = cell;
                 directions[neighbor] = direction;
-            }
 
+                cell_queue.Enqueue(neighbor);
+            }
+        }
+
+        //Create rebel organism.
+        //Add rebel cells one by one via their relationship
+        //to existing rebel cells.
+        Organism rebel_organism = new Organism(rebel_cell);
+
+        foreach(Cell cell in rebel_cells)
+        {
             RemoveCell(cell);
             rebel_organism.AddCell(host_cells[cell], directions[cell], cell);
         }
@@ -368,6 +345,45 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
         Locale.AddOrganism(rebel_organism);
 
         return rebel_organism;
+    }
+
+    public List<Cell> GetRebelCells(Cell loyal_cell, Cell rebel_cell)
+    {
+        //form factions resulting from prospective removal of rebel cell
+        //form rebel cell list by identifying rebel factions.
+
+        IEnumerable<IEnumerable<Cell>> factions = GetDisjointCellSets(Utility.CreateList(rebel_cell));
+
+        List<Cell> rebel_cells = new List<Cell>();
+        rebel_cells.Add(rebel_cell);
+
+        foreach (IEnumerable<Cell> faction in factions)
+        {
+            bool is_rebel_faction = true;
+
+            foreach (Cell cell in faction)
+                if (cell == loyal_cell)
+                    is_rebel_faction = false;
+
+            if (is_rebel_faction)
+                rebel_cells.AddRange(faction);
+        }
+
+        return rebel_cells;
+    }
+
+    public List<Cell> GetLoyalCells(Cell loyal_cell, Cell rebel_cell)
+    {
+        IEnumerable<IEnumerable<Cell>> factions = GetDisjointCellSets(Utility.CreateList(rebel_cell));
+
+        foreach (IEnumerable<Cell> faction in factions)
+        {
+            foreach (Cell cell in faction)
+                if (cell == loyal_cell)
+                    return new List<Cell>(faction);
+        }
+
+        return null;
     }
 
     public List<Cell> GetCells()

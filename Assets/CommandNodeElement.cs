@@ -171,7 +171,7 @@ public class CommandNodeElement : GoodBehavior
 
     Program.Token GetPreviousToken()
     {
-        CommandNodeElement parent = transform.parent.GetComponent<CommandNodeElement>();
+        CommandNodeElement parent = transform.parent.GetComponentInParent<CommandNodeElement>();
         if (parent == null)
             return null;
 

@@ -361,7 +361,12 @@ public class Organism : Chronal, Versionable<Organism>, Encodable
             rebel_organism.AddCell(host_cells[cell], directions[cell], cell);
         }
 
+        foreach (Molecule molecule in Cytosol.Molecules)
+            if(!molecule.Equals(Molecule.Water))//Water quantity is fixed currently. 
+                rebel_organism.Cytosol.AddCompound(Cytosol.RemoveCompound(molecule, Cytosol.GetQuantity(molecule) / 2));
+
         Locale.AddOrganism(rebel_organism);
+
         return rebel_organism;
     }
 

@@ -222,6 +222,76 @@ public class ActionComponent : MonoBehaviour
                     .SetLength(0.5f);
             }
 
+            if (action is PumpAction)
+            {
+                PumpAction pump_action = action as PumpAction;
+
+                CompoundComponent source_compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
+                source_compound_component.SetCompound(pump_action.PumpedCompound);
+                source_compound_component.transform.SetParent(CellComponent.transform);
+                source_compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
+
+                if (pump_action.Source is Cell.Slot)
+                {
+                    
+
+                    source_compound_component.gameObject.AddComponent<MoveAnimation>()
+                        .SetParameters(OrganismComponent.GetSlotComponent(pump_action.Source as Cell.Slot).CompoundComponent.gameObject,
+                                        CellComponent.GetSlotComponent(action.CatalystSlot).CompoundComponent.gameObject)
+                        .SetLength(0.5f * length);
+
+                    source_compound_component.gameObject.AddComponent<FadeAnimation>()
+                        .SetParameters(false, true)
+                        .SetLength(0.2f * length, 0.4f * length);
+                }
+                else
+                {
+                    Transform target = incoming_compound_positions.Dequeue();
+
+                    source_compound_component.gameObject.AddComponent<MoveAnimation>()
+                        .SetParameters(SlotComponent.Outside.gameObject, target != null ? target.gameObject : SlotComponent.CompoundComponent.gameObject)
+                        .SetLength(0.5f * length);
+
+                    source_compound_component.gameObject.AddComponent<FadeAnimation>()
+                        .SetParameters(false, true)
+                        .SetLength(0.2f * length, 0.4f * length);
+                }
+
+
+                CompoundComponent destination_compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
+                destination_compound_component.SetCompound(pump_action.PumpedCompound);
+                destination_compound_component.transform.SetParent(CellComponent.transform);
+                destination_compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
+
+                if (pump_action.Destination is Cell.Slot)
+                {
+                    destination_compound_component.gameObject.AddComponent<MoveAnimation>()
+                        .SetParameters(CellComponent.GetSlotComponent(action.CatalystSlot).CompoundComponent.gameObject, 
+                                       OrganismComponent.GetSlotComponent(pump_action.Destination as Cell.Slot).CompoundComponent.gameObject)
+                        .SetLength(0.5f * length, 0.5f * length);
+
+                    destination_compound_component.gameObject.AddComponent<FadeAnimation>()
+                        .SetParameters(true, false)
+                        .SetLength(0.25f * length, 0.75f * length);
+                }
+                else
+                {
+                    Transform source = outgoing_compound_positions.Dequeue();
+
+                    destination_compound_component.gameObject.AddComponent<MoveAnimation>()
+                        .SetParameters(source != null ? source.gameObject : SlotComponent.CompoundComponent.gameObject, SlotComponent.Outside.gameObject)
+                        .SetLength(0.5f * length, 0.5f * length);
+
+                    destination_compound_component.gameObject.AddComponent<FadeAnimation>()
+                        .SetParameters(false, true)
+                        .SetLength(0.1f * length, 0.9f * length);
+
+                    destination_compound_component.gameObject.AddComponent<FadeAnimation>()
+                        .SetParameters(true, false)
+                        .SetLength(0.1f * length, 0.5f * length);
+                }
+            }
+
             if (action is Interpretase.GrabCommand)
             {
                 SlotComponent.CompoundComponent.GetComponentInChildren<GrabberComponent>().gameObject.AddComponent<AnimatorAnimation>()

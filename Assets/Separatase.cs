@@ -69,9 +69,9 @@ public class Separatase : ProgressiveCatalyst
         {
             base.End();
 
-            Organism.Separate(Cell, CatalystSlot.AdjacentCell);
+            Organism new_organism = Organism.Separate(Cell, CatalystSlot.AdjacentCell);
 
-            Organism.Cytosol.AddCompound(SeedCompound);
+            new_organism.Cytosol.AddCompound(SeedCompound);
         }
     }
 }

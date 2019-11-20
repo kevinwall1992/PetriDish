@@ -120,6 +120,12 @@ public class CommandNode : DNAPanelNode
 
     void InitializeCommandNodeElement(List<Program.Token> tokens)
     {
+        if(command_node_element != null)
+        {
+            command_node_element.transform.SetParent(null);
+            Destroy(command_node_element);
+        }
+
         command_node_element = Instantiate(command_node_element_prefab);
         command_node_element.transform.SetParent(strand_container);
         command_node_element.transform.SetSiblingIndex(1);

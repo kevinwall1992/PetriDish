@@ -102,7 +102,7 @@ public class ActionComponent : MonoBehaviour
                     compound_component.transform.localScale = new Vector3(0.75f, 0.75f);
                     compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
-                    Transform target = outgoing_compound_positions.Dequeue();
+                    Transform target = incoming_compound_positions.Dequeue();
 
                     compound_component.gameObject.AddComponent<MoveAnimation>()
                         .SetParameters(CellComponent.gameObject, target != null ? target.gameObject : SlotComponent.CompoundComponent.gameObject)
@@ -121,7 +121,7 @@ public class ActionComponent : MonoBehaviour
                     compound_component.transform.localScale = new Vector3(0.75f, 0.75f);
                     compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
-                    Transform source = incoming_compound_positions.Dequeue();
+                    Transform source = outgoing_compound_positions.Dequeue();
 
                     compound_component.gameObject.AddComponent<MoveAnimation>()
                         .SetParameters(source != null ? source.gameObject : SlotComponent.CompoundComponent.gameObject, CellComponent.gameObject)
@@ -144,7 +144,7 @@ public class ActionComponent : MonoBehaviour
                     compound_component.transform.localScale = new Vector3(0.75f, 0.75f);
                     compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
-                    Transform target = outgoing_compound_positions.Dequeue();
+                    Transform target = incoming_compound_positions.Dequeue();
 
                     compound_component.gameObject.AddComponent<MoveAnimation>()
                         .SetParameters(SlotComponent.Outside.gameObject, target != null ? target.gameObject : SlotComponent.CompoundComponent.gameObject)
@@ -163,7 +163,7 @@ public class ActionComponent : MonoBehaviour
                     compound_component.transform.localScale = new Vector3(0.75f, 0.75f);
                     compound_component.gameObject.AddComponent<ActionAnimation.GarbageCollector>();
 
-                    Transform source = incoming_compound_positions.Dequeue();
+                    Transform source = outgoing_compound_positions.Dequeue();
 
                     compound_component.gameObject.AddComponent<MoveAnimation>()
                         .SetParameters(source != null ? source.gameObject : SlotComponent.CompoundComponent.gameObject, SlotComponent.Outside.gameObject)

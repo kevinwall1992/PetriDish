@@ -6,7 +6,7 @@ public class MoleculeComponent : GoodBehavior
     Molecule molecule;
 
     [SerializeField]
-    SpriteRenderer sprite_renderer;
+    SpriteRenderer molecule_base;
 
     [SerializeField]
     Transform across_transform,
@@ -16,6 +16,17 @@ public class MoleculeComponent : GoodBehavior
     [SerializeField]
     Color ribozyme_color,
           protein_color;
+
+    [SerializeField]
+    SpriteRenderer catalyst_background;
+
+    [SerializeField]
+    SpriteRenderer molecule_layer0;
+    [SerializeField]
+    SpriteRenderer molecule_layer1;
+
+    [SerializeField]
+    Animator animator;
 
     public Molecule Molecule { get { return molecule; } }
 
@@ -31,6 +42,17 @@ public class MoleculeComponent : GoodBehavior
 
     public AttachmentComponent LeftAttachmentComponent
     { get { return left_transform.GetComponentInChildren<AttachmentComponent>(); } }
+
+    public float Alpha
+    {
+        get { return molecule_base.color.a; }
+
+        set
+        {
+            molecule_base.color = Utility.ChangeAlpha(molecule_base.color, value);
+            catalyst_background.color = Utility.ChangeAlpha(catalyst_background.color, value);
+        }
+    }
 
     protected override void Update()
     {
@@ -58,9 +80,14 @@ public class MoleculeComponent : GoodBehavior
         if (molecule is Catalyst)
             transform.localRotation = Quaternion.Euler(0, 0, ((int)(molecule as Catalyst).Orientation) * 120);
 
+        catalyst_background.gameObject.SetActive(false);
+        animator.runtimeAnimatorController = null;
+        molecule_layer0.sprite = null;
+        molecule_layer1.sprite = null;
+
         if (molecule != null)
-            sprite_renderer.sprite = GetSprite(molecule);
-        else sprite_renderer.sprite = null;
+            molecule_base.sprite = GetSprite(molecule);
+        else molecule_base.sprite = null;
 
         foreach (Cell.Slot.Relation direction in System.Enum.GetValues(typeof(Cell.Slot.Relation)))
         {
@@ -85,6 +112,9 @@ public class MoleculeComponent : GoodBehavior
             {
                 Catalyst catalyst = molecule as Catalyst;
 
+                catalyst_background.gameObject.SetActive(true);
+                catalyst_background.color = molecule is Ribozyme ? ribozyme_color : protein_color;
+
                 if (catalyst.Attachments.ContainsKey(direction))
                 {
                     Attachment attachment = catalyst.Attachments[direction];
@@ -105,6 +135,15 @@ public class MoleculeComponent : GoodBehavior
                     attachment_component.SetAttachment(attachment, catalyst is Ribozyme ? ribozyme_color : protein_color);
                 }
             }
+
+        }
+
+        if (molecule != null && molecule is Catalyst)
+        {
+            Catalyst catalyst = molecule as Catalyst;
+
+            if (catalyst.GetFacet<Constructase>() != null)
+                animator.runtimeAnimatorController = Resources.Load<RuntimeAnimatorController>("Animations/MoleculeComponent/Caulk");
         }
 
         return this;
@@ -128,6 +167,8 @@ public class MoleculeComponent : GoodBehavior
             case "Hindenburgium Stankide": name = "hydrogen_sulfide"; break;
             case "NRG": name = (molecule as ChargeableMolecule).IsCharged ? "battery" : "empty_battery"; break;
             case "Genes": name = "genes"; break;
+
+            case "Constructase": name = "caulk"; break;
         }
 
         if (name == null)

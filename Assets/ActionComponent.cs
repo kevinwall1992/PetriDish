@@ -460,6 +460,9 @@ public class ActionComponent : MonoBehaviour
                 construction_animator.gameObject.AddComponent<FadeAnimation>()
                     .SetParameters(false, true)
                     .SetLength(0.1f * length, 0.9f * length);
+
+                SlotComponent.CompoundComponent.MoleculeComponent.gameObject.AddComponent<AnimatorAnimation>()
+                    .SetLength(length);
             }
 
             if (action is Separatase.SeparateCell)

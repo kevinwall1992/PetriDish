@@ -290,4 +290,11 @@ public static class Utility
         else
             return false;
     }
+
+    public static Color ChangeAlpha(Color color, float alpha)
+    {
+        color.a = alpha;
+
+        return color;
+    }
 }

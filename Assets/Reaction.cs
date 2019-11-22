@@ -531,7 +531,7 @@ public class Reaction
         }
     }
 
-    class ReactionCatalyst : InstantCatalyst
+    public class ReactionCatalyst : InstantCatalyst
     {
         Reaction reaction;
 

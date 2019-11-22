@@ -146,6 +146,25 @@ public class MoleculeComponent : GoodBehavior
                 animator.runtimeAnimatorController = Resources.Load<RuntimeAnimatorController>("Animations/MoleculeComponent/Think");
             else if (catalyst.GetFacet<Constructase>() != null)
                 animator.runtimeAnimatorController = Resources.Load<RuntimeAnimatorController>("Animations/MoleculeComponent/Caulk");
+            else if (catalyst.GetFacet<Reaction.ReactionCatalyst>() != null)
+            {
+                animator.runtimeAnimatorController = Resources.Load<RuntimeAnimatorController>("Animations/MoleculeComponent/FactoryFlue");
+
+                switch (molecule.Name)
+                {
+                    case "Structatogenase":
+                        molecule_base.color = Color.white;
+                        molecule_layer0.color = Color.Lerp(Color.grey, Color.white, 0.5f);
+                        molecule_layer1.color = Color.Lerp(Color.yellow, Color.red, 0.3f);
+                        break;
+
+                    case "NRG Synthase":
+                        molecule_base.color = Color.Lerp(Color.yellow, Color.white, 0.5f);
+                        molecule_layer0.color = Color.blue;
+                        molecule_layer1.color = Color.yellow;
+                        break;
+                }
+            }
         }
 
         return this;
@@ -173,11 +192,14 @@ public class MoleculeComponent : GoodBehavior
             case "Interpretase": name = "brain"; break;
             case "Constructase": name = "caulk"; break;
             case "Separatase": return null;
+            case "Gene Synthase": name = "genes_factory"; break;
         }
 
         if (name == null)
         {
-            if (molecule is Ribozyme)
+            if (molecule is Catalyst && (molecule as Catalyst).GetFacet<Reaction.ReactionCatalyst>() != null)
+                name = "factory";
+            else if (molecule is Ribozyme)
                 name = "ribozyme";
             else if (molecule is Protein)
                 name = "protein";

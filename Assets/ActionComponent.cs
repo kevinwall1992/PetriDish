@@ -179,6 +179,10 @@ public class ActionComponent : MonoBehaviour
                         .SetParameters(true, false)
                         .SetLength(0.1f * length, 0.5f * length);
                 }
+
+
+                SlotComponent.CompoundComponent.MoleculeComponent.gameObject.AddComponent<AnimatorAnimation>()
+                    .SetLength(length);
             }
 
             if (action is Interpretase.LoadProgram)

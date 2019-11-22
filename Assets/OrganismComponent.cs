@@ -119,7 +119,7 @@ public class OrganismComponent : GoodBehavior
                 if (action is ReactionAction)
                     length = 1.5f;
                 else if (action is Separatase.SeparateCell)
-                    length = 3;
+                    length = 4;
 
                 gameObject.AddComponent<ActionComponent>().SetAction(action, length);
             }

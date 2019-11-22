@@ -1779,7 +1779,7 @@ MonoBehaviour:
     type: 3}
   extruder_component: {fileID: 1928451054155861746, guid: c9b9d44638408e947911775c26a00696,
     type: 3}
-  separator_component: {fileID: 4044642201074721657, guid: 4b187e1981492e84397598c806504bf7,
+  separator_component: {fileID: 4333688481468101098, guid: 4b187e1981492e84397598c806504bf7,
     type: 3}
   sector_node: {fileID: 988260869368573060, guid: bb6e7a2572f45784a9c5af613b3765ea,
     type: 3}

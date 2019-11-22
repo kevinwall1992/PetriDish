@@ -172,6 +172,7 @@ public class MoleculeComponent : GoodBehavior
 
             case "Interpretase": name = "brain"; break;
             case "Constructase": name = "caulk"; break;
+            case "Separatase": return null;
         }
 
         if (name == null)

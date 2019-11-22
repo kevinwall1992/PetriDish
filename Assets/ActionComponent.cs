@@ -473,6 +473,10 @@ public class ActionComponent : MonoBehaviour
 
             if (action is Separatase.SeparateCell)
             {
+                SlotComponent.CompoundComponent.GetComponentInChildren<SeparatorComponent>().gameObject.AddComponent<AnimatorAnimation>()
+                    .SetLength(0.25f * length);
+
+
                 Cell loyal_cell = CellComponent.Cell;
                 Cell rebel_cell = SlotComponent.Slot.AdjacentCell;
 
@@ -485,13 +489,13 @@ public class ActionComponent : MonoBehaviour
 
                     cell_component.gameObject.AddComponent<FadeAnimation>()
                         .SetParameters(false, true)
-                        .SetLength(0.2f * length);
+                        .SetLength(0.2f * length, 0.25f * length);
                     cell_component.gameObject.AddComponent<ScalingAnimation>()
                         .SetParameters(true)
-                        .SetLength(0.2f * length);
+                        .SetLength(0.2f * length, 0.25f * length);
                     cell_component.gameObject.AddComponent<MoveAnimation>()
                         .SetParameters(rebel_cell_component.gameObject)
-                        .SetLength(0.2f * length);
+                        .SetLength(0.2f * length, 0.25f * length);
                 }
 
 
@@ -499,7 +503,7 @@ public class ActionComponent : MonoBehaviour
                 spore_animator.transform.SetParent(Scene.Micro.Visualization.transform);
 
                 spore_animator.gameObject.AddComponent<AnimatorAnimation>()
-                    .SetLength(0.2f * length)
+                    .SetLength(0.4f * length, 0.25f * length)
                     .Smooth();
 
                 Vector3 center = Vector3.zero;
@@ -510,11 +514,11 @@ public class ActionComponent : MonoBehaviour
                 spore_animator.gameObject.AddComponent<MoveAnimation>()
                     .SetParameters(rebel_cell_component.transform.position, 
                                    center + (rebel_cell_component.transform.position - center).normalized * 20)
-                    .SetLength(0.7f * length, 0.3f * length);
+                    .SetLength(0.55f * length, 0.45f * length);
 
                 spore_animator.gameObject.AddComponent<FadeAnimation>()
                     .SetParameters(false, true)
-                    .SetLength(0.7f * length, 0.3f * length);
+                    .SetLength(0.55f * length, 0.45f * length);
             }
         }
 
@@ -536,6 +540,13 @@ public class ActionComponent : MonoBehaviour
                 catalyst_progress_icon.gameObject.AddComponent<CatalystProgressAnimation>()
                     .SetParameters(start_progress, end_progress);
             }
+        }
+
+        if (action is ProgressiveCatalyst.WorkAction)
+        {
+            if (action.Catalyst.GetFacet<Separatase>() != null)
+                SlotComponent.CompoundComponent.GetComponentInChildren<SeparatorComponent>().gameObject.AddComponent<AnimatorAnimation>()
+                    .SetLength(length);
         }
 
         if (interpretase != null)

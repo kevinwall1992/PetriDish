@@ -60,10 +60,10 @@ public class UIOverlay : GoodBehavior
             Vector3 screen_position = Scene.Micro.Camera.WorldToScreenPoint(compound_component.transform.position);
 
             quantity_overlay.text = Measures.GetVisualQuantity(compound_component.Compound).ToString("n1");
-            quantity_overlay.transform.position = screen_position + new Vector3(20, -10);
+            quantity_overlay.transform.position = screen_position + new Vector3(25, -12);
 
             Color text_color = quantity_overlay.color;
-            text_color.a = compound_component.MoleculeComponent.GetComponent<SpriteRenderer>().color.a;
+            text_color.a = compound_component.MoleculeComponent.Alpha;
             quantity_overlay.color = text_color;
         }
 

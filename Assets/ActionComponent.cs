@@ -250,7 +250,7 @@ public class ActionComponent : MonoBehaviour
                 PumpAction pump_action = action as PumpAction;
 
                 SlotComponent.CompoundComponent.MoleculeComponent.gameObject.AddComponent<AnimatorAnimation>()
-                    .SetParameters(1)
+                    .SetParameters(3)
                     .SetLength(length);
 
 

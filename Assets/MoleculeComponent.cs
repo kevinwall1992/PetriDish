@@ -142,7 +142,9 @@ public class MoleculeComponent : GoodBehavior
         {
             Catalyst catalyst = molecule as Catalyst;
 
-            if (catalyst.GetFacet<Constructase>() != null)
+            if (catalyst.GetFacet<Interpretase>() != null)
+                animator.runtimeAnimatorController = Resources.Load<RuntimeAnimatorController>("Animations/MoleculeComponent/Think");
+            else if (catalyst.GetFacet<Constructase>() != null)
                 animator.runtimeAnimatorController = Resources.Load<RuntimeAnimatorController>("Animations/MoleculeComponent/Caulk");
         }
 
@@ -168,6 +170,7 @@ public class MoleculeComponent : GoodBehavior
             case "NRG": name = (molecule as ChargeableMolecule).IsCharged ? "battery" : "empty_battery"; break;
             case "Genes": name = "genes"; break;
 
+            case "Interpretase": name = "brain"; break;
             case "Constructase": name = "caulk"; break;
         }
 

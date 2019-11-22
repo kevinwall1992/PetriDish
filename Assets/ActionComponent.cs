@@ -48,6 +48,8 @@ public class ActionComponent : MonoBehaviour
         bool is_grabbing = false;
         bool is_releasing = false;
 
+        Interpretase interpretase = action.Catalyst.GetFacet<Interpretase>();
+
         while (actions.Count > 0)
         {
             Action action = actions.Dequeue();
@@ -444,6 +446,10 @@ public class ActionComponent : MonoBehaviour
                     compound_component.GetComponentInChildren<GrabberComponent>().gameObject.AddComponent<AnimatorAnimation>()
                     .SetLength(0.2f * length)
                     .Smooth();
+
+                if(compound_component.Compound.Molecule == action.Catalyst && interpretase != null)
+                    compound_component.MoleculeComponent.gameObject.AddComponent<AnimatorAnimation>()
+                        .SetLength(length);
             }
 
             if (action is Constructase.ConstructCell)
@@ -531,6 +537,10 @@ public class ActionComponent : MonoBehaviour
                     .SetParameters(start_progress, end_progress);
             }
         }
+
+        if (interpretase != null)
+            SlotComponent.CompoundComponent.MoleculeComponent.gameObject.AddComponent<AnimatorAnimation>()
+                .SetLength(length);
     }
 
     float GetMoment()

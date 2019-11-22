@@ -249,6 +249,11 @@ public class ActionComponent : MonoBehaviour
             {
                 PumpAction pump_action = action as PumpAction;
 
+                SlotComponent.CompoundComponent.MoleculeComponent.gameObject.AddComponent<AnimatorAnimation>()
+                    .SetParameters(1)
+                    .SetLength(length);
+
+
                 CompoundComponent source_compound_component = Instantiate(Scene.Micro.Prefabs.CompoundComponent);
                 source_compound_component.SetCompound(pump_action.PumpedCompound);
                 source_compound_component.transform.SetParent(CellComponent.transform);
@@ -827,6 +832,8 @@ public class AnimatorAnimation : ActionAnimation
 {
     Animator animator;
 
+    int cycles = 1;
+
     private void Start()
     {
         animator = GetComponent<Animator>();
@@ -836,7 +843,14 @@ public class AnimatorAnimation : ActionAnimation
     {
         base.Update();
 
-        animator.SetFloat("moment", GetMoment());
+        animator.SetFloat("moment", GetMoment() * cycles);
+    }
+
+    public AnimatorAnimation SetParameters(int cycles_)
+    {
+        cycles = cycles_;
+
+        return this;
     }
 }
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class Pumpase : InstantCatalyst
 {
-    bool is_isomer;
+    public bool IsIsomer { get; private set; }
 
     public Molecule Molecule { get; private set; }
 
@@ -16,7 +16,7 @@ public class Pumpase : InstantCatalyst
     Pumpase(Molecule molecule, bool is_isomer_)
         : base()
     {
-        is_isomer = is_isomer_;
+        IsIsomer = is_isomer_;
         Molecule = molecule;
 
         DefaultInitialization();
@@ -32,7 +32,7 @@ public class Pumpase : InstantCatalyst
         InPump = new InputAttachment(Molecule);
         OutPump = new OutputAttachment(Molecule);
 
-        if (!is_isomer)
+        if (!IsIsomer)
         {
             Attachments[Cell.Slot.Relation.Across] = InPump;
             Attachments[Cell.Slot.Relation.Right] = OutPump;
@@ -73,9 +73,9 @@ public class Pumpase : InstantCatalyst
         else
         {
             if (MathUtility.Roll(0.9f))
-                return new Pumpase(Molecule, !is_isomer);
+                return new Pumpase(Molecule, !IsIsomer);
             else
-                return new Pumpase(GetRandomMolecule(), is_isomer);
+                return new Pumpase(GetRandomMolecule(), IsIsomer);
         }
     }
 
@@ -86,20 +86,20 @@ public class Pumpase : InstantCatalyst
 
         Pumpase other_pumpase = other as Pumpase;
 
-        return other_pumpase.is_isomer == is_isomer &&
+        return other_pumpase.IsIsomer == IsIsomer &&
                other_pumpase.Molecule.Equals(Molecule);
     }
 
     public override Catalyst Copy()
     {
-        return new Pumpase(Molecule, is_isomer).CopyStateFrom(this);
+        return new Pumpase(Molecule, IsIsomer).CopyStateFrom(this);
     }
 
     public override JObject EncodeJson()
     {
         JObject json_catalyst_object = base.EncodeJson();
 
-        json_catalyst_object["Is Isomer"] = is_isomer;
+        json_catalyst_object["Is Isomer"] = IsIsomer;
         json_catalyst_object["Molecule"] = Molecule.Name;
 
         return json_catalyst_object;
@@ -109,7 +109,7 @@ public class Pumpase : InstantCatalyst
     {
         base.DecodeJson(json_object);
 
-        is_isomer = Utility.JTokenToBool(json_object["Is Isomer"]);
+        IsIsomer = Utility.JTokenToBool(json_object["Is Isomer"]);
         Molecule = Molecule.GetMolecule(Utility.JTokenToString(json_object["Molecule"]));
 
         DefaultInitialization();

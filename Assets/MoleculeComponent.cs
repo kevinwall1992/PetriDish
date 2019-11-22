@@ -146,6 +146,17 @@ public class MoleculeComponent : GoodBehavior
                 animator.runtimeAnimatorController = Resources.Load<RuntimeAnimatorController>("Animations/MoleculeComponent/Think");
             else if (catalyst.GetFacet<Constructase>() != null)
                 animator.runtimeAnimatorController = Resources.Load<RuntimeAnimatorController>("Animations/MoleculeComponent/Caulk");
+            else if (catalyst.GetFacet<Pumpase>() != null)
+            {
+                molecule_base.color = molecule is Ribozyme ? ribozyme_color : protein_color;
+                if (catalyst.GetFacet<Pumpase>().IsIsomer)
+                    animator.runtimeAnimatorController = Resources.Load<RuntimeAnimatorController>("Animations/MoleculeComponent/PumpIsomer");
+                else
+                    animator.runtimeAnimatorController = Resources.Load<RuntimeAnimatorController>("Animations/MoleculeComponent/Pump");
+
+                if(catalyst.GetFacet<Pumpase>().Molecule.Name == "Hindenburgium Gas")
+                    molecule_layer0.color = Color.Lerp(Color.yellow, Color.red, 0.3f);
+            }
             else if (catalyst.GetFacet<Reaction.ReactionCatalyst>() != null)
             {
                 animator.runtimeAnimatorController = Resources.Load<RuntimeAnimatorController>("Animations/MoleculeComponent/FactoryFlue");
@@ -192,6 +203,11 @@ public class MoleculeComponent : GoodBehavior
             case "Interpretase": name = "brain"; break;
             case "Constructase": name = "caulk"; break;
             case "Separatase": return null;
+            case "Pumpase":
+                if ((molecule as Catalyst).GetFacet<Pumpase>().IsIsomer)
+                    name = "pump_isomer";
+                else
+                    name = "pump"; break;
             case "Gene Synthase": name = "genes_factory"; break;
         }
 
